@@ -172,21 +172,25 @@ def read_rad_data_avg(sim_data, n_steps=0):
 
 def read_data_srs(sim_data):
     """
-    Read in the data from netcdf file into a dictionary that can be used for timeseries plots
+    Read in the data from netcdf file into a dictionary that can be used for timeseries of profiles plots
 
     Input:
     sim_data - netcdf Dataset with simulation results
     """
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
                  "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
-                 "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "env_qr", "updraft_qr", "updraft_w", "env_w",\
+                 "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql", "updraft_thetal",\
+                 "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
                  "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
                  "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
-                 "Hvar_rain", "QTvar_rain", "HQTcov_rain"\
+                 "Hvar_rain", "QTvar_rain", "HQTcov_rain",\
+                 "massflux_h", "diffusive_flux_h", "total_flux_h",\
+                 "massflux_qt","diffusive_flux_qt","total_flux_qt",\
+                 "eddy_viscosity", "eddy_diffusivity", "mixing_length",\
+                 "entrainment_sc", "detrainment_sc", "massflux"\
                 ]
 
     # read the data
@@ -202,6 +206,26 @@ def read_data_srs(sim_data):
             data_to_plot[var] = np.transpose(np.array(sim_data["reference/" + var][:, :])) * 100   #hPa
         else:
             data_to_plot[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :]))
+
+    return data_to_plot
+
+
+def read_data_timeseries(sim_data):
+    """
+    Read in the data from netcdf file into a dictionary that can be used for timeseries plots
+
+    Input:
+    sim_data - netcdf Dataset with simulation results
+    """
+    variables = ["updraft_cloud_cover", "updraft_cloud_base", "updraft_cloud_top", "lwp",\
+                 "ustar", "shf", "lhf", "Tsurface"]
+
+    # read the data
+    data_to_plot = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
+
+    for var in variables:
+        data_to_plot[var] = []
+        data_to_plot[var] = np.array(sim_data["timeseries/" + var][:])
 
     return data_to_plot
 
@@ -293,6 +317,7 @@ def plot_drafts(data, title, folder="tests/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
+
 def plot_var_covar_mean(data, title, folder="tests/output/"):
     """
     Plots variance and covariance profiles from Scampy
@@ -328,6 +353,7 @@ def plot_var_covar_mean(data, title, folder="tests/output/"):
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
+
 
 def plot_var_covar_components(data, title, folder="tests/output/"):
     """
@@ -369,6 +395,50 @@ def plot_var_covar_components(data, title, folder="tests/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
+
+def plot_timeseries_1D(data, title, folder="tests/output/"):
+    """
+    Plots timeseries from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # customize defaults
+    mpl.rc('lines', linewidth=3, markersize=8)
+
+    plt.figure(1, figsize=(20,16))
+    mpl.rc('lines', linewidth=4.5, markersize=10)
+    mpl.rcParams.update({'font.size': 20})
+    plots = []
+
+    # iteration over plots
+    plot_y = [data["updraft_cloud_cover"], data["updraft_cloud_top"], data["lwp"], data["ustar"], data["lhf"], data["Tsurface"]]
+    y_lab  = ['updr cl. cover',            'updr CB, CT',             'LWP',       'u star',      'shf',       'T surf']
+
+    for plot_it in range(6):
+        plots.append(plt.subplot(2,3,plot_it+1))
+                               #(rows, columns, number)
+        plots[plot_it].set_xlabel('t [s]')
+        plots[plot_it].set_ylabel(y_lab[plot_it])
+        plots[plot_it].set_xlim([0, data["t"][-1]])
+        plots[plot_it].grid(True)
+        plots[plot_it].plot(data["t"], plot_y[plot_it], '.-', color="b")
+        if plot_it == 1:
+            plots[plot_it].plot(data["t"], data["updraft_cloud_base"], '.-', color="r", label="CB")
+            plots[plot_it].plot(data["t"], data["updraft_cloud_top"],  '.-', color="b", label="CT")
+            plots[plot_it].legend()
+        if plot_it == 4:
+            plots[plot_it].plot(data["t"], data["lhf"], '.-', color="r", label='lhf')
+            plots[plot_it].plot(data["t"], data["shf"], '.-', color="b", label='shf')
+            plots[plot_it].legend()
+
+    plt.tight_layout()
+    plt.savefig(folder + title)
+    plt.clf()
+
+
 def plot_timeseries(data, case, folder="tests/output/"):
     """
     Plots the time series of Scampy simulations
@@ -385,28 +455,40 @@ def plot_timeseries(data, case, folder="tests/output/"):
     updr_qv  = data["updraft_qt"] - data["updraft_ql"]
     env_qv   = data["env_qt"]     - data["env_ql"]
     env_area = 1. - data["updraft_area"]
+
     # data to plot
-    mean_data  = [data["qt_mean"],    data["buoyancy_mean"], data["tke_mean"],   mean_qv,          data["ql_mean"],    data["qr_mean"]]
-    mean_label = ["mean qt [g/kg]",   "mean buo [cm2/s3]",   "mean TKE [m2/s2]", "mean qv [g/kg]", "mean ql [g/kg]",   "mean qr [g/kg]"]
-    mean_cb    = [mpl.cm.Blues,       mpl.cm.Reds_r,         mpl.cm.Reds,        mpl.cm.Blues,     mpl.cm.Blues,       mpl.cm.Blues]
-    env_data   = [data["env_qt"],     env_area,              data["env_w"],      env_qv,           data["env_ql"],     data["env_qr"]]
-    env_label  = ["env qt [g/kg]",    "env area [%]",        "env w [m/s]",      "env qv [g/kg]",  "env ql [g/kg]",    "env qr [g/kg]"]
-    env_cb     = [mpl.cm.Blues,       mpl.cm.Reds,           mpl.cm.Reds_r,      mpl.cm.Blues,     mpl.cm.Blues,       mpl.cm.Blues]
-    updr_data  = [data["updraft_qt"], data["updraft_area"],  data["updraft_w"],  updr_qv,          data["updraft_ql"], data["updraft_qr"]]
-    updr_label = ["updr qt [g/kg]",   "updr area [%]",       "updr w [m/s]",     "updr qv [g/kg]", "updr ql [g/kg]",   "updr qr [g/kg"]
-    updr_cb    = [mpl.cm.Blues,       mpl.cm.Reds,           mpl.cm.Reds,        mpl.cm.Blues,     mpl.cm.Blues,       mpl.cm.Blues]
-    data_to_plot = [mean_data,  env_data,  updr_data]
-    labels       = [mean_label, env_label, updr_label]
-    titles       = ["01mean",   "02env",   "03updr"]
-    cbs          = [mean_cb,    env_cb,    updr_cb]
+    mean_data  = [data["thetal_mean"],    data["buoyancy_mean"],    data["tke_mean"],      mean_qv,                data["ql_mean"],           data["qr_mean"]]
+    mean_label = ["mean thl [K]",         "mean buo [cm2/s3]",      "mean TKE [m2/s2]",    "mean qv [g/kg]",       "mean ql [g/kg]",          "mean qr [g/kg]"]
+    mean_cb    = [mpl.cm.Reds,            mpl.cm.Reds,              mpl.cm.Reds,           mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
+
+    env_data   = [data["env_thetal"],     env_area,                 data["env_w"],         env_qv,                 data["env_ql"],            data["env_qr"]]
+    env_label  = ["env thl [K]",          "env area [%]",           "env w [m/s]",         "env qv [g/kg]",        "env ql [g/kg]",           "env qr [g/kg]"]
+    env_cb     = [mpl.cm.Reds,            mpl.cm.Reds,              mpl.cm.Reds_r,         mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
+
+    updr_data  = [data["updraft_thetal"], data["updraft_area"],     data["updraft_w"],     updr_qv,                data["updraft_ql"],        data["updraft_qr"]]
+    updr_label = ["updr thl [K]",   "     updr area [%]",           "updr w [m/s]",        "updr qv [g/kg]",       "updr ql [g/kg]",          "updr qr [g/kg"]
+    updr_cb    = [mpl.cm.Reds,            mpl.cm.Reds,              mpl.cm.Reds,           mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
+
+    flux_data  = [data["massflux_h"],     data["diffusive_flux_h"], data["total_flux_h"],  data["massflux_qt"],    data["diffusive_flux_qt"], data["total_flux_qt"]]
+    flux_label = ["M_FL thl",             "D_FL thl ",              "tot FL thl",          "M_FL qt",              "D_FL qt",                 "tot FL qt"]
+    flux_cb    = [mpl.cm.Spectral,        mpl.cm.Spectral,          mpl.cm.Spectral,       mpl.cm.Spectral_r,      mpl.cm.Spectral_r,         mpl.cm.Spectral_r]
+
+    misc_data  = [data["eddy_viscosity"], data["eddy_diffusivity"], data["mixing_length"], data["entrainment_sc"], data["detrainment_sc"],    data["massflux"]]
+    misc_label = ["eddy visc",            "eddy diff",              "mix. length",         "entr sc",              "detr sc",                 "mass flux"]
+    misc_cb    = [mpl.cm.Blues,           mpl.cm.Blues,             mpl.cm.Blues,          mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
+
+    data_to_plot = [mean_data,  env_data,  updr_data,  flux_data,  misc_data]
+    labels       = [mean_label, env_label, updr_label, flux_label, misc_label]
+    titles       = ["01mean",   "02env",   "03updr",   "04flx",    "05misc"]
+    cbs          = [mean_cb,    env_cb,    updr_cb,    flux_cb,    misc_cb]
 
     # customize figure parameters
     mpl.rcParams.update({'font.size': 18})
     fig = plt.figure(1)
-    fig.set_figheight(16)
-    fig.set_figwidth(28)
+    fig.set_figheight(20)
+    fig.set_figwidth(40)
 
-    for var in range(3):
+    for var in range(5):
         ax   = []
         plot = []
         for plot_it in range(6):

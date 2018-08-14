@@ -51,6 +51,14 @@ def test_plot_timeseries_Soares(sim_data):
 
     pls.plot_timeseries(data_to_plot, "Soares")
 
+def test_plot_timeseries_1D_Soares(sim_data):
+    """
+    plot Soares 1D timeseries
+    """
+    data_to_plot = pls.read_data_timeseries(sim_data)
+
+    pls.plot_timeseries_1D(data_to_plot, "Soares_timeseries_1D.pdf")
+
 def test_plot_var_covar_Soares(sim_data):
     """
     plot Soares var covar profiles
