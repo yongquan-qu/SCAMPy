@@ -276,7 +276,7 @@ def plot_mean(data, title, folder="tests/output/"):
         for it in xrange(2): #init, end
             plots[plot_it].plot(plot_x[plot_it][it], data["z_half"], '.-', color=color[it], label=label[it])
 
-    plots[0].legend(loc='upper right')
+    plots[0].legend()
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
@@ -330,7 +330,7 @@ def plot_drafts(data, title, folder="tests/output/"):
         if (plot_it < 3):
             plots[plot_it].plot(plot_mean[plot_it][1], data["z_half"], ".-", color="purple", label="mean")
 
-    plots[0].legend(loc='upper right')
+    plots[0].legend()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -522,12 +522,10 @@ def plot_timeseries(data, case, folder="tests/output/"):
             ax.append(fig.add_subplot(2,3,plot_it+1))
                                     #(rows, columns, number)
             ax[plot_it].set_xlabel('t [hrs]')
+            ax[plot_it].set_ylabel('z [m]')
             plot.append(ax[plot_it].pcolormesh(time, z_half, data_to_plot[var][plot_it], cmap=discrete_cmap(32, cbs[var][plot_it]), rasterized=True))
             fig.colorbar(plot[plot_it], ax=ax[plot_it], label=labels[var][plot_it])
 
-        ax[0].set_ylabel('z [m]')
-        ax[3].set_ylabel('z [m]')
-
-        plt.tight_layout()
+        #plt.tight_layout()
         plt.savefig(folder + case + "_timeseries_" + titles[var] + ".pdf")
         plt.clf()
