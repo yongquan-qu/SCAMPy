@@ -249,19 +249,23 @@ def plot_mean(data, title, folder="tests/output/"):
     folder - folder where to save the created plot
     """
     # customize defaults
-    mpl.rc('lines', linewidth=3, markersize=8)
-
-    plt.figure(1, figsize=(18,14))
-    mpl.rc('lines', linewidth=4, markersize=10)
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
     mpl.rcParams.update({'font.size': 18})
-    plots = []
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # read data
     qv_mean = np.array(data["qt_mean"]) - np.array(data["ql_mean"])
-    # iteration over plots
+
+    # data to plot
     x_lab  = ['QV [g/kg]', 'QL [g/kg]',      'QR [g/kg]',      'THL [K]',           'buoyancy [cm2/s3]',   'TKE [m2/s2]']
     plot_x = [qv_mean,      data["ql_mean"],  data["qr_mean"], data["thetal_mean"],  data["buoyancy_mean"], data["tke_mean"]]
     color  = ["palegreen", "forestgreen"]
     label  = ["ini", "end"]
 
+    # iteration over plots
+    plots = []
     for plot_it in range(6):
         plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
@@ -288,21 +292,25 @@ def plot_drafts(data, title, folder="tests/output/"):
     folder - folder where to save the created plot
     """
     # customize defaults
-    mpl.rc('lines', linewidth=3, markersize=8)
-
-    plt.figure(1, figsize=(18,14))
-    mpl.rc('lines', linewidth=4, markersize=10)
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
     mpl.rcParams.update({'font.size': 18})
-    plots = []
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # read data
     qv_mean    = np.array(data["qt_mean"])    - np.array(data["ql_mean"])
     env_qv     = np.array(data["env_qt"])     - np.array(data["env_ql"])
     updraft_qv = np.array(data["updraft_qt"]) - np.array(data["updraft_ql"])
 
-    # iteration over plots
+    # data to plot
     x_lab    = ["QV [g/kg]", "QL [g/kg]",        "QR [g/kg]",        "w [m/s]",         "updraft buoyancy [cm2/s3]",  "updraft area [%]"]
     plot_upd = [qv_mean,     data["updraft_ql"], data["updraft_qr"], data["updraft_w"], data["updraft_buoyancy"],     data["updraft_area"]]
     plot_env = [env_qv,      data["env_ql"],     data["env_qr"],     data["env_w"]]
     plot_mean= [updraft_qv,  data["ql_mean"],    data["qr_mean"]]
+
+    # iteration over plots
+    plots = []
     for plot_it in xrange(6):
         plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
@@ -317,7 +325,7 @@ def plot_drafts(data, title, folder="tests/output/"):
             plots[plot_it].plot(plot_upd[plot_it][1] * 100, data["z_half"], ".-", color="blue", label="upd")
         # plot environment
         if (plot_it < 4):
-            plots[plot_it].plot(plot_env[plot_it][1], data["z_half"], ".-", color="red", label="red")
+            plots[plot_it].plot(plot_env[plot_it][1], data["z_half"], ".-", color="red", label="env")
         # plot mean
         if (plot_it < 3):
             plots[plot_it].plot(plot_mean[plot_it][1], data["z_half"], ".-", color="purple", label="mean")
@@ -337,15 +345,19 @@ def plot_var_covar_mean(data, title, folder="tests/output/"):
     folder - folder where to save the created plot
     """
     # customize defaults
-    plt.figure(1, figsize=(18,14))
+    fig = plt.figure(1)
+    fig.set_figheight(8)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 16})
     mpl.rc('lines', linewidth=4, markersize=10)
-    mpl.rcParams.update({'font.size': 18})
-    plots = []
 
+    # data to plot
     x_lab         = ["Hvar",       "QTvar",       "HQTcov"]
     plot_var_mean = ["Hvar_mean",  "QTvar_mean",  "HQTcov_mean"]
     plot_var_env  = ["env_Hvar",   "env_QTvar",   "env_HQTcov"]
 
+    # iteration over plots
+    plots = []
     for plot_it in range(3):
         plots.append(plt.subplot(1,3,plot_it+1))
                                #(rows, columns, number)
@@ -358,7 +370,7 @@ def plot_var_covar_mean(data, title, folder="tests/output/"):
         plots[plot_it].plot(data[plot_var_mean[plot_it]][1], data["z_half"], ".-", label=plot_var_mean[plot_it], c="black")
         plots[plot_it].plot(data[plot_var_env[plot_it]][1],  data["z_half"], ".-", label=plot_var_env[plot_it],  c="red")
 
-    plots[0].legend(loc='lower right')
+    plots[0].legend()
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
@@ -373,6 +385,14 @@ def plot_var_covar_components(data, title, folder="tests/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+    # customize defaults
+    fig = plt.figure(1)
+    fig.set_figheight(8)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 16})
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # data to plot
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
     plot_QTvar_c  = ["QTvar_dissipation",  "QTvar_entr_gain",  "QTvar_detr_loss",  "QTvar_shear",  "QTvar_rain"]
     plot_HQTcov_c = ["HQTcov_dissipation", "HQTcov_entr_gain", "HQTcov_detr_loss", "HQTcov_shear", "HQTcov_rain"]
@@ -381,11 +401,7 @@ def plot_var_covar_components(data, title, folder="tests/output/"):
     x_lab         = ["Hvar",      "QTvar",      "HQTcov"]
     plot_var_data = [plot_Hvar_c, plot_QTvar_c, plot_HQTcov_c]
 
-    # customize defaults
-    fig = plt.figure(1, figsize=(18,14))
-    mpl.rc('lines', linewidth=6, markersize=12)
-    mpl.rcParams.update({'font.size': 20})
-
+    # iteration over plots
     plots = []
     for plot_it in range(3):
         plots.append(plt.subplot(1,3,plot_it+1))
@@ -399,7 +415,7 @@ def plot_var_covar_components(data, title, folder="tests/output/"):
         for var in range(5):
             plots[plot_it].plot(data[plot_var_data[plot_it][var]][1],   data["z_half"], ".-", label=plot_Hvar_c[var],  c=color_c[var])
 
-    plots[0].legend(loc='lower right')
+    plots[0].legend()
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
@@ -415,17 +431,18 @@ def plot_timeseries_1D(data, title, folder="tests/output/"):
     folder - folder where to save the created plot
     """
     # customize defaults
-    mpl.rc('lines', linewidth=3, markersize=8)
+    fig = plt.figure(1)
+    fig.set_figheight(8)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 12})
+    mpl.rc('lines', linewidth=2, markersize=6)
 
-    plt.figure(1, figsize=(20,16))
-    mpl.rc('lines', linewidth=4.5, markersize=10)
-    mpl.rcParams.update({'font.size': 20})
-    plots = []
-
-    # iteration over plots
+    # data to plot
     plot_y = [data["updraft_cloud_cover"], data["updraft_cloud_top"], data["lwp"], data["ustar"], data["lhf"], data["Tsurface"]]
     y_lab  = ['updr cl. cover',            'updr CB, CT',             'LWP',       'u star',      'shf',       'T surf']
 
+    # iteration over plots
+    plots = []
     for plot_it in range(6):
         plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
@@ -457,6 +474,12 @@ def plot_timeseries(data, case, folder="tests/output/"):
     case   - name for the tested simulation (to be used in the plot name)
     folder - folder where to save the created plot
     """
+    # customize figure parameters
+    fig = plt.figure(1)
+    fig.set_figheight(15)
+    fig.set_figwidth(30)
+    mpl.rcParams.update({'font.size': 20})
+
     # read data
     z_half   = data["z_half"]
     time     = data["t"] / 60. / 60.
@@ -491,12 +514,7 @@ def plot_timeseries(data, case, folder="tests/output/"):
     titles       = ["01mean",   "02env",   "03updr",   "04flx",    "05misc"]
     cbs          = [mean_cb,    env_cb,    updr_cb,    flux_cb,    misc_cb]
 
-    # customize figure parameters
-    mpl.rcParams.update({'font.size': 18})
-    fig = plt.figure(1)
-    fig.set_figheight(20)
-    fig.set_figwidth(40)
-
+    # iteration over plots
     for var in range(5):
         ax   = []
         plot = []
@@ -504,9 +522,12 @@ def plot_timeseries(data, case, folder="tests/output/"):
             ax.append(fig.add_subplot(2,3,plot_it+1))
                                     #(rows, columns, number)
             ax[plot_it].set_xlabel('t [hrs]')
-            ax[plot_it].set_ylabel('z [m]')
             plot.append(ax[plot_it].pcolormesh(time, z_half, data_to_plot[var][plot_it], cmap=discrete_cmap(32, cbs[var][plot_it]), rasterized=True))
             fig.colorbar(plot[plot_it], ax=ax[plot_it], label=labels[var][plot_it])
 
+        ax[0].set_ylabel('z [m]')
+        ax[3].set_ylabel('z [m]')
+
+        plt.tight_layout()
         plt.savefig(folder + case + "_timeseries_" + titles[var] + ".pdf")
         plt.clf()
