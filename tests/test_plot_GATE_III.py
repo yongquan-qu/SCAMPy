@@ -39,7 +39,7 @@ def test_plot_GATE_III(sim_data):
     """
     plot GATE_III profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100)
 
     pls.plot_mean(data_to_plot,   "GATE_III_quicklook.pdf")
     pls.plot_drafts(data_to_plot, "GATE_III_quicklook_drafts.pdf")
@@ -67,7 +67,7 @@ def test_plot_var_covar_GATE_III(sim_data):
     """
     plot GATE III var covar
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100, var_covar=True)
 
     pls.plot_var_covar_mean(data_to_plot,       "GATE_III_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "GATE_III_var_covar_components.pdf")

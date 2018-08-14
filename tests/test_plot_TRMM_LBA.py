@@ -39,7 +39,7 @@ def test_plot_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100)
 
     pls.plot_mean(data_to_plot,   "TRMM_LBA_quicklook.pdf")
     pls.plot_drafts(data_to_plot, "TRMM_LBA_quicklook_drafts.pdf")
@@ -67,7 +67,7 @@ def test_plot_var_covar_TRMM_LBA(sim_data):
     """
     plot TRMM LBA var covar
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100, var_covar=True)
 
     pls.plot_var_covar_mean(data_to_plot,       "TRMM_LBA_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "TRMM_LBA_var_covar_components.pdf")

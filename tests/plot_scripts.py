@@ -81,18 +81,20 @@ def discrete_cmap(N, base_cmap=None):
     return base.from_list(cmap_name, color_list, N)
 
 
-def read_data_avg(sim_data, n_steps=0):
+def read_data_avg(sim_data, n_steps=0, var_covar=False):
     """
     Read in the data from netcdf file into a dictionary that can be used for plots
 
     Input:
-    sim_data - netcdf Dataset with simulation results
-    n_steps  - number of timesteps to average over
+    sim_data  - netcdf Dataset with simulation results
+    n_steps   - number of timesteps to average over
+    var_covar - flag for when we also want to read in the variance and covariance fields
     """
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
                  "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "env_qr", "updraft_qr", "updraft_w", "env_w",\
+                 "env_qr", "updraft_qr", "updraft_w", "env_w"]
+    variables_var = [\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
@@ -100,6 +102,8 @@ def read_data_avg(sim_data, n_steps=0):
                  "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
                  "Hvar_rain", "QTvar_rain", "HQTcov_rain"
                 ]
+    if var_covar:
+        variables.extend(variables_var)
 
     # read the data from t=init and t=end
     data_to_plot = {"z_half" : np.array(sim_data["profiles/z_half"][:])}
@@ -170,28 +174,33 @@ def read_rad_data_avg(sim_data, n_steps=0):
     return rad_data
 
 
-def read_data_srs(sim_data):
+def read_data_srs(sim_data, var_covar=False):
     """
     Read in the data from netcdf file into a dictionary that can be used for timeseries of profiles plots
 
     Input:
-    sim_data - netcdf Dataset with simulation results
+    sim_data  - netcdf Dataset with simulation results
+    var_covar - flag for when we also want to read in the variance and covariance fields
     """
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
                  "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql", "updraft_thetal",\
                  "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
-                 "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
-                 "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
-                 "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
-                 "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
-                 "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
-                 "Hvar_rain", "QTvar_rain", "HQTcov_rain",\
                  "massflux_h", "diffusive_flux_h", "total_flux_h",\
                  "massflux_qt","diffusive_flux_qt","total_flux_qt",\
                  "eddy_viscosity", "eddy_diffusivity", "mixing_length",\
                  "entrainment_sc", "detrainment_sc", "massflux"\
                 ]
+    variables_var = [\
+                 "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
+                 "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
+                 "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
+                 "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
+                 "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
+                 "Hvar_rain", "QTvar_rain", "HQTcov_rain"\
+                ]
+    if var_covar:
+        variables.extend(variables_var)
 
     # read the data
     data_to_plot = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}

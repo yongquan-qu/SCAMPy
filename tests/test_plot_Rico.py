@@ -38,7 +38,7 @@ def test_plot_Rico(sim_data):
     """
     plot Rico profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 10)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100)
 
     pls.plot_mean(data_to_plot,   "Rico_quicklook.pdf")
     pls.plot_drafts(data_to_plot, "Rico_quicklook_drafts.pdf")
@@ -47,7 +47,7 @@ def test_plot_var_covar_Rico(sim_data):
     """
     plot Rico variance and covariance of H and QT profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 10)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100, var_covar=True)
 
     pls.plot_var_covar_mean(data_to_plot,       "Rico_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "Rico_var_covar_components.pdf")

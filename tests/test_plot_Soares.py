@@ -38,7 +38,7 @@ def test_plot_Soares(sim_data):
     """
     plot Soares profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100)
 
     pls.plot_mean(data_to_plot,   "Soares_quicklook.pdf")
     pls.plot_drafts(data_to_plot, "Soares_quicklook_drafts.pdf")
@@ -63,7 +63,7 @@ def test_plot_var_covar_Soares(sim_data):
     """
     plot Soares var covar profiles
     """
-    data_to_plot = pls.read_data_avg(sim_data, 100)
+    data_to_plot = pls.read_data_avg(sim_data, n_steps=100, var_covar=True)
 
     pls.plot_var_covar_mean(data_to_plot,       "Soares_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "Soares_var_covar_comp.pdf")
