@@ -25,7 +25,7 @@ Additional Acknowledgements:
 
 # installation #
 
-TODO - Travis file
+TODO - (Travis instructions in the future?)
 
 # building and running #
 ```
@@ -53,6 +53,8 @@ $ python main.py Soares.in paramlist_Soares.in
 ```
 
 # testing  #
+
+To generate the automatic plots try:
 
 ```
 $ py.test -v tests/
