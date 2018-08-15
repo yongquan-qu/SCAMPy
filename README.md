@@ -44,7 +44,7 @@ $ python generate_paramlist.py Soares
 
 Compile the source code by running setup.py
 ```
-$ CC=mpicc python setup.py build_ext --inplace
+$ python setup.py build_ext --inplace
 ```
 
 Serial execution of scampy (both turbulence and case specific parameters need to be passed)
