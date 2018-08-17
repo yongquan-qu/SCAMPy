@@ -14,7 +14,6 @@ import pprint as pp
 
 import main as scampy
 import plot_scripts as pls
-import pytest_wrapper as wrp
 
 @pytest.fixture(scope="module")
 def sim_data(request):
