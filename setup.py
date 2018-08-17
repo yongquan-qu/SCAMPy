@@ -55,7 +55,7 @@ elif 'sampo' in platform.node():
     netcdf_include = '/export/data1/ajaruga/clones/netcdf-4.4/localnetcdf/include'
     netcdf_lib = '/export/data1/ajaruga/clones/netcdf-4.4/localnetcdf/lib'
     f_compiler = 'gfortran'
-elif 'linux' in platform.node():
+elif 'linux' in sys.platform:
     #Compile flags for Travis (linux)
     library_dirs = string.split(os.environ['LD_LIBRARY_PATH'],':')
     libraries = []
