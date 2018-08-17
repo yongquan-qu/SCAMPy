@@ -65,8 +65,8 @@ elif 'linux' in platform.node():
     extra_compile_args=[]
     extra_compile_args+=['-std=c99', '-O3', '-march=native', '-Wno-unused',
                          '-Wno-#warnings', '-Wno-maybe-uninitialized', '-Wno-cpp', '-Wno-array-bounds','-fPIC']
-    netcdf_include = '/export/data1/ajaruga/clones/netcdf-4.4/localnetcdf/include' #TODO
-    netcdf_lib = '/export/data1/ajaruga/clones/netcdf-4.4/localnetcdf/lib'
+    netcdf_include = '' #TODO
+    netcdf_lib = ''#TODO
     f_compiler = 'gfortran'
 else:
     print('Unknown system platform: ' + sys.platform  + 'or unknown system name: ' + platform.node())
