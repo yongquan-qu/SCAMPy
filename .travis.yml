@@ -5,6 +5,7 @@ python:
 
 install:
   - pip install Cython
+  - pip install netcdf4
 #  - pip install pytest
 #  - pip install matplotlib
 
