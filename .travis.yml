@@ -7,7 +7,6 @@ python:
 #  - pip install Cython
 #  - pip install pytest
 #  - pip install matplotlib
-
 script:
   - cd ..
   - git clone --depth=1 git://github.com/trontrytel/SCAMPy.git
