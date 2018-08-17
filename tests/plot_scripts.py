@@ -12,7 +12,7 @@ import numpy as np
 import pprint as pp
 
 import matplotlib as mpl
-matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+mpl.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
