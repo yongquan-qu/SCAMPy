@@ -7,11 +7,9 @@ python:
 #  - pip install Cython
 #  - pip install pytest
 #  - pip install matplotlib
+
 script:
-  - cd ..
-  - git clone --depth=1 git://github.com/trontrytel/SCAMPy.git
   - cd scampy
-  - git checkout travis
   - python setup.py build_ext --inplace
   - py.test -s -v tests
 
