@@ -129,6 +129,11 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 
     def __init__(self):
         ForcingBase.__init__(self)
+        return
+
+    cpdef initialize(self, GridMeanVariables GMV):
+        ForcingBase.initialize(self, GMV)
+
         self.alpha_z    = 1.
         self.kappa      = 85.
         self.F0         = 70.
@@ -136,11 +141,8 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         self.divergence = 3.75e-6  # divergence is defined twice: here and in initialize_forcing method of DYCOMS_RF01 case class
                                    # where it is used to initialize large scale subsidence
 
+        print("self.Gr.nzg = ", self.Gr.nzg)
         self.f_rad = np.zeros((self.Gr.nzg + 1,), dtype=np.double, order='c') # radiative flux at cell edges
-        return
-
-    cpdef initialize(self, GridMeanVariables GMV):
-        ForcingBase.initialize(self, GMV)
         return
 
     cpdef calculate_radiation(self, GridMeanVariables GMV):
