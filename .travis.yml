@@ -9,7 +9,6 @@ install:
 #  - pip install matplotlib
 
 script:
-  - cd scampy
   - python setup.py build_ext --inplace
   - py.test -s -v tests
 
