@@ -6,8 +6,7 @@ python:
 install:
   - pip install Cython
   - pip install netcdf4
-#  - pip install pytest
-#  - pip install matplotlib
+  - pip install matplotlib
 
 script:
   - python setup.py build_ext --inplace
