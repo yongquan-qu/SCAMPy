@@ -50,7 +50,6 @@ cdef class VariablePrognostic:
             Py_ssize_t start_low = Gr.gw - 1
             Py_ssize_t start_high = Gr.nzg - Gr.gw - 1
 
-
         if self.bc == 'sym':
             for k in xrange(Gr.gw):
                 self.values[start_high + k +1] = self.values[start_high  - k]
@@ -61,9 +60,6 @@ cdef class VariablePrognostic:
 
                 self.new[start_high + k +1] = self.new[start_high  - k]
                 self.new[start_low - k] = self.new[start_low + 1 + k]
-
-
-
         else:
             self.values[start_high] = 0.0
             self.values[start_low] = 0.0
@@ -102,18 +98,17 @@ cdef class VariableDiagnostic:
         self.name = name
         self.units = units
         return
+
     cpdef set_bcs(self,Grid Gr):
         cdef:
             Py_ssize_t k
             Py_ssize_t start_low = Gr.gw - 1
             Py_ssize_t start_high = Gr.nzg - Gr.gw
 
-
         if self.bc == 'sym':
             for k in xrange(Gr.gw):
                 self.values[start_high + k] = self.values[start_high  - 1]
                 self.values[start_low - k] = self.values[start_low + 1]
-
 
         else:
             self.values[start_high] = 0.0
@@ -122,10 +117,7 @@ cdef class VariableDiagnostic:
                 self.values[start_high+ k] = 0.0  #-self.values[start_high - k ]
                 self.values[start_low- k] = 0.0 #-self.values[start_low + k ]
 
-
         return
-
-
 
 cdef class GridMeanVariables:
     def __init__(self, namelist, Grid Gr, ReferenceState Ref):
@@ -139,7 +131,6 @@ cdef class GridMeanVariables:
 
         # Create thermodynamic variables
         self.QT = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qt', 'kg/kg')
-        self.QR = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qr', 'kg/kg')
 
         if namelist['thermodynamics']['thermal_variable'] == 'entropy':
             self.H = VariablePrognostic(Gr.nzg, 'half', 'scalar', 'sym','s', 'J/kg/K' )
@@ -154,10 +145,11 @@ cdef class GridMeanVariables:
 
         # Diagnostic Variables--same class as the prognostic variables, but we append to diagnostics list
         # self.diagnostics_list  = []
-        self.QL = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'ql', 'kg/kg')
-        self.T = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'temperature', 'K')
-        self.B = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'buoyancy', 'm^2/s^3')
-        self.THL = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal','K')
+        self.QL  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'ql',          'kg/kg')
+        self.T   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'temperature', 'K')
+        self.B   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'buoyancy',    'm^2/s^3')
+        self.THL = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal',      'K')
+        self.QR  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'qr',          'kg/kg')
 
         # TKE   TODO   repeated from EDMF_Environment.pyx logic
         if  namelist['turbulence']['scheme'] == 'EDMF_PrognosticTKE':
@@ -198,7 +190,6 @@ cdef class GridMeanVariables:
         self.U.zero_tendencies(self.Gr)
         self.V.zero_tendencies(self.Gr)
         self.QT.zero_tendencies(self.Gr)
-        self.QR.zero_tendencies(self.Gr)
         self.H.zero_tendencies(self.Gr)
         return
 
@@ -211,14 +202,11 @@ cdef class GridMeanVariables:
                 self.V.values[k]  +=  self.V.tendencies[k] * TS.dt
                 self.H.values[k]  +=  self.H.tendencies[k] * TS.dt
                 self.QT.values[k] +=  self.QT.tendencies[k] * TS.dt
-                self.QR.values[k] +=  self.QR.tendencies[k] * TS.dt
-
 
         self.U.set_bcs(self.Gr)
         self.V.set_bcs(self.Gr)
         self.H.set_bcs(self.Gr)
         self.QT.set_bcs(self.Gr)
-        self.QR.set_bcs(self.Gr)
 
         if self.calc_tke:
             self.TKE.set_bcs(self.Gr)

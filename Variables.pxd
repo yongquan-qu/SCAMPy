@@ -17,7 +17,6 @@ cdef class VariablePrognostic:
     cpdef set_bcs(self, Grid Gr)
     cpdef zero_tendencies(self, Grid Gr)
 
-
 cdef class VariableDiagnostic:
     cdef:
         double [:] values
@@ -28,19 +27,19 @@ cdef class VariableDiagnostic:
         str units
     cpdef set_bcs(self, Grid Gr)
 
-
-
 cdef class GridMeanVariables:
     cdef:
         Grid Gr
         ReferenceState Ref
+
         VariablePrognostic U
         VariablePrognostic V
         VariablePrognostic W
         VariablePrognostic QT
-        VariablePrognostic QR
         VariablePrognostic H
+
         VariableDiagnostic QL
+        VariableDiagnostic QR
         VariableDiagnostic T
         VariableDiagnostic B
         VariableDiagnostic THL
@@ -49,6 +48,7 @@ cdef class GridMeanVariables:
         VariableDiagnostic Hvar
         VariableDiagnostic HQTcov
         VariableDiagnostic THVvar
+
         double (*t_to_prog_fp)(double p0, double T,  double qt, double ql, double qi)   nogil
         double (*prog_to_t_fp)(double H, double pd, double pv, double qt ) nogil
         bint calc_tke

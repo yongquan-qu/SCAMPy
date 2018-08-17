@@ -22,26 +22,40 @@ cdef double q2r(double q_, double qt) nogil :
     """
     return q_ / (1. - qt)
 
-cdef double rain_source_to_thetal(double p0, double T, double qt, double ql, double qi, double qr) nogil :
+cdef double rain_source_to_thetal(double p0, double T, double qr) nogil :
     """
-    Source term for thetal because of ql turning to qr and disappearing from the working fluid
+    Source term for thetal because of qr transitioning between the working fluid and rain
+    (simple version to avoid exponents)
     """
-    thetali_old = t_to_thetali_c(p0, T, qt, ql, qi)
-    thetali_new = t_to_thetali_c(p0, T, qt - qr, ql - qr, qi)
+    return latent_heat(T) * qr / exner_c(p0) / cpd
 
-    #TODO - check: Before it was qr / exner_c(p0) * latent_heat(T) / cpd
-    return thetali_new - thetali_old
+cdef double rain_source_to_thetal_detailed(double p0, double T, double qt, double ql, double qr) nogil :
+    """
+    Source term for thetal because of qr transitioning between the working fluid and rain
+    (more detailed version, but still ignoring dqt/dqr)
+    """
+    cdef double L = latent_heat(T)
+
+    old_source = L * qr / exner_c(p0) / cpd
+
+    new_source = old_source / (1.-qt) * exp(-L * ql / T / cpd / (1.-qt))
+
+    return new_source
 
 # instantly convert all cloud water exceeding a threshold to rain water
 # the threshold is specified as axcess saturation
 # rain water is immediately removed from the domain
 # Tiedke:   TODO - add reference
-cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, double p0) nogil :
+cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, double p0, double ar) nogil :
 
     cdef double psat = pv_star(T)
     cdef double qsat = qv_star_c(p0, qt, psat)
 
-    return fmax(0.0, ql - sat_treshold * qsat)
+    if ar <= 0.:
+        _ret = 0.
+    else:
+        _ret = fmax(0.0, ql - sat_treshold * qsat)
+    return _ret
 
 # time-rate expressions for 1-moment microphysics
 # autoconversion:   Kessler 1969, see Table 1 in Wood 2005: https://doi.org/10.1175/JAS3530.1
@@ -56,9 +70,9 @@ cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, do
 cdef double acnv_rate(double ql, double qt) nogil :
 
     cdef double rl = q2r(ql, qt)
+    cdef double  _ret
 
     return (1. - qt) * 1e-3 * fmax(0.0, rl - 5e-4)
-    #      dq/dr     * dr/dt
 
 cdef double accr_rate(double ql, double qr, double qt) nogil :
 
@@ -87,31 +101,79 @@ cdef double terminal_velocity(double rho, double rho0, double qr, double qt) nog
 
     return 14.34 * rho0**0.5 * rho**-0.3654 * rr**0.1346
 
-
-cdef mph_struct microphysics(double T, double ql, double p0, double qt,\
-                             double max_supersat, bint in_Env) nogil:
+cdef mph_struct microphysics(double T, double ql, double p0, double qt, double area,\
+                             double max_supersat, bint rain) nogil:
     """
-    do condensation and autoconversion
+    do autoconversion
     return updated T, THL, qt, qv, ql, qr, alpha
     """
     # TODO assumes no ice
     cdef mph_struct _ret
 
-    _ret.T     = T
+    _ret.qt    = qt
     _ret.ql    = ql
+    _ret.qv    = qt - ql
+
+    _ret.T     = T
     _ret.thl   = t_to_thetali_c(p0, T, qt, ql, 0.0)
     _ret.th    = theta_c(p0, T)
-    _ret.qv    = qt - ql
     _ret.alpha = alpha_c(p0, T, qt, _ret.qv)
-    _ret.qr    = 0.0
-    _ret.qt    = qt
 
-    if in_Env:
-        _ret.qr           = acnv_instant(ql, qt, max_supersat, T, p0)
-        _ret.thl_rain_src = rain_source_to_thetal(p0, T, qt, ql, 0.0, _ret.qr)
+    _ret.qr    = 0.0
+    _ret.thl_rain_src = 0.0
+
+    if rain:
+        _ret.qr           = acnv_instant(ql, qt, max_supersat, T, p0, area)
+        _ret.thl_rain_src = rain_source_to_thetal(p0, T, _ret.qr)
 
         _ret.qt  -= _ret.qr
         _ret.ql  -= _ret.qr
         _ret.thl += _ret.thl_rain_src
+
+    return _ret
+
+cdef rain_struct rain_area(double source_area,  double source_qr,
+                           double current_area, double current_qr,
+                           double a_const) nogil:
+    """
+    Source terams for rain and rain area
+    """
+    cdef double eps = 0. #TODO
+
+    cdef rain_struct _ret
+
+    if source_qr <=  eps:
+        _ret.qr = current_qr
+        _ret.ar = current_area
+    else:
+        _ret.qr = current_qr + source_area / a_const * source_qr
+        _ret.ar = a_const
+
+    #cdef double a_big, q_big, a_sml, q_sml
+    #cdef double a_const = 0.2
+    #cdef double eps     = 1e-5
+
+    #if source_qr ==  0.:
+    #    _ret.qr = current_qr
+    #    _ret.ar = current_area
+    #else:
+    #    if current_area != 0.:
+    #        if current_area >= source_area:
+    #            a_big = current_area
+    #            q_big = current_qr
+    #            a_sml = source_area
+    #            q_sml = source_qr
+    #        else:
+    #            a_sml = current_area
+    #            q_sml = current_qr
+    #            a_big = source_area
+    #            q_big = source_qr
+
+    #        _ret.qr = q_big + a_sml / a_big * q_sml
+    #        _ret.ar = a_big
+
+    #    else:
+    #        _ret.qr = source_qr
+    #        _ret.ar = source_area
 
     return _ret
