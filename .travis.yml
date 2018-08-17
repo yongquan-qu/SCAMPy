@@ -10,7 +10,6 @@ install:
   - pip install matplotlib
 
 script:
-  - locate netcdf4
   - python setup.py build_ext --inplace
   - py.test -s -v tests
 
