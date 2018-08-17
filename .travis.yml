@@ -1,0 +1,17 @@
+language: python
+python:
+  - "2.7"
+  - "3.6"
+
+#install:
+#  - pip install Cython
+#  - pip install pytest
+#  - pip install matplotlib
+
+script:
+  - cd ..
+  - git clone --depth=1 git://github.com/cmkaul/SCAMPy.git
+  - cd scampy
+  - python setup.py build_ext --inplace
+  - py.test -s -v tests
+
