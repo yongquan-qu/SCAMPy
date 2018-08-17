@@ -11,8 +11,9 @@ from netCDF4 import Dataset
 import numpy as np
 import pprint as pp
 
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+import matplotlib.pyplot as plt
 from matplotlib import ticker
 
 def simulation_setup(case):
