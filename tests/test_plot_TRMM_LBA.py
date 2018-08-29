@@ -21,7 +21,7 @@ def sim_data(request):
     # generate namelists and paramlists
     setup = pls.simulation_setup('TRMM_LBA')
     # chenge the defaults
-    setup['namelist']['turbulence']['EDMF_PrognosticTKE']['use_scalar_var'] = True
+    setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
     scampy.main1d(setup["namelist"], setup["paramlist"])
