@@ -12,6 +12,8 @@ install:
 script:
   - python setup.py build_ext --inplace
   - cd ..
+  - pwd
+  - ls
   - git clone https://github.com/trontrytel/SCAMPy_tests
   - cd SCAMPy_tests
   - py.test -s -v plots
