@@ -25,7 +25,13 @@ Additional Acknowledgements:
 
 # installation #
 
-TODO - (Travis instructions in the future?)
+SCAMPy is written in Python and is compatible with both Python 2.7 and 3.6.
+It requires [Cython](http://cython.org/), [netcdf4](http://unidata.github.io/netcdf4-python/)
+ and [scipy](https://www.scipy.org/).
+For testing and plotting it additionally requires [pytest](https://docs.pytest.org/en/latest/)
+ and [matplotlib](https://matplotlib.org/).
+All the dependancies can be installed using [pip](https://pypi.org/project/pip/).
+See also the travis.yml file for a complete list of instructions needed to compile and run SCAMPy on a clean Linux machine.
 
 # building and running #
 ```
@@ -54,8 +60,15 @@ $ python main.py Soares.in paramlist_Soares.in
 
 # testing  #
 
-To generate the automatic plots try:
+Tests for SCAMPy are located in [SCAMPy_tests](https://github.com/trontrytel/SCAMPy_tests).
+To run them please try
 
 ```
-$ py.test -v tests/
+$ cd ..
+
+$ git clone https://github.com/trontrytel/SCAMPy_tests
+
+$ cd SCAMPy_tests
+
+$ py.test -v plots/
 ```
