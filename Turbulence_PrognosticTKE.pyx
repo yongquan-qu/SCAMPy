@@ -951,10 +951,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.updraft_pressure_sink[i,k] = press
                         self.UpdVar.W.new[i,k] = (self.Ref.rho0[k] * a_k * self.UpdVar.W.values[i,k] * dti_
                                                   -adv + exch + buoy + press)/(self.Ref.rho0[k] * anew_k * dti_)
-                        with gil:
-                            if k==gw:
-                                print self.UpdVar.W.new[i,k]/fmax(w_temp,0.001)
-                                self.UpdVar.W.new[i,k] = w_temp*1.4
 
                         if self.UpdVar.W.new[i,k] <= 0.0:
                             self.UpdVar.W.new[i,k:] = 0.0
