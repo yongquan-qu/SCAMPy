@@ -22,6 +22,9 @@ cdef class RainVariables:
         bint rain_model
         bint rain_const_area
 
+        double mean_rwp
+        double env_rwp
+        double upd_rwp
         double puddle
         double rain_area_value
         double max_supersaturation
@@ -36,9 +39,10 @@ cdef class RainVariables:
         RainVariable Env_RainArea
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
-    cpdef io(self, NetCDFIO_Stats)
+    cpdef io(self, NetCDFIO_Stats, ReferenceState.ReferenceState Ref)
     cpdef set_values_with_new(self)
     cpdef update_bulk_rain(self)
+    cpdef rain_diagnostics(self, ReferenceState.ReferenceState Ref)
 
 cdef class RainPhysics:
     cdef :
