@@ -13,9 +13,10 @@ subgrid-scale turbulence and convection. Journal of Advances in Modeling Earth S
 The code is written in Python and Cython.
 
 Code Contributors:
-	Colleen Kaul (Caltech)--initial/primary developer. Inquiries may be sent to cmkaul@caltech.edu;
+	Colleen Kaul (Caltech)--initial/primary developer.
 	Yair Cohen (Caltech);
 	Anna Jaruga (JPL/Caltech);
+        Ignacio Lopez-Gomez (Caltech);
 	Kyle Pressel (Caltech);
 	Zhihong Tan (U. Chicago)
 
@@ -60,15 +61,19 @@ $ python main.py Soares.in paramlist_Soares.in
 
 # testing  #
 
-Tests for SCAMPy are located in [SCAMPy_tests](https://github.com/trontrytel/SCAMPy_tests).
-To run them please try
+Tests for SCAMPy are located in the tests folder.
+
+To run automatic plots please try:
 
 ```
-$ cd ..
-
-$ git clone https://github.com/trontrytel/SCAMPy_tests
-
-$ cd SCAMPy_tests
+$ cd tests/
 
 $ py.test -v plots/
+
+$ cd ../
+
 ```
+
+TODO: regression tests
+
+TODO: unit tests
