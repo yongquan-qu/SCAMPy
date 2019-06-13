@@ -1057,32 +1057,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 input.T_mean = (self.EnvVar.T.values[k]+self.UpdVar.T.values[i,k])/2
                 input.L = 20000.0 # need to define the scale of the GCM grid resolution
                 ## Ignacio
-                input.n_up = self.n_updrafts
-                input.thv_e = theta_virt_c(self.Ref.p0_half[k], self.EnvVar.T.values[k], self.EnvVar.QT.values[k],
-                     self.EnvVar.QL.values[k], self.EnvVar.QR.values[k])
-                input.thv_u = theta_virt_c(self.Ref.p0_half[k], self.UpdVar.T.bulkvalues[k], self.UpdVar.QT.bulkvalues[k],
-                     self.UpdVar.QL.bulkvalues[k], self.UpdVar.QR.bulkvalues[k])
-                input.dwdz = (self.UpdVar.Area.values[i,k+1]*
-                    interp2pt(self.UpdVar.W.values[i,k+1],self.UpdVar.W.values[i,k]) +
-                    (1.0-self.UpdVar.Area.values[i,k+1])*self.EnvVar.W.values[k+1] -
-                    (self.UpdVar.Area.values[i,k-1]*
-                    interp2pt(self.UpdVar.W.values[i,k-1],self.UpdVar.W.values[i,k-2]) +
-                    (1.0-self.UpdVar.Area.values[i,k-1])*self.EnvVar.W.values[k-1]) )/(2.0*self.Gr.dz)
-
-                transport_plus = ( self.UpdVar.Area.values[i,k+1]*(1.0-self.UpdVar.Area.values[i,k+1])*
-                    (interp2pt(self.UpdVar.W.values[i,k+1],self.UpdVar.W.values[i,k]) - self.EnvVar.W.values[k+1])*
-                    (1.0-2.0*self.UpdVar.Area.values[i,k+1])*
-                    (interp2pt(self.UpdVar.W.values[i,k+1],self.UpdVar.W.values[i,k]) - self.EnvVar.W.values[k+1])*
-                    (interp2pt(self.UpdVar.W.values[i,k+1],self.UpdVar.W.values[i,k]) - self.EnvVar.W.values[k+1]) )
-
-                transport_minus = ( self.UpdVar.Area.values[i,k-1]*(1.0-self.UpdVar.Area.values[i,k-1])*
-                    (interp2pt(self.UpdVar.W.values[i,k-1],self.UpdVar.W.values[i,k-2]) - self.EnvVar.W.values[k-1])*
-                    (1.0-2.0*self.UpdVar.Area.values[i,k+1])*
-                    (interp2pt(self.UpdVar.W.values[i,k-1],self.UpdVar.W.values[i,k-2]) - self.EnvVar.W.values[k-1])*
-                    (interp2pt(self.UpdVar.W.values[i,k-1],self.UpdVar.W.values[i,k-2]) - self.EnvVar.W.values[k-1]) )
-
-                input.transport_der = (transport_plus - transport_minus)/2.0/self.Gr.dz
-
                 if input.zbl-self.UpdVar.cloud_base[i] > 0.0:
                     input.poisson = np.random.poisson(self.Gr.dz/((input.zbl-self.UpdVar.cloud_base[i])/10.0))
                 else:
@@ -1091,7 +1065,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 ret = self.entr_detr_fp(input)
                 self.entr_sc[i,k] = ret.entr_sc * self.entrainment_factor
                 self.detr_sc[i,k] = ret.detr_sc * self.detrainment_factor
-
         return
 
     cpdef double compute_zbl_qt_grad(self, GridMeanVariables GMV):

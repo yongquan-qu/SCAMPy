@@ -39,17 +39,8 @@ cdef struct entr_in_struct:
     double env_HQTcov
     double dw_env
     double L
-    double tke_ed_coeff
-    double Poisson_rand
-    double logfn
     double zbl
     double poisson
-    double n_up
-    double thv_e
-    double thv_u
-    double dwdz
-    double transport_der
-    double dynamic_entr_detr
     long quadrature_order
 
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
