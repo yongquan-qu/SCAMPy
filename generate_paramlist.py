@@ -269,8 +269,8 @@ def DYCOMS_RF01():
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
 
     paramlist['turbulence'] = {}
-    paramlist['turbulence']['prandtl_number'] = 1.0
-    paramlist['turbulence']['Ri_bulk_crit'] = 0.0
+    paramlist['turbulence']['prandtl_number'] = 0.8
+    paramlist['turbulence']['Ri_bulk_crit'] = 0.2
 
     paramlist['turbulence']['EDMF_PrognosticTKE'] = {}
     paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
