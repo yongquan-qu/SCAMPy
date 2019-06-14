@@ -1141,7 +1141,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         buoy= self.Ref.rho0[k] * a_k * B_k
                         press_buoy =  -1.0 * self.Ref.rho0[k] * a_k * B_k * self.pressure_buoy_coeff
                         press_drag = -1.0 * self.Ref.rho0[k] * a_k * (self.pressure_drag_coeff/self.pressure_plume_spacing
-                                        * (self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])*fabs(self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])*/sqrt(fmax(a_k,self.minimum_area)))
+                                        * (self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])*fabs(self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])/sqrt(fmax(a_k,self.minimum_area)))
                         press = press_buoy + press_drag
                         self.updraft_pressure_sink[i,k] = press
                         self.UpdVar.W.new[i,k] = (self.Ref.rho0[k] * a_k * self.UpdVar.W.values[i,k] * dti_
@@ -1639,6 +1639,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 tke_factor = 0.5
                 k_eddy = self.KM.values[k]
             else:
+            # Defined correctly only for covariance between half-level variables.
                 du_low = 0.0
                 dv_low = 0.0
                 du_high = 0.0
