@@ -1582,10 +1582,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         z = self.Gr.z_half[k]
                         if (z<=250.0):
                             GMV.Hvar.values[k] = 0.4*(1.0-z/250.0)*(1.0-z/250.0)*(1.0-z/250.0)
-                            GMV.QTvar.values[k]  = 0.4*(1.0-z/250.0)*(1.0-z/250.0)*(1.0-z/250.0)
-                            GMV.HQTcov.values[k] = 0.4*(1.0-z/250.0)*(1.0-z/250.0)*(1.0-z/250.0)
-            self.reset_surface_covariance(GMV, Case)
-            self.compute_mixing_length(Case.Sur.obukhov_length, GMV)
+                        GMV.QTvar.values[k]  = 0.0
+                        GMV.HQTcov.values[k] = 0.0
+        self.compute_mixing_length(Case.Sur.obukhov_length, GMV)
 
         return
 
@@ -1627,6 +1626,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double du_low, dv_low
             double du_high = 0.0
             double dv_high = 0.0
+            double k_eddy
 
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             if Covar.name == 'tke':
@@ -1637,6 +1637,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 diff_var2 = (EnvVar2[k] - EnvVar2[k-1]) * self.Gr.dzi
                 diff_var1 = (EnvVar1[k] - EnvVar1[k-1]) * self.Gr.dzi
                 tke_factor = 0.5
+                k_eddy = self.KM.values[k]
             else:
                 du_low = 0.0
                 dv_low = 0.0
@@ -1645,8 +1646,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 diff_var2 = interp2pt((EnvVar2[k+1] - EnvVar2[k]),(EnvVar2[k] - EnvVar2[k-1])) * self.Gr.dzi
                 diff_var1 = interp2pt((EnvVar1[k+1] - EnvVar1[k]),(EnvVar1[k] - EnvVar1[k-1])) * self.Gr.dzi
                 tke_factor = 1.0
+                k_eddy = self.KH.values[k]
             with nogil:
-                Covar.shear[k] = tke_factor*2.0*(self.Ref.rho0_half[k] * ae[k] * self.KH.values[k] *
+                Covar.shear[k] = tke_factor*2.0*(self.Ref.rho0_half[k] * ae[k] * k_eddy *
                             (diff_var1*diff_var2 +  pow(interp2pt(du_low, du_high),2.0)  +  pow(interp2pt(dv_low, dv_high),2.0)))
         return
 
