@@ -1170,7 +1170,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double whalf_kp, whalf_k
             double au_lim
             double anew_k, a_k, a_km, entr_w, detr_w, B_k, entr_term, detr_term, rho_ratio
-            double adv, buoy, exch, press, press_buoy, press_drag # groupings of terms in velocity discrete equation
+            double adv, buoy, exch # groupings of terms in velocity discrete equation
 
         with nogil:
             for i in xrange(self.n_updrafts):
