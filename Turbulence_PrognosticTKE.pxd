@@ -60,6 +60,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] tke_detr_loss
         double [:] tke_shear
         double [:] tke_pressure
+        double [:] tke_transport
+        double [:] tke_advection
         double max_area_factor
         double tke_ed_coeff
         double tke_diss_coeff
@@ -87,6 +89,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         double [:] mls
         double [:] ml_ratio
+        double [:] l_entdet
+        double [:] b
+        double [:] prandtl_nvec
         str mixing_scheme
 
     cpdef initialize(self, GridMeanVariables GMV)
@@ -96,7 +101,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_prognostic_updrafts(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_diagnostic_updrafts(self, GridMeanVariables GMV, CasesBase Case)
     cpdef update_inversion(self, GridMeanVariables GMV, option)
-    cpdef compute_mixing_length(self, double obukhov_length)
+    cpdef compute_mixing_length(self, double obukhov_length, GridMeanVariables GMV)
     cpdef compute_eddy_diffusivities_tke(self, GridMeanVariables GMV, CasesBase Case)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
@@ -124,7 +129,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cdef void update_covariance_ED(self, GridMeanVariables GMV, CasesBase Case,TimeStepping TS, VariablePrognostic GmvVar1, VariablePrognostic GmvVar2,
             VariableDiagnostic GmvCovar, EDMF_Environment.EnvironmentVariable_2m Covar, EDMF_Environment.EnvironmentVariable  EnvVar1, EDMF_Environment.EnvironmentVariable  EnvVar2,
             EDMF_Updrafts.UpdraftVariable UpdVar1, EDMF_Updrafts.UpdraftVariable UpdVar2)
-
+    cpdef compute_tke_transport(self)
+    cpdef compute_tke_advection(self)
     cpdef update_GMV_diagnostics(self, GridMeanVariables GMV)
     cpdef double compute_zbl_qt_grad(self, GridMeanVariables GMV)
     cdef get_GMV_CoVar(self, EDMF_Updrafts.UpdraftVariable au,
