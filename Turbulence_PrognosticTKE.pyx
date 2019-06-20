@@ -413,6 +413,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             Py_ssize_t iter_
             double time_elapsed = 0.0
 
+        self.area_fraction_cleanup(GMV)
         self.UpdVar.set_new_with_values()
         self.UpdVar.set_old_with_values()
         self.set_updraft_surface_bc(GMV, Case)
@@ -422,6 +423,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.solve_updraft_velocity_area(GMV,TS)
             self.solve_updraft_scalars(GMV, Case, TS)
             self.UpdVar.set_values_with_new()
+            self.area_fraction_cleanup(GMV)
             time_elapsed += self.dt_upd
             self.dt_upd = np.minimum(TS.dt-time_elapsed,  0.5 * self.Gr.dz/fmax(np.max(self.UpdVar.W.values),1e-10))
             # (####)
@@ -1085,6 +1087,46 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         return zbl_qt
 
+    cpdef area_fraction_cleanup(self, GridMeanVariables GMV):
+        cdef:
+            Py_ssize_t i, k
+
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            self.EnvVar.W.values[k] = 0.0
+            self.EnvVar.B.values[k] = 0.0
+            self.EnvVar.H.values[k] = GMV.H.values[k]
+            self.EnvVar.QT.values[k] = GMV.QT.values[k]
+            self.EnvVar.T.values[k] = GMV.T.values[k]
+            self.EnvVar.QL.values[k] = GMV.QL.values[k]
+            self.EnvVar.QR.values[k] = GMV.QR.values[k]
+            self.EnvVar.THL.values[k] = GMV.THL.values[k]
+            for i in xrange(self.n_updrafts):
+                if self.UpdVar.Area.values[i,k]<self.minimum_area:
+                    self.UpdVar.Area.values[i,k] = 0.0
+                    self.UpdVar.W.values[i,k] = 0.0
+                    self.UpdVar.B.values[i,k] = 0.0
+                    self.UpdVar.H.values[i,k] = GMV.H.values[k]
+                    self.UpdVar.QT.values[i,k] = GMV.QT.values[k]
+                    self.UpdVar.T.values[i,k] = GMV.T.values[k]
+                    self.UpdVar.QL.values[i,k] = GMV.QL.values[k]
+                    self.UpdVar.QR.values[i,k] = GMV.QR.values[k]
+                    self.UpdVar.THL.values[i,k] = GMV.THL.values[k]
+
+        self.UpdVar.W.set_bcs(self.Gr)
+        self.UpdVar.Area.set_bcs(self.Gr)
+        self.UpdVar.H.set_bcs(self.Gr)
+        self.UpdVar.QT.set_bcs(self.Gr)
+        self.UpdVar.QR.set_bcs(self.Gr)
+        self.UpdVar.T.set_bcs(self.Gr)
+        self.UpdVar.B.set_bcs(self.Gr)
+
+        self.EnvVar.W.set_bcs(self.Gr)
+        self.EnvVar.H.set_bcs(self.Gr)
+        self.EnvVar.QT.set_bcs(self.Gr)
+
+        return
+
+
     cpdef solve_updraft_velocity_area(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t i, k
@@ -1243,9 +1285,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             # Update updraft variables with microphysical source tendencies
             self.UpdMicro.update_updraftvars(self.UpdVar)
 
-        self.UpdVar.H.set_bcs(self.Gr)
-        self.UpdVar.QT.set_bcs(self.Gr)
-        self.UpdVar.QR.set_bcs(self.Gr)
         return
 
     # After updating the updraft variables themselves:
@@ -1868,6 +1907,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 Covar.values[k] = fmin(x[kk],   sqrt(self.EnvVar.Hvar.values[k]*self.EnvVar.QTvar.values[k]))
             else:
                 Covar.values[k] = fmax(x[kk],0.0)
+        Covar.set_bcs(self.Gr)
 
         self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
 
