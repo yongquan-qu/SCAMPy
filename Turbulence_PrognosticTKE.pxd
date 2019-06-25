@@ -37,8 +37,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double dt_upd
         double [:,:] entr_sc
         double [:,:] detr_sc
-        double [:,:] updraft_pressure_sink
-        double [:,:] nh_pressure_term
+        double [:,:] nh_pressure
         double [:] area_surface_bc
         double [:] h_surface_bc
         double [:] qt_surface_bc
@@ -104,9 +103,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_mixing_length(self, double obukhov_length, GridMeanVariables GMV)
     cpdef compute_eddy_diffusivities_tke(self, GridMeanVariables GMV, CasesBase Case)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
+    cpdef compute_nh_pressure(self)
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
     cpdef decompose_environment(self, GridMeanVariables GMV, whichvals)
     cpdef compute_entrainment_detrainment(self, GridMeanVariables GMV, CasesBase Case)
+    cpdef zero_area_fraction_cleanup(self, GridMeanVariables GMV)
+    cpdef set_subdomain_bcs(self)
     cpdef solve_updraft_velocity_area(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef solve_updraft_scalars(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef update_GMV_MF(self, GridMeanVariables GMV, TimeStepping TS)
