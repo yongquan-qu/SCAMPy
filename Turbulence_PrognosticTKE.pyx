@@ -489,7 +489,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         with nogil:
             for i in xrange(self.n_updrafts):
                 self.UpdVar.W.values[i, self.Gr.gw-1] = self.w_surface_bc[i]
-                self.entr_sc[i,gw] = 2.0 /dz
+                self.entr_sc[i,gw] = 2.0 /dz # 0.0 ? 
                 self.detr_sc[i,gw] = 0.0
                 for k in range(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                     area_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
