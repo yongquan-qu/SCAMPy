@@ -497,7 +497,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         with nogil:
             for i in xrange(self.n_updrafts):
                 self.UpdVar.W.values[i, self.Gr.gw-1] = self.w_surface_bc[i]
-                self.entr_sc[i,gw] = 2.0 /dz
+                self.entr_sc[i,gw] = 2.0 /dz # 0.0 ? 
                 self.detr_sc[i,gw] = 0.0
                 for k in range(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                     area_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
@@ -1121,8 +1121,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for i in xrange(self.n_updrafts):
                 if self.UpdVar.Area.values[i,k]<self.minimum_area:
                     self.UpdVar.Area.values[i,k] = 0.0
-                    self.UpdVar.W.values[i,k] = 0.0
-                    self.UpdVar.B.values[i,k] = 0.0
+                    self.UpdVar.W.values[i,k] = GMV.W.values[k]
+                    self.UpdVar.B.values[i,k] = GMV.B.values[k]
                     self.UpdVar.H.values[i,k] = GMV.H.values[k]
                     self.UpdVar.QT.values[i,k] = GMV.QT.values[k]
                     self.UpdVar.T.values[i,k] = GMV.T.values[k]
@@ -1131,8 +1131,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.UpdVar.THL.values[i,k] = GMV.THL.values[k]
 
             if np.sum(self.UpdVar.Area.values[:,k])==0.0:
-                self.EnvVar.W.values[k] = 0.0
-                self.EnvVar.B.values[k] = 0.0
+                self.EnvVar.W.values[k] = GMV.W.values[k]
+                self.EnvVar.B.values[k] = GMV.B.values[k]
                 self.EnvVar.H.values[k] = GMV.H.values[k]
                 self.EnvVar.QT.values[k] = GMV.QT.values[k]
                 self.EnvVar.T.values[k] = GMV.T.values[k]
