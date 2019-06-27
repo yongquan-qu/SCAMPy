@@ -806,6 +806,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     else:
                         l2 = vkb * z_
                     self.mixing_length[k] = fmax( 1.0/(1.0/fmax(l1,m_eps) + 1.0/l2), 1e-3)
+                    self.prandtl_nvec[k] = 1.0
         return
 
 
@@ -1869,12 +1870,17 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double [:] rho_ae_K_m = np.zeros((nzg,),dtype=np.double, order='c')
             double [:] whalf = np.zeros((nzg,),dtype=np.double, order='c')
             double  D_env = 0.0
-            double Covar_surf, wu_half
+            double Covar_surf, wu_half, K, Kp
 
-        with nogil:
-            for k in xrange(1,nzg-1):
-                rho_ae_K_m[k] = 0.5 * (ae[k]*self.KH.values[k]+ ae[k+1]*self.KH.values[k+1])* self.Ref.rho0[k]
-                whalf[k] = interp2pt(self.EnvVar.W.values[k-1], self.EnvVar.W.values[k])
+        for k in xrange(1,nzg-1):
+            if  Covar.name == 'tke':
+                K = self.KM.values[k]
+                Kp = self.KM.values[k+1]
+            else:
+                K = self.KH.values[k]
+                Kp = self.KH.values[k+1]
+            rho_ae_K_m[k] = 0.5 * (ae[k]*K+ ae[k+1]*Kp)* self.Ref.rho0[k]
+            whalf[k] = interp2pt(self.EnvVar.W.values[k-1], self.EnvVar.W.values[k])
         wu_half = interp2pt(self.UpdVar.W.bulkvalues[gw-1], self.UpdVar.W.bulkvalues[gw])
 
         if GmvCovar.name=='tke':
