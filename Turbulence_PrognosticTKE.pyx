@@ -806,6 +806,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     else:
                         l2 = vkb * z_
                     self.mixing_length[k] = fmax( 1.0/(1.0/fmax(l1,m_eps) + 1.0/l2), 1e-3)
+                    self.prandtl_nvec[k] = 1.0
         return
 
 
