@@ -1050,6 +1050,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 input.ql_env = self.EnvVar.QL.values[k]
                 input.H_env = self.EnvVar.H.values[k]
                 input.b_env = self.EnvVar.B.values[k]
+                input.b_mean = GMV.B.values[k]
                 input.w_env = self.EnvVar.W.values[k]
                 input.H_up = self.UpdVar.H.values[i,k]
                 input.qt_up = self.UpdVar.QT.values[i,k]
