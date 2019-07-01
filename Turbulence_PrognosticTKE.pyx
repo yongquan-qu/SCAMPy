@@ -894,8 +894,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         dw = (wu_half - we_half)
                         #self.horizontal_KM[i,k] = a*(1.0-a)*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
                         #self.horizontal_KH[i,k] = a*(1.0-a)*self.horizontal_KM[i,k] / self.prandtl_number
-                        self.horizontal_KM[i,k] = 0.4*self.tke_ed_coeff*sqrt(fmax(a*ae[k]*dw*dw,0.0))*l
-                        self.horizontal_KH[i,k] = 0.4*self.horizontal_KM[i,k] / self.prandtl_number
+                        self.horizontal_KM[i,k] = a*self.tke_ed_coeff*sqrt(fmax(a*ae[k]*dw*dw,0.0))*l
+                        self.horizontal_KH[i,k] = a*self.horizontal_KM[i,k] / self.prandtl_number
                     else:
                         self.horizontal_KM[i,k] = 0.0
                         self.horizontal_KH[i,k] = 0.0
