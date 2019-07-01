@@ -48,6 +48,9 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     #RH_env = relative_humidity_c(entr_in.p0, entr_in.qt_env, entr_in.ql_env, 0.0, entr_in.T_env)
     RH_upd = entr_in.RH_upd
     RH_env = entr_in.RH_env
+    chi_struct = inter_critical_env_frac(entr_in)
+    _ret.chi_c = stochastic_buoyancy_sorting(entr_in)
+    _ret.buoyant_frac = buoyancy_sorting(entr_in)
 
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
@@ -56,7 +59,8 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     # _ret.RH_upd = RH_upd
     # _ret.RH_env = RH_env
     if entr_in.ql_up>0.0:
-        _ret.detr_sc = del_bw2*(1.0+(fmax((RH_upd - RH_env),0.0)/RH_upd))
+        #_ret.detr_sc = del_bw2*(1.0+(RH_upd/fmax((RH_upd - RH_env),1.0))**2.0)
+        _ret.detr_sc = del_bw2*(1.0+fmax(RH_upd - RH_env,0.0)/RH_upd)**6.0
     else:
         _ret.detr_sc = del_bw2
 

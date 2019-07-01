@@ -145,6 +145,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         # Detrainment rates
         self.detr_sc = np.zeros((self.n_updrafts, Gr.nzg,),dtype=np.double,order='c')
 
+        self.buoyant_frac = np.zeros((self.n_updrafts, Gr.nzg,),dtype=np.double,order='c')
+        self.chi_c = np.zeros((self.n_updrafts, Gr.nzg,),dtype=np.double,order='c')
+
         # turbulent entrainment
         self.frac_turb_entr = np.zeros((self.n_updrafts, Gr.nzg,),dtype=np.double,order='c')
         self.frac_turb_entr_full = np.zeros((self.n_updrafts, Gr.nzg,),dtype=np.double,order='c')
@@ -214,6 +217,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.add_profile('nh_pressure')
         Stats.add_profile('horizontal_KM')
         Stats.add_profile('horizontal_KH')
+        Stats.add_profile('buoyant_frac')
+        Stats.add_profile('chi_c')
         Stats.add_profile('turbulent_entrainment')
         Stats.add_profile('turbulent_entrainment_full')
         Stats.add_profile('turbulent_entrainment_W')
@@ -290,6 +295,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double [:] mean_turb_entr_QT = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_horizontal_KM = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_horizontal_KH = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_buoyant_frac = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_chi_c = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
 
         self.UpdVar.io(Stats)
         self.EnvVar.io(Stats)
@@ -313,6 +320,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         mean_turb_entr_QT[k] += self.UpdVar.Area.values[i,k] * self.turb_entr_QT[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_horizontal_KM[k] += self.UpdVar.Area.values[i,k] * self.horizontal_KM[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_horizontal_KH[k] += self.UpdVar.Area.values[i,k] * self.horizontal_KH[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_buoyant_frac[k] += self.UpdVar.Area.values[i,k] * self.buoyant_frac[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_chi_c[k] += self.UpdVar.Area.values[i,k] * self.chi_c[i,k]/self.UpdVar.Area.bulkvalues[k]
 
         Stats.write_profile('turbulent_entrainment', mean_frac_turb_entr[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('turbulent_entrainment_full', mean_frac_turb_entr_full[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -323,6 +332,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.write_profile('horizontal_KH', mean_horizontal_KH[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('entrainment_sc', mean_entr_sc[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('detrainment_sc', mean_detr_sc[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('buoyant_frac', mean_buoyant_frac[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('chi_c', mean_chi_c[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure', mean_nh_pressure[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('massflux', massflux[self.Gr.gw:self.Gr.nzg-self.Gr.gw ])
         Stats.write_profile('massflux_h', mf_h[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -1147,7 +1158,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         for i in xrange(self.n_updrafts):
             input.zi = self.UpdVar.cloud_base[i]
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-                if self.UpdVar.Area.values[i,k]<0.0:
+                if self.UpdVar.Area.values[i,k]>0.0:
                     input.quadrature_order = quadrature_order
                     input.b = self.UpdVar.B.values[i,k]
                     input.w = interp2pt(self.UpdVar.W.values[i,k],self.UpdVar.W.values[i,k-1])
