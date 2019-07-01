@@ -44,8 +44,8 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
         entr_struct _ret
         double chi_c, RH_env, RH_upd
 
-    c_eps = sqrt(entr_in.af*(1.0-entr_in.af))
-    # c_eps = entr_in.af*(1.0-entr_in.af)
+    c_eps = sqrt(entr_in.af*(1.0-entr_in.af)) # Bomex
+    #c_eps = entr_in.af*(1.0-entr_in.af) # TRMM
     # c_eps = entr_in.af
     # c_eps = 0.12
     RH_upd = relative_humidity_c(entr_in.p0, entr_in.qt_up, entr_in.ql_up, 0.0, entr_in.T_up)
