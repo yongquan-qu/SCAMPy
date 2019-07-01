@@ -971,6 +971,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     val2 = self.UpdVar.Area.bulkvalues[k] * val1
                     self.EnvVar.QT.values[k] = val1 * GMV.QT.values[k] - val2 * self.UpdVar.QT.bulkvalues[k]
                     self.EnvVar.H.values[k] = val1 * GMV.H.values[k] - val2 * self.UpdVar.H.bulkvalues[k]
+                    #self.EnvVar.RH.values[k] = val1 * GMV.RH.values[k] - val2 * self.UpdVar.RH.bulkvalues[k]
                     # Have to account for staggering of W--interpolate area fraction to the "full" grid points
                     # Assuming GMV.W = 0!
                     au_full = 0.5 * (self.UpdVar.Area.bulkvalues[k+1] + self.UpdVar.Area.bulkvalues[k])
@@ -995,6 +996,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                     self.EnvVar.QT.values[k] = val1 * GMV.QT.mf_update[k] - val2 * self.UpdVar.QT.bulkvalues[k]
                     self.EnvVar.H.values[k] = val1 * GMV.H.mf_update[k] - val2 * self.UpdVar.H.bulkvalues[k]
+                    #self.EnvVar.RH.values[k] = val1 * GMV.RH.values[k] - val2 * self.UpdVar.RH.bulkvalues[k]
                     # Have to account for staggering of W
                     # Assuming GMV.W = 0!
                     au_full = 0.5 * (self.UpdVar.Area.bulkvalues[k+1] + self.UpdVar.Area.bulkvalues[k])
@@ -1168,6 +1170,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 input.env_Hvar = self.EnvVar.Hvar.values[k]
                 input.env_QTvar = self.EnvVar.QTvar.values[k]
                 input.env_HQTcov = self.EnvVar.HQTcov.values[k]
+                input.RH_upd = self.UpdVar.RH.values[i,k]
+                input.RH_env = self.EnvVar.RH.values[k]
 
                 if self.calc_tke:
                         input.tke = self.EnvVar.TKE.values[k]
@@ -1234,6 +1238,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.UpdVar.W.values[i,k] = GMV.W.values[k]
                     self.UpdVar.B.values[i,k] = GMV.B.values[k]
                     self.UpdVar.H.values[i,k] = GMV.H.values[k]
+                    self.UpdVar.RH.values[i,k] = GMV.RH.values[k]
                     self.UpdVar.QT.values[i,k] = GMV.QT.values[k]
                     self.UpdVar.T.values[i,k] = GMV.T.values[k]
                     self.UpdVar.QL.values[i,k] = GMV.QL.values[k]
@@ -1244,6 +1249,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.EnvVar.W.values[k] = GMV.W.values[k]
                 self.EnvVar.B.values[k] = GMV.B.values[k]
                 self.EnvVar.H.values[k] = GMV.H.values[k]
+                self.EnvVar.RH.values[k] = GMV.RH.values[k]
                 self.EnvVar.QT.values[k] = GMV.QT.values[k]
                 self.EnvVar.T.values[k] = GMV.T.values[k]
                 self.EnvVar.QL.values[k] = GMV.QL.values[k]
@@ -1261,10 +1267,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.UpdVar.QT.set_bcs(self.Gr)
         self.UpdVar.QR.set_bcs(self.Gr)
         self.UpdVar.T.set_bcs(self.Gr)
+        self.UpdVar.RH.set_bcs(self.Gr)
         self.UpdVar.B.set_bcs(self.Gr)
 
         self.EnvVar.W.set_bcs(self.Gr)
         self.EnvVar.H.set_bcs(self.Gr)
+        self.EnvVar.T.set_bcs(self.Gr)
+        self.EnvVar.RH.set_bcs(self.Gr)
+        self.EnvVar.QL.set_bcs(self.Gr)
         self.EnvVar.QT.set_bcs(self.Gr)
 
         return

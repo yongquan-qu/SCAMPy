@@ -87,6 +87,7 @@ cdef class EnvironmentVariables:
         self.QT = EnvironmentVariable( nz, 'half', 'scalar', 'qt','kg/kg' )
         self.QL = EnvironmentVariable( nz, 'half', 'scalar', 'ql','kg/kg' )
         self.QR = EnvironmentVariable( nz, 'half', 'scalar', 'qr','kg/kg' )
+        self.RH = EnvironmentVariable( nz, 'half', 'scalar', 'RH','%' )
         if namelist['thermodynamics']['thermal_variable'] == 'entropy':
             self.H = EnvironmentVariable( nz, 'half', 'scalar', 's','J/kg/K' )
         elif namelist['thermodynamics']['thermal_variable'] == 'thetal':
@@ -154,6 +155,7 @@ cdef class EnvironmentVariables:
         Stats.add_profile('env_qt')
         Stats.add_profile('env_ql')
         Stats.add_profile('env_qr')
+        Stats.add_profile('env_RH')
         if self.H.name == 's':
             Stats.add_profile('env_s')
         else:
@@ -174,6 +176,7 @@ cdef class EnvironmentVariables:
         Stats.write_profile('env_qt', self.QT.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_ql', self.QL.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_qr', self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('env_RH', self.RH.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         if self.H.name == 's':
             Stats.write_profile('env_s', self.H.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         else:
@@ -271,6 +274,9 @@ cdef class EnvironmentThermodynamics:
 
                 self.update_EnvVar(   k, EnvVar, mph.T, mph.thl, mph.qt, mph.ql, mph.qr, mph.alpha)
                 self.update_cloud_dry(k, EnvVar, mph.T, mph.th,  mph.qt, mph.ql, mph.qv)
+                EnvVar.RH.values[k] = relative_humidity_c(self.Ref.p0_half[k], EnvVar.QT.values[k] , EnvVar.QL.values[k] , 0.0,
+                                        EnvVar.T.values[k])
+
         return
 
     cdef void eos_update_SA_sgs(self, EnvironmentVariables EnvVar, bint in_Env):
@@ -329,6 +335,8 @@ cdef class EnvironmentThermodynamics:
 
         with nogil:
             for k in xrange(gw, self.Gr.nzg-gw):
+                EnvVar.RH.values[k] = relative_humidity_c(self.Ref.p0_half[k], EnvVar.QT.values[k] , EnvVar.QL.values[k] , 0.0,
+                                        EnvVar.T.values[k])
                 if EnvVar.QTvar.values[k] != 0.0 and EnvVar.Hvar.values[k] != 0.0 and EnvVar.HQTcov.values[k] != 0.0:
                     sd_q = sqrt(EnvVar.QTvar.values[k])
                     sd_h = sqrt(EnvVar.Hvar.values[k])

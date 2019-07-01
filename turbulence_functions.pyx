@@ -48,13 +48,18 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     c_eps = entr_in.af*(1.0-entr_in.af) # TRMM
     # c_eps = entr_in.af
     # c_eps = 0.12
-    RH_upd = relative_humidity_c(entr_in.p0, entr_in.qt_up, entr_in.ql_up, 0.0, entr_in.T_up)
-    RH_env = relative_humidity_c(entr_in.p0, entr_in.qt_env, entr_in.ql_env, 0.0, entr_in.T_env)
+    #RH_upd = relative_humidity_c(entr_in.p0, entr_in.qt_up, entr_in.ql_up, 0.0, entr_in.T_up)
+    #RH_env = relative_humidity_c(entr_in.p0, entr_in.qt_env, entr_in.ql_env, 0.0, entr_in.T_env)
+    RH_upd = entr_in.RH_upd
+    RH_env = entr_in.RH_env
+
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
 
     if entr_in.af>0.0:
         _ret.entr_sc = eps_bw2
+        # _ret.RH_upd = RH_upd
+        # _ret.RH_env = RH_env
         if entr_in.ql_up>0.0:
             _ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**6.0
         else:
@@ -62,6 +67,8 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     else:
         _ret.entr_sc = 0.0
         _ret.detr_sc = 0.0
+        # _ret.RH_upd = RH_env
+        # _ret.RH_env = RH_env
 
     return _ret
 

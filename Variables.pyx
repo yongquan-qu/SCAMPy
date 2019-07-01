@@ -140,6 +140,7 @@ cdef class GridMeanVariables:
         # Create thermodynamic variables
         self.QT = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qt', 'kg/kg')
         self.QR = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qr', 'kg/kg')
+        self.RH = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'RH', '%')
 
         if namelist['thermodynamics']['thermal_variable'] == 'entropy':
             self.H = VariablePrognostic(Gr.nzg, 'half', 'scalar', 'sym','s', 'J/kg/K' )
@@ -242,6 +243,7 @@ cdef class GridMeanVariables:
         Stats.add_profile('v_mean')
         Stats.add_profile('qt_mean')
         Stats.add_profile('qr_mean')
+        Stats.add_profile('RH_mean')
         if self.H.name == 's':
             Stats.add_profile('s_mean')
             Stats.add_profile('thetal_mean')
@@ -271,6 +273,7 @@ cdef class GridMeanVariables:
         Stats.write_profile('qt_mean',self.QT.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('ql_mean',self.QL.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('qr_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('RH_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('temperature_mean',self.T.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('buoyancy_mean',self.B.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         if self.H.name == 's':
