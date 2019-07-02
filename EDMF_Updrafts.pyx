@@ -321,14 +321,17 @@ cdef class UpdraftThermodynamics:
             with nogil:
                 for i in xrange(self.n_updraft):
                     for k in xrange(self.Gr.nzg):
-                        qv = UpdVar.QT.values[i,k] - UpdVar.QL.values[i,k]
-                        alpha = alpha_c(self.Ref.p0_half[k], UpdVar.T.values[i,k], UpdVar.QT.values[i,k], qv)
-                        UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) #- GMV.B.values[k]
+                        if UpdVar.Area.values[i,k] > 0.0:
+                            qv = UpdVar.QT.values[i,k] - UpdVar.QL.values[i,k]
+                            alpha = alpha_c(self.Ref.p0_half[k], UpdVar.T.values[i,k], UpdVar.QT.values[i,k], qv)
+                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) #- GMV.B.values[k]
+                        else:
+                            UpdVar.B.values[i,k] = EnvVar.B.values[k]
         else:
             with nogil:
                 for i in xrange(self.n_updraft):
                     for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-                        if UpdVar.Area.values[i,k] > 1e-3:
+                        if UpdVar.Area.values[i,k] > 0.0:
                             qt = UpdVar.QT.values[i,k]
                             qv = UpdVar.QT.values[i,k] - UpdVar.QL.values[i,k]
                             h = UpdVar.H.values[i,k]
@@ -336,7 +339,7 @@ cdef class UpdraftThermodynamics:
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
                             UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
 
-                        else:
+                        elif UpdVar.Area.values[i,k-1] > 0.0 and k>self.Gr.gw:
                             sa = eos(self.t_to_prog_fp, self.prog_to_t_fp, self.Ref.p0_half[k],
                                      qt, h)
                             qt -= sa.ql
@@ -344,6 +347,9 @@ cdef class UpdraftThermodynamics:
                             t = sa.T
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
                             UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                        else:
+                            UpdVar.B.values[i,k] = EnvVar.B.values[k]
+
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 GMV.B.values[k] = (1.0 - UpdVar.Area.bulkvalues[k]) * EnvVar.B.values[k]
