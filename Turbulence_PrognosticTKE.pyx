@@ -1556,21 +1556,23 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-                GMV.QL.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.QL.bulkvalues[k]
-                                    + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QL.values[k])
-
+                GMV.QL.values[k] = (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QL.values[k]
                 # TODO - change to prognostic?
-                GMV.QR.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.QR.bulkvalues[k]
-                                    + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QR.values[k])
-
-                GMV.T.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.T.bulkvalues[k]
-                                    + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.T.values[k])
+                GMV.QR.values[k] = (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QR.values[k]
+                GMV.T.values[k] =  (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.T.values[k]
                 qv = GMV.QT.values[k] - GMV.QL.values[k]
-
                 GMV.THL.values[k] = t_to_thetali_c(self.Ref.p0_half[k], GMV.T.values[k], GMV.QT.values[k],
                                                    GMV.QL.values[k], 0.0)
-                GMV.B.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.B.bulkvalues[k]
-                                    + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.B.values[k])
+                GMV.B.values[k] = (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.B.values[k]
+
+                for i in xrange(self.n_updrafts):
+                    GMV.QL.values[k] += self.UpdVar.Area.values[i,k] * self.UpdVar.QL.values[i,k]
+                    # TODO - change to prognostic?
+                    GMV.QR.values[k] += self.UpdVar.Area.values[i,k] * self.UpdVar.QR.values[i,k]
+                    GMV.T.values[k]  += self.UpdVar.Area.values[i,k] * self.UpdVar.T.values[i,k]
+                    qv = GMV.QT.values[k] - GMV.QL.values[k]
+                    GMV.THL.values[k] = self.UpdVar.Area.values[i,k] * self.UpdVar.THL.values[i,k]
+                    GMV.B.values[k]  += self.UpdVar.Area.values[i,k] * self.UpdVar.B.values[i,k]
 
         return
 
