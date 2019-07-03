@@ -1199,8 +1199,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     ret = self.entr_detr_fp(input)
                     self.entr_sc[i,k] = ret.entr_sc * self.entrainment_factor
                     self.detr_sc[i,k] = ret.detr_sc * self.detrainment_factor
-                    self.chi_c[i,k] = ret.chi_c
+                    # self.chi_c[i,k] = ret.chi_c
                     self.buoyant_frac[i,k] = ret.buoyant_frac
+                    _ret = inter_critical_env_frac(input)
+                    self.chi_c[i,k] = _ret.x1
+                    if self.chi_c[i,k]>1.0:
+                        print(self.chi_c[i,k])
+                    if _ret.y1>1e-5:
+                        print('not convereged')
                 else:
                     self.entr_sc[i,k] = 0.0
                     self.detr_sc[i,k] = 0.0
