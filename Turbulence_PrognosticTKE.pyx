@@ -74,6 +74,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.entr_detr_fp = entr_detr_suselj
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'env_moisture_deficit':
                 self.entr_detr_fp = entr_detr_env_moisture_deficit
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'buoyancy_sorting':
+                self.entr_detr_fp = entr_detr_buoyancy_sorting
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'none':
                 self.entr_detr_fp = entr_detr_none
             else:
@@ -825,7 +827,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 grad_thv_plus = ( theta_virt_c(self.Ref.p0_half[k+1], self.EnvVar.T.values[k+1], self.EnvVar.QT.values[k+1],
                     self.EnvVar.QL.values[k+1]) - thv) * self.Gr.dzi
                 grad_thv = interp2pt(grad_thv_low, grad_thv_plus)
-
+                if (thv*grad_thv)==0.0:
+                    print(thv,grad_thv)
                 N = sqrt(fmax(g/thv*grad_thv, 0.0))
                 if N > 0.0:
                     l1 = fmin(sqrt(fmax(0.4*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
@@ -903,8 +906,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         a = self.UpdVar.Area.values[i,k]
                         wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                         dw = (wu_half - we_half)
-                        self.horizontal_KM[i,k] = a*(1.0-a)*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
-                        self.horizontal_KH[i,k] = a*(1.0-a)*self.horizontal_KM[i,k] / self.prandtl_number
+                        self.horizontal_KM[i,k] = 0.0*self.UpdVar.Area.values[i,k]*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
+                        self.horizontal_KH[i,k] = 0.0*self.UpdVar.Area.values[i,k]*self.horizontal_KM[i,k] / self.prandtl_number
                         #self.horizontal_KM[i,k] = a*self.tke_ed_coeff*sqrt(fmax(a*ae[k]*dw*dw,0.0))*l
                         #self.horizontal_KH[i,k] = a*self.horizontal_KM[i,k] / self.prandtl_number
                     else:
@@ -1145,12 +1148,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             entr_struct ret
             entr_in_struct input
             eos_struct sa
-            double transport_plus, transport_minus
+            double transport_plus, transport_minus, ii
             long quadrature_order = 3
 
 
         self.UpdVar.get_cloud_base_top_cover()
-
+        ii=0
         input.wstar = self.wstar
 
         input.dz = self.Gr.dz
@@ -1200,13 +1203,17 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.entr_sc[i,k] = ret.entr_sc * self.entrainment_factor
                     self.detr_sc[i,k] = ret.detr_sc * self.detrainment_factor
                     # self.chi_c[i,k] = ret.chi_c
-                    self.buoyant_frac[i,k] = ret.buoyant_frac
+                    #self.buoyant_frac[i,k] = ret.buoyant_frac
                     _ret = inter_critical_env_frac(input)
-                    self.chi_c[i,k] = _ret.x1
-                    if self.chi_c[i,k]>1.0:
-                        print(self.chi_c[i,k])
-                    if _ret.y1>1e-5:
-                        print('not convereged')
+                    # self.chi_c[i,k] = critical_env_frac_RH(input)
+
+                    #self.chi_c[i,k] = _ret.x1
+                    #buoyant_frac = buoyancy_sorting(input)
+                    #buoyant_frac_s = stochastic_buoyancy_sorting(input)
+
+                    # if self.chi_c[i,k]<1.0:
+                    #     print(self.chi_c[i,k])
+
                 else:
                     self.entr_sc[i,k] = 0.0
                     self.detr_sc[i,k] = 0.0
@@ -1263,7 +1270,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.UpdVar.W.values[i,k] = GMV.W.values[k]
                     self.UpdVar.B.values[i,k] = GMV.B.values[k]
                     self.UpdVar.H.values[i,k] = GMV.H.values[k]
-                    self.UpdVar.RH.values[i,k] = GMV.RH.values[k]
+                    self.UpdVar.RH.values[i,k] = self.EnvVar.RH.values[k]
                     self.UpdVar.QT.values[i,k] = GMV.QT.values[k]
                     self.UpdVar.T.values[i,k] = GMV.T.values[k]
                     self.UpdVar.QL.values[i,k] = GMV.QL.values[k]

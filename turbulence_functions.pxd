@@ -4,10 +4,6 @@ cdef struct entr_struct:
     double buoyant_frac
     double chi_c
 
-cdef struct evap_struct:
-    double T
-    double ql
-
 cdef struct chi_struct:
     double T_mix
     double ql_mix
@@ -65,6 +61,7 @@ cdef entr_struct entr_detr_tke(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_tke2(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_suselj(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_none(entr_in_struct entr_in) nogil
+cdef double critical_env_frac_RH(entr_in_struct entr_in) nogil
 cdef double buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil

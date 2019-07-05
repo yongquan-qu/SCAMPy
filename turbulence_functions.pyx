@@ -41,25 +41,30 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
         double chi_c, RH_env, RH_upd
 
     c_eps = sqrt(entr_in.af*(1.0-entr_in.af)) # Bomex
-    # c_eps = entr_in.af*(1.0-entr_in.af) # TRMM
-    # c_eps = entr_in.af
-    # c_eps = 0.12
     #RH_upd = relative_humidity_c(entr_in.p0, entr_in.qt_up, entr_in.ql_up, 0.0, entr_in.T_up)
     #RH_env = relative_humidity_c(entr_in.p0, entr_in.qt_env, entr_in.ql_env, 0.0, entr_in.T_env)
     RH_upd = entr_in.RH_upd
     RH_env = entr_in.RH_env
-    chi_struct = inter_critical_env_frac(entr_in)
-    _ret.buoyant_frac = buoyancy_sorting(entr_in)
+    # chi_struct = inter_critical_env_frac(entr_in)
+    # _ret.buoyant_frac = buoyancy_sorting(entr_in)
 
+    # c_eps = entr_in.af*(1.0-entr_in.af) # TRMM
+    c_eps = 0.12
+    # c_eps = entr_in.af
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
 
     _ret.entr_sc = eps_bw2
     if entr_in.ql_up>0.0:
+        qv     = entr_in.qt_env-entr_in.ql_env
+        pv     = pv_c(entr_in.p0, entr_in.qt_env, qv)
+        qv_s   = qv_star_c(entr_in.p0, entr_in.qt_env, pv)
+    # if entr_in.z>entr_in.zi:
         #_ret.detr_sc = del_bw2*(1.0+(RH_upd/fmax((RH_upd - RH_env),1.0))**2.0)
-        _ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**6.0
+        #_ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**6.0
+        _ret.detr_sc = del_bw2*(1.0+(entr_in.ql_up-1e-5)/(qv_s*(RH_upd/100.0 - RH_env/100.0)+1e-5))
     else:
-        _ret.detr_sc = del_bw2
+        _ret.detr_sc =  del_bw2
 
     return _ret
 
@@ -71,7 +76,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     c_eps = sqrt(entr_in.af*(1.0-entr_in.af))
     # c_eps = entr_in.af
-    # c_eps = 0.12
+    c_eps = 0.12
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
 
@@ -84,8 +89,9 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
     _ret.entr_sc = eps_bw2
     chi_struct = inter_critical_env_frac(entr_in)
     _ret.buoyant_frac = stochastic_buoyancy_sorting(entr_in)
-    #_ret.buoyant_frac = buoyancy_sorting(entr_in)
-    if entr_in.ql_up>0.0:
+    _ret.buoyant_frac = buoyancy_sorting(entr_in)
+    # if entr_in.ql_up>0.0:
+    if entr_in.z >= entr_in.zi :
         _ret.detr_sc = del_bw2*(1.0+(1.0/_ret.buoyant_frac)**6.0)
     else:
         _ret.detr_sc = del_bw2
@@ -164,16 +170,16 @@ cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
                     qv_ = qt_hat - sa.ql
                     alpha_mix = alpha_c(entr_in.p0, sa.T, qt_hat, qv_)
                     bmix = buoyancy_c(entr_in.alpha0, alpha_mix) - b_mean
-                    with gil:
-                        print(entr_in.z, bmix, entr_in.H_up-h_hat, entr_in.qt_up-qt_hat, weights[m_h])
+                    # with gil:
+                    #     print(entr_in.z, bmix, entr_in.H_up-h_hat, entr_in.qt_up-qt_hat, entr_in.ql_up-sa.ql, weights[m_h])
 
                     # sum only the points with positive buoyancy to get the buoyant fraction
                     if bmix >0.0:
                         inner_buoyant_frac  += weights[m_h] * sqpi_inv
 
                 buoyant_frac  += inner_buoyant_frac * weights[m_q] * sqpi_inv
-            with gil:
-                print('buoyant_frac ---------------->', buoyant_frac)
+            # with gil:
+            #     print('buoyant_frac ---------------->', buoyant_frac)
         else:
             h_hat = ( entr_in.H_env + entr_in.H_up)/2.0
             qt_hat = ( entr_in.qt_env + entr_in.qt_up)/2.0
@@ -227,7 +233,8 @@ cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil:
         # cov[1,2] = entr_in.env_HQTcov
         # cov[2,1] = entr_in.env_HQTcov
         # cov[2,2] = entr_in.env_Hvar
-
+        # with gil:
+        #     print('-----------> buoyant_frac_s')
         for i in range(n):
             with gil:
                 rand_QT,rand_H = np.random.multivariate_normal([entr_in.qt_env,entr_in.H_env],[[entr_in.env_QTvar,entr_in.env_HQTcov],[entr_in.env_HQTcov,entr_in.env_Hvar]], 1).T
@@ -242,8 +249,38 @@ cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
             if bmix>0:
                 buoyant_frac_s +=1.0/float(n)
-
+            # with gil:
+            #     print(i, Hmix,entr_in.H_up, rand_H, QTmix, entr_in.qt_up, rand_QT)
+            #     print(entr_in.env_QTvar,entr_in.env_HQTcov,entr_in.env_Hvar)
+        # with gil:
+        #         print(buoyant_frac_s)
         return buoyant_frac_s
+
+cdef double critical_env_frac_RH(entr_in_struct entr_in) nogil:
+    cdef:
+        double qv_s, qv, Xc, chi_c, pv
+
+    RH_upd = entr_in.RH_upd
+    RH_env = entr_in.RH_env
+
+    # if entr_in.ql_up>0.0:
+    #     qv     = entr_in.qt_env-entr_in.ql_env
+    #     pv     = pv_c(entr_in.p0, entr_in.qt_env, qv)
+    #     qv_s   = qv_star_c(entr_in.p0, entr_in.qt_env, pv)
+    #     Xc     = (entr_in.ql_up - 1e-5)/((qv_s-qv)+1e-5)
+    #     chi_c  = Xc/(1.0+Xc)
+    #     t_a = 1.0
+    #     a = k/t_a*(ql0/1e-5) + (qv_s-qv)/1e-5
+    #     b = k/t_a + (qv_s-qv)/1e-5
+    #     t_new = t_a*
+    #     t_mix = k*(Xc+Xc*Xc/2.0)
+    #     with gil:
+    #         print(qv ,qv_s ,Xc ,(entr_in.ql_up - 1e-5),((qv_s-qv)+1e-5),chi_c)
+    # else:
+    #     chi_c  = 1.0-entr_in.af
+    chi_c  = 1.0-entr_in.af
+
+    return chi_c
 
 cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil:
     cdef:
