@@ -1148,7 +1148,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             entr_struct ret
             entr_in_struct input
             eos_struct sa
-            double transport_plus, transport_minus, ii
+            double transport_plus, transport_minus, ii, alpha_mix
             long quadrature_order = 3
 
 
@@ -1204,12 +1204,16 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.detr_sc[i,k] = ret.detr_sc * self.detrainment_factor
                     # self.chi_c[i,k] = ret.chi_c
                     #self.buoyant_frac[i,k] = ret.buoyant_frac
-                    _ret = inter_critical_env_frac(input)
+                    # _ret = inter_critical_env_frac(input)
                     # self.chi_c[i,k] = critical_env_frac_RH(input)
 
-                    #self.chi_c[i,k] = _ret.x1
-                    #buoyant_frac = buoyancy_sorting(input)
-                    #buoyant_frac_s = stochastic_buoyancy_sorting(input)
+                    # self.chi_c[i,k] = _ret.y1
+                    # if fabs(_ret.y1)>1e-5:
+                    #     print('not converged')
+
+                    # self.buoyant_frac[i,k] = buoyancy_sorting(input)
+                    self.buoyant_frac[i,k] = buoyancy_sorting_mean(input)
+                    # self.buoyant_frac[i,k] = stochastic_buoyancy_sorting(input)
 
                     # if self.chi_c[i,k]<1.0:
                     #     print(self.chi_c[i,k])
