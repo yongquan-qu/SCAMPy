@@ -74,46 +74,16 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
         entr_struct _ret
         double chi_c
 
-    c_eps = 0.05
-    eps = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-
+    eps = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
     if entr_in.ql_up>0.0:
         _ret.buoyant_frac = buoyancy_sorting_mean(entr_in)
         buoyant_frac = _ret.buoyant_frac
-        _ret.entr_sc = eps*fmax(buoyant_frac,0.0)
+        _ret.entr_sc = eps*fmax(1.0+buoyant_frac,0.0)
         _ret.detr_sc = eps*fmax(2.0-buoyant_frac,0.0)
     else:
         buoyant_frac = 0.0
         _ret.entr_sc = eps
         _ret.detr_sc = 0.0
-
-    # c_eps = sqrt(entr_in.af*(1.0-entr_in.af))
-    # c_eps = entr_in.af
-    # del_bulk = 4.0e-3
-    #eps =  1.0/(fmax(fabs(entr_in.w),0.001)*1000.0)
-    #eps_bw2 = 1.0/(fmax(fabs(entr_in.w),1.0)*700.0)
-    #esp = 0.0/entr_in.z
-    # chi_struct = inter_critical_env_frac(entr_in)
-    # _ret.buoyant_frac = stochastic_buoyancy_sorting(entr_in)
-    # eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # if entr_in.ql_up>0.0:
-    # if entr_in.z >= entr_in.zi :
-    #     _ret.detr_sc = del_bw2*(1.0+(1.0/_ret.buoyant_frac)**6.0)
-    # else:
-    #     _ret.detr_sc = del_bw2
-
-    # #temp = inter_critical_env_frac(entr_in)
-    # #_ret.chi_c = fmax(fmin(temp.x1,1.0),0.0)
-    # #buoyant_frac = stochastic_buoyancy_sorting(entr_in)
-    # #_ret.entr_sc = _ret.chi_c**2.0*eps #+ entr_alim
-    # #_ret.detr_sc = (1.0 - _ret.chi_c)**2.0*eps #+ detr_alim
-
-    # #_ret.entr_sc = eps_bw2
-    # #_ret.detr_sc = del_bw2 #+ detr_alim
-    # #if entr_in.z >= entr_in.zi:
-    # #    _ret.detr_sc = eps #+ detr_alim
-    # _ret.buoyant_frac = buoyant_frac
 
     return _ret
 

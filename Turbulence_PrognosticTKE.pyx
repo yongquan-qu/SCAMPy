@@ -1187,6 +1187,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.env_HQTcov = self.EnvVar.HQTcov.values[k]
                     input.RH_upd = self.UpdVar.RH.values[i,k]
                     input.RH_env = self.EnvVar.RH.values[k]
+                    input.c_eps = self.entrainment_factor
 
                     if self.calc_tke:
                             input.tke = self.EnvVar.TKE.values[k]
@@ -1200,8 +1201,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         input.poisson = 0.0
                     ## End: Ignacio
                     ret = self.entr_detr_fp(input)
-                    self.entr_sc[i,k] = ret.entr_sc * self.entrainment_factor
-                    self.detr_sc[i,k] = ret.detr_sc * self.detrainment_factor
+                    self.entr_sc[i,k] = ret.entr_sc
+                    self.detr_sc[i,k] = ret.detr_sc
                     # self.chi_c[i,k] = ret.chi_c
                     #self.buoyant_frac[i,k] = ret.buoyant_frac
                     # _ret = inter_critical_env_frac(input)
