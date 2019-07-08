@@ -43,7 +43,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double chi_c,eps_bw2, del_bw2
+        double eps_bw2, del_bw2, c_eps
 
     c_eps = 0.1
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
@@ -57,7 +57,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
 
         cdef:
-            double qv_ ,T_env ,ql_env ,alpha_env ,b_env, T_up ,ql_up ,alpha_up ,b_up, b_mean, b_avg, b_mix, qt_mix , H_mix
+            double qv_ ,T_env ,ql_env ,alpha_env ,b_env, T_up ,ql_up ,alpha_up ,b_up, b_mix, qt_mix , H_mix
             double buoyant_frac = 0.0
             eos_struct sa
 
@@ -74,9 +74,6 @@ cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
         ql_up = sa.ql
         alpha_up = alpha_c(entr_in.p0, sa.T, entr_in.qt_up, qv_)
         b_up = buoyancy_c(entr_in.alpha0, alpha_up)
-
-        b_mean = entr_in.af*b_up +  (1.0-entr_in.af)*b_env
-        b_avg = 0.5*b_up + 0.5*b_env - b_mean
 
         qt_mix = (entr_in.qt_up+entr_in.qt_env)/2.0
         H_mix = (entr_in.H_up+entr_in.H_env)/2.0
