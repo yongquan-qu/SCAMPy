@@ -22,6 +22,7 @@ from turbulence_functions cimport *
 from utility_functions cimport *
 from libc.math cimport fmax, sqrt, exp, pow, cbrt, fmin, fabs
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
+import pylab as plt
 
 cdef class EDMF_PrognosticTKE(ParameterizationBase):
     # Initialize the class
@@ -379,19 +380,20 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.EnvVar.Hvar.values[k] = GMV.Hvar.values[k]
                         self.EnvVar.QTvar.values[k] = GMV.QTvar.values[k]
                         self.EnvVar.HQTcov.values[k] = GMV.HQTcov.values[k]
-
+        self.nan_stopper(GMV, 383)
         self.decompose_environment(GMV, 'values')
-
+        self.nan_stopper(GMV, 385)
         if self.use_steady_updrafts:
             self.compute_diagnostic_updrafts(GMV, Case)
         else:
             self.compute_prognostic_updrafts(GMV, Case, TS)
-
+        self.nan_stopper(GMV, 390)
         # TODO -maybe not needed? - both diagnostic and prognostic updrafts end with decompose_environment
         # But in general ok here without thermodynamics because MF doesnt depend directly on buoyancy
         self.decompose_environment(GMV, 'values')
-
+        self.nan_stopper(GMV, 394)
         self.update_GMV_MF(GMV, TS)
+        self.nan_stopper(GMV, 396)
         # (###)
         # decompose_environment +  EnvThermo.satadjust + UpdThermo.buoyancy should always be used together
         # This ensures that:
@@ -399,18 +401,20 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
         self.decompose_environment(GMV, 'mf_update')
+        self.nan_stopper(GMV, 404)
         self.EnvThermo.satadjust(self.EnvVar, True)
+        self.nan_stopper(GMV, 406)
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
-
+        self.nan_stopper(GMV, 408)
         self.compute_eddy_diffusivities_tke(GMV, Case)
-
+        self.nan_stopper(GMV, 410)
         self.update_GMV_ED(GMV, Case, TS)
         self.compute_covariance(GMV, Case, TS)
-
+        self.nan_stopper(GMV, 413)
         # Back out the tendencies of the grid mean variables for the whole timestep by differencing GMV.new and
         # GMV.values
         ParameterizationBase.update(self, GMV, Case, TS)
-
+        self.nan_stopper(GMV, 417)
         return
 
     cpdef compute_prognostic_updrafts(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS):
@@ -1941,5 +1945,80 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Covar.set_bcs(self.Gr)
 
         self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
+
+        return
+
+    cpdef nan_stopper(self, GridMeanVariables GMV, double line):
+        cdef:
+            Py_ssize_t i, k
+
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            for i in xrange(self.n_updrafts):
+                if np.isnan(self.UpdVar.Area.values[i,k]*self.UpdVar.W.values[i,k]*self.UpdVar.B.values[i,k]*self.UpdVar.H.values[i,k]
+                    *self.UpdVar.QT.values[i,k]*self.UpdVar.T.values[i,k]*self.UpdVar.QL.values[i,k]*self.UpdVar.QR.values[i,k]
+                    *self.UpdVar.THL.values[i,k]*self.EnvVar.W.values[k]*self.EnvVar.B.values[k]*self.EnvVar.H.values[k]
+                    *self.EnvVar.QT.values[k]*self.EnvVar.T.values[k]*self.EnvVar.QL.values[k]
+                    *self.EnvVar.QR.values[k]*self.EnvVar.THL.values[k]*GMV.W.values[k]*GMV.B.values[k]*GMV.H.values[k]
+                    *GMV.QT.values[k]*GMV.T.values[k]*GMV.QL.values[k]
+                    *GMV.QR.values[k]*GMV.THL.values[k]):
+                    print('nan detected')
+                    print(k, self.Gr.z_half[k], 'line', line)
+                    print('self.UpdVar.Area.values[i,k]',self.UpdVar.Area.values[i,k])
+                    print('self.UpdVar.W.values[i,k]',self.UpdVar.W.values[i,k])
+                    print('self.UpdVar.B.values[i,k]',self.UpdVar.B.values[i,k])
+                    print('self.UpdVar.H.values[i,k]',self.UpdVar.H.values[i,k])
+                    print('self.UpdVar.QT.values[i,k]',self.UpdVar.QT.values[i,k])
+                    print('self.UpdVar.T.values[i,k]',self.UpdVar.T.values[i,k])
+                    print('self.UpdVar.QL.values[i,k]',self.UpdVar.QL.values[i,k])
+                    print('self.UpdVar.QR.values[i,k]',self.UpdVar.QR.values[i,k])
+                    print('self.UpdVar.THL.values[i,k])',self.UpdVar.THL.values[i,k])
+                    print('self.EnvVar.W.values[k]',self.EnvVar.W.values[k])
+                    print('self.EnvVar.B.values[k]',self.EnvVar.B.values[k])
+                    print('self.EnvVar.H.values[k]',self.EnvVar.H.values[k])
+                    print('self.EnvVar.QT.values[k]',self.EnvVar.QT.values[k])
+                    print('self.EnvVar.T.values[k]',self.EnvVar.T.values[k])
+                    print('self.EnvVar.QL.values[k]',self.EnvVar.QL.values[k])
+                    print('self.EnvVar.QR.values[k]',self.EnvVar.QR.values[k])
+                    print('self.EnvVar.THL.values[k]',self.EnvVar.THL.values[k])
+                    print('GMV.W.values[k]',  GMV.W.values[k])
+                    print('GMV.B.values[k]',  GMV.B.values[k])
+                    print('GMV.H.values[k]',  GMV.H.values[k])
+                    print('GMV.QT.values[k]',  GMV.QT.values[k])
+                    print('GMV.T.values[k]',  GMV.T.values[k])
+                    print('GMV.QL.values[k]',  GMV.QL.values[k])
+                    print('GMV.QR.values[k]',  GMV.QR.values[k])
+                    print('GMV.THL.values[k]',  GMV.THL.values[k])
+                    plt.figure()
+                    plt.show()
+                if  self.UpdVar.H.values[i,k]<280.0 or self.EnvVar.H.values[k]<280.0 or GMV.H.values[k]<280.0 or self.UpdVar.QT.values[i,k]<0.0 or self.EnvVar.QT.values[k]<0.0 or GMV.QT.values[k]<0.0:
+                    print('bad thermodynamic values')
+                    print(k, self.Gr.z_half[k], 'line', line)
+                    print('self.UpdVar.Area.values[i,k]',self.UpdVar.Area.values[i,k])
+                    print('self.UpdVar.W.values[i,k]',self.UpdVar.W.values[i,k])
+                    print('self.UpdVar.B.values[i,k]',self.UpdVar.B.values[i,k])
+                    print('self.UpdVar.H.values[i,k]',self.UpdVar.H.values[i,k])
+                    print('self.UpdVar.QT.values[i,k]',self.UpdVar.QT.values[i,k])
+                    print('self.UpdVar.T.values[i,k]',self.UpdVar.T.values[i,k])
+                    print('self.UpdVar.QL.values[i,k]',self.UpdVar.QL.values[i,k])
+                    print('self.UpdVar.QR.values[i,k]',self.UpdVar.QR.values[i,k])
+                    print('self.UpdVar.THL.values[i,k])',self.UpdVar.THL.values[i,k])
+                    print('self.EnvVar.W.values[k]',self.EnvVar.W.values[k])
+                    print('self.EnvVar.B.values[k]',self.EnvVar.B.values[k])
+                    print('self.EnvVar.H.values[k]',self.EnvVar.H.values[k])
+                    print('self.EnvVar.QT.values[k]',self.EnvVar.QT.values[k])
+                    print('self.EnvVar.T.values[k]',self.EnvVar.T.values[k])
+                    print('self.EnvVar.QL.values[k]',self.EnvVar.QL.values[k])
+                    print('self.EnvVar.QR.values[k]',self.EnvVar.QR.values[k])
+                    print('self.EnvVar.THL.values[k]',self.EnvVar.THL.values[k])
+                    print('GMV.W.values[k]',  GMV.W.values[k])
+                    print('GMV.B.values[k]',  GMV.B.values[k])
+                    print('GMV.H.values[k]',  GMV.H.values[k])
+                    print('GMV.QT.values[k]',  GMV.QT.values[k])
+                    print('GMV.T.values[k]',  GMV.T.values[k])
+                    print('GMV.QL.values[k]',  GMV.QL.values[k])
+                    print('GMV.QR.values[k]',  GMV.QR.values[k])
+                    print('GMV.THL.values[k]',  GMV.THL.values[k])
+                    plt.figure()
+                    plt.show()
 
         return
