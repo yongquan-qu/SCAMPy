@@ -400,7 +400,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         #   - the buoyancy of updrafts and environment is up to date with the most recent decomposition,
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
-        self.decompose_environment(GMV, 'mf_update')
+        # self.decompose_environment(GMV, 'mf_update')
+        self.decompose_environment(GMV, 'values')
         self.nan_stopper(GMV, 404)
         self.EnvThermo.satadjust(self.EnvVar, True)
         self.nan_stopper(GMV, 406)
