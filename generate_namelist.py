@@ -57,7 +57,7 @@ def Soares():
     namelist['thermodynamics']['saturation'] = 'sa_mean'
 
     namelist['time_stepping'] = {}
-    namelist['time_stepping']['dt'] = 60.0
+    namelist['time_stepping']['dt'] = 30.0
     namelist['time_stepping']['t_max'] = 8 * 3600.0
 
     namelist['turbulence'] = {}

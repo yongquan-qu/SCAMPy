@@ -900,7 +900,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 we_half = interp2pt(self.EnvVar.W.values[k], self.EnvVar.W.values[k-1])
                 for i in xrange(self.n_updrafts):
                     if self.UpdVar.Area.values[i,k]>self.minimum_area:
-                    # if self.Gr.z_half[k]>520.0: #entr_in.zi:
                         R_up = self.pressure_plume_spacing*sqrt(self.UpdVar.Area.values[i,k])
                         #l = fmin(self.mixing_length[k],R_up)
                         #l = fmin(R_up, self.Gr.z_half[k])
@@ -908,8 +907,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         a = self.UpdVar.Area.values[i,k]
                         wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                         dw = (wu_half - we_half)
-                        self.horizontal_KM[i,k] = 0.0*self.UpdVar.Area.values[i,k]*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
-                        self.horizontal_KH[i,k] = 0.0*self.UpdVar.Area.values[i,k]*self.horizontal_KM[i,k] / self.prandtl_number
+                        self.horizontal_KM[i,k] = self.UpdVar.Area.values[i,k]*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
+                        self.horizontal_KH[i,k] = self.UpdVar.Area.values[i,k]*self.horizontal_KM[i,k] / self.prandtl_number
                         #self.horizontal_KM[i,k] = a*self.tke_ed_coeff*sqrt(fmax(a*ae[k]*dw*dw,0.0))*l
                         #self.horizontal_KH[i,k] = a*self.horizontal_KM[i,k] / self.prandtl_number
                     else:
