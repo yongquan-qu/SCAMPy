@@ -774,8 +774,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 d_buoy_qt_dry = prefactor * th_dry * (eps_vi-1.0)
 
                 if self.EnvVar.CF.values[k] > 0.0:
-                    if t_cloudy*(1.0 + lh * lh / cpm / Rv / t_cloudy / t_cloudy * qv_cloudy)==0.0:
-                        print(lh,cpm,Rv, t_cloudy,qv_cloudy)
                     d_buoy_thetal_cloudy = (prefactor * (1.0 + eps_vi * (1.0 + lh / Rv / t_cloudy) * qv_cloudy - qt_cloudy )
                                              / (1.0 + lh * lh / cpm / Rv / t_cloudy / t_cloudy * qv_cloudy))
                     d_buoy_qt_cloudy = (lh / cpm / t_cloudy * d_buoy_thetal_cloudy - prefactor) * th_cloudy
@@ -829,8 +827,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 grad_thv_plus = ( theta_virt_c(self.Ref.p0_half[k+1], self.EnvVar.T.values[k+1], self.EnvVar.QT.values[k+1],
                     self.EnvVar.QL.values[k+1]) - thv) * self.Gr.dzi
                 grad_thv = interp2pt(grad_thv_low, grad_thv_plus)
-                if thv*grad_thv==0.0:
-                    print(thv,grad_thv,self.Ref.p0_half[k], self.EnvVar.T.values[k], self.EnvVar.QT.values[k],self.EnvVar.QL.values[k])
                 N = sqrt(fmax(g/thv*grad_thv, 0.0))
                 if N > 0.0:
                     l1 = fmin(sqrt(fmax(0.4*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)

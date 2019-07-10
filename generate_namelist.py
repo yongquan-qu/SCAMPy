@@ -368,7 +368,7 @@ def DYCOMS_RF01():
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'  # sa_mean, sa_quadrature, sommeria_deardorff
+    namelist['thermodynamics']['saturation'] = 'sa_mean'
 
     namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 10.0
@@ -429,7 +429,6 @@ def GABLS():
     namelist['turbulence']['EDMF_PrognosticTKE']['updraft_surface_height'] = 0.0
     namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_sommeria_deardorff'] = False
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
@@ -476,7 +475,6 @@ def SP():
     namelist['turbulence']['EDMF_PrognosticTKE']['updraft_surface_height'] = 0.0
     namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_sommeria_deardorff'] = False
     namelist['turbulence']['EDMF_PrognosticTKE']['use_scalar_var'] = True
 
     namelist['output'] = {}
