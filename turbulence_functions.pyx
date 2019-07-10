@@ -76,13 +76,6 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
     else:
         _ret.detr_sc = 0.0
 
-    # if entr_in.ql_up>0.0:
-    #     _ret.entr_sc = eps_bw2*(1.0+fmax(buoyant_frac,0.0))
-    #     _ret.detr_sc = del_bw2*(1.0+fmax(1.0-buoyant_frac,0.0))
-    # else:
-    #     _ret.entr_sc = eps_bw2*(1.0+fmax(buoyant_frac,0.0))
-    #     _ret.detr_sc = del_bw2
-
     return _ret
 
 cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
