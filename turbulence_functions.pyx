@@ -64,26 +64,31 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double chi_c,eps_bw2, del_bw2
+        double chi_c,eps_bw2, del_bw2, c_eps
 
-    eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-    buoyant_frac = buoyancy_sorting_mean(entr_in)
+    c_eps = 0.1
+    ret_b = buoyancy_sorting_mean(entr_in)
+    b_mix = ret_b.b_mix
+    buoyant_frac = ret_b.buoyant_frac
+    eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
     _ret.buoyant_frac = buoyant_frac
+    _ret.b_mix = b_mix
     _ret.entr_sc = eps_bw2*(fmax(buoyant_frac,0.0))
     if entr_in.ql_up>0.0:
         _ret.detr_sc = del_bw2*(fmax(1.0-buoyant_frac,0.0))
     else:
-        _ret.detr_sc = 0.0
+        _ret.detr_sc = del_bw2*(fmax(1.0-buoyant_frac,0.0))
 
     return _ret
 
-cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
+cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
 
         cdef:
             double qv_ ,T_env ,ql_env ,alpha_env ,b_env, T_up ,ql_up ,alpha_up ,b_up, b_mean, b_avg, b_mix, qt_mix , H_mix
             double buoyant_frac = 0.0
             eos_struct sa
+            buoyant_stract ret_b
 
         sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, entr_in.qt_env, entr_in.H_env)
         qv_ = entr_in.qt_env - sa.ql
@@ -109,8 +114,10 @@ cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
         alpha_mix = alpha_c(entr_in.p0, sa.T, qt_mix, qv_)
         b_mix = buoyancy_c(entr_in.alpha0, alpha_mix)
         buoyant_frac = (b_mix-b_env)/fmax(fabs(b_up-b_env),0.0000001)
+        ret_b.b_mix = b_mix - b_mean
+        ret_b.buoyant_frac = buoyant_frac
 
-        return buoyant_frac
+        return ret_b
 
 cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
 

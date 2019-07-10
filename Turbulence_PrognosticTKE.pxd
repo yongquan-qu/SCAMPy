@@ -39,6 +39,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:,:] detr_sc
         double [:,:] nh_pressure
         double [:,:] buoyant_frac
+        double [:,:] b_mix
         double [:,:] chi_c
         double [:,:] frac_turb_entr
         double [:,:] frac_turb_entr_full

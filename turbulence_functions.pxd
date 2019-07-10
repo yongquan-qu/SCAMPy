@@ -2,7 +2,7 @@ cdef struct entr_struct:
     double entr_sc
     double detr_sc
     double buoyant_frac
-    double chi_c
+    double b_mix
 
 cdef struct chi_struct:
     double T_mix
@@ -12,6 +12,10 @@ cdef struct chi_struct:
     double alpha_mix
     double y1
     double x1
+
+cdef struct buoyant_stract:
+    double b_mix
+    double buoyant_frac
 
 cdef struct entr_in_struct:
     double zi
@@ -66,7 +70,7 @@ cdef double critical_env_frac_RH(entr_in_struct entr_in) nogil
 cdef double buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil
-cdef double buoyancy_sorting_mean(entr_in_struct entr_in) nogil
+cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
 cdef double thetali_mix(double p0, double qt, double T) nogil
 cdef double get_wstar(double bflux, double zi )
 cdef double get_inversion(double *theta_rho, double *u, double *v, double *z_half,
