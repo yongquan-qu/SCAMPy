@@ -82,7 +82,40 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.entr_detr_fp = entr_detr_b_w2
             print('Turbulence--EDMF_PrognosticTKE: defaulting to cloudy entrainment formulation')
         if(self.calc_tke == False and 'tke' in str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'])):
-             sys.exit('Turbulence--EDMF_PrognosticTKE: >>calc_tke<< must be set to True when entrainment is using tke')
+            sys.exit('Turbulence--EDMF_PrognosticTKE: >>calc_tke<< must be set to True when entrainment is using tke')
+
+
+        try:
+            if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'tan18':
+                self.pressure_func_buoy = pressure_tan18_buoy
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'jia':
+                self.pressure_func_buoy = pressure_jia_buoy
+            else:
+                print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
+        except:
+            self.pressure_func_buoy = pressure_tan18_buoy
+            print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
+
+        self.drag_sign = 0.0
+        try:
+            if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'tan18':
+                self.pressure_func_drag = pressure_tan18_drag
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'jia':
+                self.pressure_func_drag = pressure_jia_drag
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'jia_signdf':
+                self.pressure_func_drag = pressure_jia_drag
+                self.drag_sign = 1.0
+            else:
+                print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
+        except:
+            self.pressure_func_drag = pressure_tan18_drag
+            print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
+
+        try:
+            self.asp_label = namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']
+        except:
+            self.asp_label = 'const'
+            print('Turbulence--EDMF_PrognosticTKE: H/2R defaulting to constant')
 
         try:
             self.similarity_diffusivity = namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity']
@@ -117,6 +150,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.turbulent_entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor']
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
         self.aspect_ratio = paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio']
+
+        self.pressure_normalmode_coeff1 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1']
+        self.pressure_normalmode_coeff2 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2']
+        self.pressure_normalmode_coeff3 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3']
         # "Legacy" coefficients used by the steady updraft routine
         self.vel_buoy_coeff = 1.0-self.pressure_buoy_coeff
         if self.calc_tke == True:
@@ -157,6 +194,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         # Pressure term in updraft vertical momentum equation
         self.nh_pressure = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.nh_pressure_b = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.nh_pressure_w = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.asp_ratio = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.b_coeff = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+
         # Mass flux
         self.m = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double, order='c')
 
@@ -216,6 +258,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.add_profile('entrainment_sc')
         Stats.add_profile('detrainment_sc')
         Stats.add_profile('nh_pressure')
+        Stats.add_profile('nh_pressure_w')
+        Stats.add_profile('nh_pressure_b')
+        Stats.add_profile('asp_ratio')
+        Stats.add_profile('b_coeff')
+
         Stats.add_profile('horizontal_KM')
         Stats.add_profile('horizontal_KH')
         Stats.add_profile('buoyant_frac')
@@ -286,6 +333,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             Py_ssize_t kmax = self.Gr.nzg-self.Gr.gw
             double [:] mean_entr_sc = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_nh_pressure = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_nh_pressure_w = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_nh_pressure_b = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_asp_ratio = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_b_coeff = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+
             double [:] mean_detr_sc = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] massflux = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mf_h = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
@@ -316,6 +368,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         mean_entr_sc[k] += self.UpdVar.Area.values[i,k] * self.entr_sc[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_detr_sc[k] += self.UpdVar.Area.values[i,k] * self.detr_sc[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_nh_pressure[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_nh_pressure_b[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_b[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_nh_pressure_w[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_w[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_asp_ratio[k] += self.UpdVar.Area.values[i,k] * self.asp_ratio[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_b_coeff[k] += self.UpdVar.Area.values[i,k] * self.b_coeff[i,k]/self.UpdVar.Area.bulkvalues[k]
+
                         mean_frac_turb_entr_full[k] += self.UpdVar.Area.values[i,k] * self.frac_turb_entr_full[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_frac_turb_entr[k] += self.UpdVar.Area.values[i,k] * self.frac_turb_entr[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_turb_entr_W[k] += self.UpdVar.Area.values[i,k] * self.turb_entr_W[i,k]/self.UpdVar.Area.bulkvalues[k]
@@ -338,6 +395,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.write_profile('buoyant_frac', mean_buoyant_frac[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('b_mix', mean_b_mix[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure', mean_nh_pressure[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('nh_pressure_w', mean_nh_pressure_w[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('nh_pressure_b', mean_nh_pressure_b[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('asp_ratio', mean_asp_ratio[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('b_coeff', mean_b_coeff[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+
         Stats.write_profile('massflux', massflux[self.Gr.gw:self.Gr.nzg-self.Gr.gw ])
         Stats.write_profile('massflux_h', mf_h[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('massflux_qt', mf_qt[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -482,7 +544,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_entrainment_detrainment(GMV, Case)
             self.compute_horizontal_eddy_diffusivities(GMV)
             self.compute_turbulent_entrainment(GMV,Case)
-            self.compute_nh_pressure()
+            self.compute_nh_pressure_sep()
             self.solve_updraft_velocity_area(GMV,TS)
             self.solve_updraft_scalars(GMV, Case, TS)
             self.UpdVar.set_values_with_new()
@@ -1234,23 +1296,56 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
         return
 
-    cpdef compute_nh_pressure(self):
+    cpdef compute_nh_pressure_sep(self):
         cdef:
-            Py_ssize_t i, k
-            double a_k, B_k, press_buoy, press_drag
-        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            for i in xrange(self.n_updrafts):
-                a_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
-                B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
-                if a_k>0.0:
-                    press_buoy =  -1.0 * self.Ref.rho0[k] * a_k * B_k * self.pressure_buoy_coeff
-                    press_drag = -1.0 * self.Ref.rho0[k] * sqrt(a_k) * (1.0/self.pressure_plume_spacing[i]
-                                    * (self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])*fabs(self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k]))
-                    self.nh_pressure[i,k] = press_buoy + press_drag
+            Py_ssize_t i,k
+            pressure_buoy_struct ret_b
+            pressure_drag_struct ret_w
+            pressure_in_struct input
+
+        input.asp_label = self.asp_label
+        for i in xrange(self.n_updrafts):
+            input.H = self.UpdVar.updraft_top[i]
+            input.a_med = np.median(np.argwhere(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw]))
+            for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+                input.a_kfull = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
+                input.dzi = self.Gr.dzi
+
+                input.a_khalf = self.UpdVar.Area.values[i,k]
+                input.a_kphalf = self.UpdVar.Area.values[i,k+1]
+                input.b_kfull = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
+                input.rho0_kfull = self.Ref.rho0[k]
+                input.bcoeff_tan18 = self.pressure_buoy_coeff
+                input.alpha1 = self.pressure_normalmode_coeff1
+                input.alpha2 = self.pressure_normalmode_coeff2
+                input.beta = self.pressure_normalmode_coeff3
+                input.rd = self.pressure_plume_spacing[i]
+                input.w_kfull = self.UpdVar.W.values[i,k]
+                input.w_khalf = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
+                input.w_kphalf = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k+1])
+                input.w_kenv = self.EnvVar.W.values[k]
+                input.drag_sign = self.drag_sign
+
+                if input.a_kfull>0.0:
+                    ret_b = self.pressure_func_buoy(input)
+                    ret_w = self.pressure_func_drag(input)
+                    self.nh_pressure_b[i,k] = ret_b.nh_pressure_b
+                    self.nh_pressure_w[i,k] = ret_w.nh_pressure_w
+
+                    self.b_coeff[i,k] = ret_b.b_coeff
+                    self.asp_ratio[i,k] = ret_b.asp_ratio
+
                 else:
-                    self.nh_pressure[i,k] = 0.0
+                    self.nh_pressure_b[i,k] = 0.0
+                    self.nh_pressure_w[i,k] = 0.0
+
+                    self.b_coeff[i,k] = 0.0
+                    self.asp_ratio[i,k] = 0.0
+
+                self.nh_pressure[i,k] = self.nh_pressure_b[i,k] + self.nh_pressure_w[i,k]
 
         return
+
 
     cpdef zero_area_fraction_cleanup(self, GridMeanVariables GMV):
         cdef:
