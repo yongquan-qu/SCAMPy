@@ -237,6 +237,59 @@ cdef entr_struct entr_detr_none(entr_in_struct entr_in)nogil:
 
     return  _ret
 
+cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil:
+    cdef:
+        pressure_buoy_struct _ret
+
+    with gil:
+        if press_in.asp_label.encode('utf-8') == 'z_dependent':
+            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
+        elif press_in.asp_label.encode('utf-8') == 'median':
+            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
+        elif press_in.asp_label.encode('utf-8') == 'const':
+            _ret.asp_ratio = 1.72
+
+    _ret.b_coeff = press_in.bcoeff_tan18
+    _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff
+
+    return _ret
+
+cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil:
+    cdef:
+        pressure_drag_struct _ret
+
+    _ret.nh_pressure_w = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * (1.0/press_in.rd
+                         * (press_in.w_kfull - press_in.w_kenv)*fabs(press_in.w_kfull - press_in.w_kenv))
+
+    return _ret
+
+cdef pressure_buoy_struct pressure_jia_buoy(pressure_in_struct press_in) nogil:
+    cdef:
+        pressure_buoy_struct _ret
+
+    with gil:
+        if press_in.asp_label.encode('utf-8') == 'z_dependent':
+            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
+        elif press_in.asp_label.encode('utf-8') == 'median':
+            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
+        elif press_in.asp_label.encode('utf-8') == 'const':
+            _ret.asp_ratio = 1.72
+
+    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*_ret.asp_ratio**2 )
+    _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff
+
+    return _ret
+
+cdef pressure_drag_struct pressure_jia_drag(pressure_in_struct press_in) nogil:
+    cdef:
+        pressure_drag_struct _ret
+    _ret.nh_pressure_w = press_in.rho0_kfull * press_in.a_kfull * press_in.beta * (1.0/press_in.a_kfull*(
+                         press_in.a_kphalf*press_in.w_kphalf**2 - press_in.a_khalf*press_in.w_khalf**2 )*press_in.dzi
+                         - 0.5 * ( press_in.w_kphalf**2 - press_in.w_khalf**2 ) * press_in.dzi )
+    if press_in.drag_sign == 1.0:
+        _ret.nh_pressure_w = -fabs(_ret.nh_pressure_w)
+    return _ret
+
 # convective velocity scale
 cdef double get_wstar(double bflux, double zi ):
     return cbrt(fmax(bflux * zi, 0.0))
@@ -400,5 +453,3 @@ cdef bint set_cloudbase_flag(double ql, bint current_flag) nogil:
     else:
         new_flag = current_flag
     return  new_flag
-
-
