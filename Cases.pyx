@@ -839,6 +839,9 @@ cdef class TRMM_LBA(CasesBase):
                     else:
                         self.Fo.dTdt[k] = 0.0
 
+        for k in xrange(self.Fo.Gr.nzg):
+            self.Fo.dTdt[k] = 0.0
+
         self.Fo.update(GMV)
 
         return
