@@ -1243,9 +1243,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         lv = latent_heat(Case.Sur.Tsurface)
         HF = (g * self.Ref.alpha0[self.Gr.gw-1] / cpm / Case.Sur.Tsurface * (Case.Sur.shf + (eps_vi-1.0) * cpm * Case.Sur.Tsurface * Case.Sur.lhf /lv))
         # buoyancy flux
-        # self.pressure_plume_spacing = (Case.Sur.shf + (eps_vi-1.0) * cpm * Case.Sur.Tsurface * Case.Sur.lhf /lv)/(self.Ref.rho0[self.Gr.gw]*Case.Sur.ustar**2.0)
         self.pressure_plume_spacing = cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0)
-
         # naive sum of flux
         # self.pressure_plume_spacing = (Case.Sur.lhf + Case.Sur.shf)/(self.Ref.rho0[self.Gr.gw]*Case.Sur.ustar**2.0)
         return
