@@ -1,6 +1,6 @@
 import numpy as np
 cimport numpy as np
-from libc.math cimport cbrt, sqrt, log, fabs,atan, exp, fmax, pow, fmin, tanh
+from libc.math cimport cbrt, sqrt, log, fabs,atan, exp, fmax, pow, fmin, tanh, erf
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 include "parameters.pxi"
 from thermodynamic_functions cimport *
@@ -64,19 +64,28 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double chi_c,eps_bw2, del_bw2, c_eps
+        double chi_c,eps_bw2, del_bw2, c_eps, beta, d, D_
 
-    c_eps = 0.1
+    c_eps = 0.03
+    beta = 0.05
+    d = 3.0
     ret_b = buoyancy_sorting_mean(entr_in)
     b_mix = ret_b.b_mix
     buoyant_frac = ret_b.buoyant_frac
+
     eps_bw2 = c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
     _ret.buoyant_frac = buoyant_frac
     _ret.b_mix = b_mix
-    _ret.entr_sc = eps_bw2*(fmax(buoyant_frac,0.0))
+    # _ret.entr_sc = eps_bw2*(fmax(buoyant_frac,0.0)) # yair
+    _ret.entr_sc = eps_bw2 # Tapio
     if entr_in.ql_up>0.0:
-        _ret.detr_sc = del_bw2*(fmax(1.0-buoyant_frac,0.0))
+        # _ret.detr_sc = del_bw2*(fmax(1.0-buoyant_frac,0.0))# yair
+        D_ = 0.5*(1.0+erf(beta*(buoyant_frac)))# Tapio
+        _ret.detr_sc = del_bw2*(1.0+d*D_)# Tapio
+        # _ret.detr_sc = del_bw2*(1.0+d*erf(beta*(buoyant_frac)))# Tapio2
+        # with gil:
+        #     print(del_bw2*(1.0+d*D_),del_bw2*(fmax(1.0-buoyant_frac,0.0)))
     else:
         _ret.detr_sc = 0.0
 

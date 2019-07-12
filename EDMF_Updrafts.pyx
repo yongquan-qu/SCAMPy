@@ -98,6 +98,7 @@ cdef class UpdraftVariables:
 
         self.cloud_base = np.zeros((nu,), dtype=np.double, order='c')
         self.cloud_top = np.zeros((nu,), dtype=np.double, order='c')
+        self.updraft_top = np.zeros((nu,), dtype=np.double, order='c')
         self.cloud_cover = np.zeros((nu,), dtype=np.double, order='c')
 
 
@@ -277,11 +278,14 @@ cdef class UpdraftVariables:
             self.cloud_base[i] = self.Gr.z_half[self.Gr.nzg-self.Gr.gw-1]
             self.cloud_top[i] = 0.0
             self.cloud_cover[i] = 0.0
+            self.updraft_top[i] = 0.0
             for k in xrange(self.Gr.gw,self.Gr.nzg-self.Gr.gw):
-                if self.QL.values[i,k] > 1e-8 and self.Area.values[i,k] > 1e-3:
-                    self.cloud_base[i] = fmin(self.cloud_base[i], self.Gr.z_half[k])
-                    self.cloud_top[i] = fmax(self.cloud_top[i], self.Gr.z_half[k])
-                    self.cloud_cover[i] = fmax(self.cloud_cover[i], self.Area.values[i,k])
+                if self.Area.values[i,k] > 1e-3:
+                    self.updraft_top[i] = fmax(self.updraft_top[i], self.Gr.z_half[k])
+                    if self.QL.values[i,k] > 1e-8:
+                        self.cloud_base[i] = fmin(self.cloud_base[i], self.Gr.z_half[k])
+                        self.cloud_top[i] = fmax(self.cloud_top[i], self.Gr.z_half[k])
+                        self.cloud_cover[i] = fmax(self.cloud_cover[i], self.Area.values[i,k])
 
 
         return
