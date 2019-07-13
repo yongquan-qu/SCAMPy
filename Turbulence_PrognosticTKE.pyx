@@ -1243,7 +1243,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         lv = latent_heat(Case.Sur.Tsurface)
         HF = (g * self.Ref.alpha0[self.Gr.gw-1] / cpm / Case.Sur.Tsurface * (Case.Sur.shf + (eps_vi-1.0) * cpm * Case.Sur.Tsurface * Case.Sur.lhf /lv))
         # buoyancy flux
-        self.pressure_plume_spacing = cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0)
+        self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
+        self.pressure_plume_spacing = 2000.0
         # naive sum of flux
         # self.pressure_plume_spacing = (Case.Sur.lhf + Case.Sur.shf)/(self.Ref.rho0[self.Gr.gw]*Case.Sur.ustar**2.0)
         return
@@ -1280,19 +1281,20 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             H = 0.0
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 if self.UpdVar.Area.values[i,k]!=0.0:
-                    # H += self.Gr.dzi
-                    H += self.UpdVar.updraft_top[i]
+                    H += self.Gr.dz
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 a_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
                 B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
                 whalf_k = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                 whalf_kp = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k+1])
                 if a_k>0.0:
-                    asp_ratio = H/2.0/a_k/(self.pressure_plume_spacing**2)
+                    # asp_ratio = H/2.0/a_k/(self.pressure_plume_spacing**2)
+                    asp_ratio = H/2.0/(self.pressure_plume_spacing**2)
                     press_buoy = -1.0 * self.Ref.rho0[k] * a_k * B_k * coeff1 / (1+coeff2*asp_ratio**2)
                     press_drag = self.Ref.rho0[k] * a_k * coeff3 * ( 1/a_k*(self.UpdVar.Area.values[i,k+1]*whalf_kp**2
                                  - self.UpdVar.Area.values[i,k]*whalf_k**2 ) * self.Gr.dzi - 0.5 * (whalf_kp**2 - whalf_k**2) *self.Gr.dzi )
                     self.nh_pressure[i,k] = press_buoy+press_drag
+                    # print(self.Gr.z_half[k], asp_ratio,press_buoy,press_drag)
                 else:
                     self.nh_pressure[i,k] = 0.0
 

@@ -76,7 +76,7 @@ def defaults():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
@@ -100,7 +100,7 @@ def Soares():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
@@ -126,7 +126,7 @@ def Bomex():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
 
     paramlist['turbulence']['updraft_microphysics'] = {}
@@ -152,7 +152,7 @@ def life_cycle_Tan2018():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0 / 3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
@@ -177,7 +177,7 @@ def Rico():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0 / 3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
@@ -203,7 +203,7 @@ def TRMM_LBA():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0 / 3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 1000.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.01
@@ -228,7 +228,7 @@ def ARM_SGP():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0 / 3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
@@ -280,7 +280,7 @@ def DYCOMS_RF01():
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 0.375
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     # TODO (they used to be here - check if still work)
     #paramlist['turbulence']['EDMF_PrognosticTKE']['vel_pressure_coeff'] = 0.00005
