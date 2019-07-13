@@ -1244,7 +1244,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         HF = (g * self.Ref.alpha0[self.Gr.gw-1] / cpm / Case.Sur.Tsurface * (Case.Sur.shf + (eps_vi-1.0) * cpm * Case.Sur.Tsurface * Case.Sur.lhf /lv))
         # buoyancy flux
         self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
-        self.pressure_plume_spacing = 2000.0
         # naive sum of flux
         # self.pressure_plume_spacing = (Case.Sur.lhf + Case.Sur.shf)/(self.Ref.rho0[self.Gr.gw]*Case.Sur.ustar**2.0)
         return
