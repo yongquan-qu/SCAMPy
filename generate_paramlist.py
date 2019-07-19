@@ -146,12 +146,12 @@ def life_cycle_Tan2018():
 
     paramlist['turbulence']['EDMF_PrognosticTKE'] = {}
     paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
-    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.1
-    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 2.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9 # 7 if use_steady_updrafts = True
+    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
+    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
+    paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0 / 3.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
