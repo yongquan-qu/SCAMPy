@@ -48,7 +48,6 @@ cdef class EnvironmentVariables:
         EnvironmentVariable_2m QTvar
         EnvironmentVariable_2m HQTcov
         EnvironmentVariable CF
-        EnvironmentVariable_2m THVvar
         Grid Gr
         bint calc_tke
         bint calc_scalar_var

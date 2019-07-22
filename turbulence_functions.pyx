@@ -43,18 +43,13 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     c_eps = sqrt(entr_in.af*(1.0-entr_in.af)) # Bomex
     RH_upd = entr_in.RH_upd
     RH_env = entr_in.RH_env
-    # chi_struct = inter_critical_env_frac(entr_in)
-    # _ret.buoyant_frac = buoyancy_sorting(entr_in)
 
     eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
 
     _ret.entr_sc = eps_bw2
     if entr_in.ql_up>0.0:
-    # if entr_in.z>entr_in.zi:
-        #_ret.detr_sc = del_bw2*(1.0+(RH_upd/fmax((RH_upd - RH_env),1.0))**2.0)
         _ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**6.0
-        #_ret.detr_sc = del_bw2*(1.0+(entr_in.ql_up-1e-5)/(qv_s*(RH_upd/100.0 - RH_env/100.0)+1e-5))
     else:
         _ret.detr_sc =  del_bw2
 
@@ -64,9 +59,8 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double chi_c,eps_bw2, del_bw2, c_eps, beta, d, D_
+        double eps_bw2, del_bw2, D_, buoyant_frac
 
-    # d = 3.0
     ret_b = buoyancy_sorting_mean(entr_in)
     b_mix = ret_b.b_mix
     buoyant_frac = ret_b.buoyant_frac
@@ -125,7 +119,6 @@ cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
 
         cdef:
             Py_ssize_t m_q, m_h
-            #double[:] inner
             int i_b
 
             double h_hat, qt_hat, sd_h, sd_q, corr, mu_h_star, sigma_h_star, qt_var, T_hat, h_hat_
@@ -173,21 +166,7 @@ cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
                 mu_h_star = entr_in.H_env + sqrt2 * corr * sd_h * abscissas[m_q]
                 inner_buoyant_frac = 0.0
                 for m_h in xrange(entr_in.quadrature_order):
-                    # original version
                     h_hat = (sqrt2 * sigma_h_star * abscissas[m_h] + mu_h_star + entr_in.H_up)/2.0
-
-                    # compute h_hat from mixing T and qt
-                    # h_hat = sqrt2 * sigma_h_star * abscissas[m_h] + mu_h_star
-                    # sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, qt_hat, h_hat)
-                    # T_hat = (entr_in.T_up+sa.T)/2.0
-                    # h_hat = thetali_mix(entr_in.p0, qt_hat, T_hat)
-
-
-
-                    # with gil:
-                    #     if h_hat != h_hat_:
-                    #         print(h_hat,h_hat_)
-
                     # condensation - evaporation
                     sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, qt_hat, h_hat)
                     # calcualte buoyancy
@@ -195,23 +174,12 @@ cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
                     L_ = latent_heat(sa.T)
                     dT = L_*((entr_in.ql_up+entr_in.ql_env)/2.0- sa.ql)/1004.0
                     alpha_mix = alpha_c(entr_in.p0, sa.T, qt_hat, qv_)
-                    # alpha_mix = alpha_c(entr_in.p0, entr_in.T_up - dT, qt_hat, qv_)
                     bmix = buoyancy_c(entr_in.alpha0, alpha_mix) - b_mean #- entr_in.dw2dz
-                    # with gil:
-                    #     print(entr_in.z, bmix, entr_in.H_up-h_hat, entr_in.qt_up-qt_hat, entr_in.ql_up-sa.ql, weights[m_h])
 
-                    # sum only the points with positive buoyancy to get the buoyant fraction
-                    with gil:
-                        if entr_in.ql_up>0.0:
-                            print(entr_in.z, entr_in.ql_up, entr_in.ql_env, sa.ql, 'dT',dT, (entr_in.T_up+entr_in.T_env)/2.0 - sa.T, bmix, b_up- b_mean)
                     if bmix >0.0:
                         inner_buoyant_frac  += weights[m_h] * sqpi_inv
 
                 buoyant_frac  += inner_buoyant_frac * weights[m_q] * sqpi_inv
-            with gil:
-                print ('buoyant_frac ---------> ',buoyant_frac)
-            # with gil:
-            #     print('buoyant_frac ---------------->', buoyant_frac)
         else:
             h_hat = ( entr_in.H_env + entr_in.H_up)/2.0
             qt_hat = ( entr_in.qt_env + entr_in.qt_up)/2.0
@@ -258,15 +226,8 @@ cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil:
         sigma_QT = sqrt(entr_in.env_QTvar)
         corr    = entr_in.env_HQTcov/fmax(sqrt(entr_in.env_QTvar)*sqrt(entr_in.env_Hvar), 1e-13)
         sigma_H = sqrt(fmax(1.0-corr*corr,0.0)) * sqrt(entr_in.env_Hvar)
-        #sigma_H = sqrt(entr_in.env_Hvar)
         buoyant_frac_s = 0.0
 
-        # cov[1,1] = entr_in.env_QTvar
-        # cov[1,2] = entr_in.env_HQTcov
-        # cov[2,1] = entr_in.env_HQTcov
-        # cov[2,2] = entr_in.env_Hvar
-        # with gil:
-        #     print('-----------> buoyant_frac_s')
         for i in range(n):
             with gil:
                 rand_QT,rand_H = np.random.multivariate_normal([entr_in.qt_env,entr_in.H_env],[[entr_in.env_QTvar,entr_in.env_HQTcov],[entr_in.env_HQTcov,entr_in.env_Hvar]], 1).T
@@ -277,56 +238,16 @@ cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil:
             sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, QTmix, h_hat)
             T_hat = (entr_in.T_up+sa.T)/2.0
             h_hat = thetali_mix(entr_in.p0, qt_hat, T_hat)
-            with gil:
-                if np.isnan(h_hat):
-                    print(sa.T, h_hat)
-            # with gil:
-            #     print(sa.T, h_hat)
-
             Hmix = (entr_in.H_up+h_hat)/2.0
 
             sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0,  QTmix, Hmix)
             qv_ =  QTmix - sa.ql
             alpha_mix = alpha_c(entr_in.p0, sa.T, QTmix, qv_)
-            bmix = buoyancy_c(entr_in.alpha0, alpha_mix)  - b_mean #- entr_in.dw2dz/2.0
+            bmix = buoyancy_c(entr_in.alpha0, alpha_mix)  - b_mean
 
             if bmix>0:
                 buoyant_frac_s +=1.0/float(n)
-            else:
-                with gil:
-                    print('bmix = ',bmix, Hmix, QTmix, h_hat, T_hat, rand_H, rand_QT)
-            # with gil:
-            #     print(i, Hmix,entr_in.H_up, rand_H, QTmix, entr_in.qt_up, rand_QT)
-            #     print(entr_in.env_QTvar,entr_in.env_HQTcov,entr_in.env_Hvar)
-        # with gil:
-        #         print(buoyant_frac_s)
         return buoyant_frac_s
-
-cdef double critical_env_frac_RH(entr_in_struct entr_in) nogil:
-    cdef:
-        double qv_s, qv, Xc, chi_c, pv
-
-    RH_upd = entr_in.RH_upd
-    RH_env = entr_in.RH_env
-
-    # if entr_in.ql_up>0.0:
-    #     qv     = entr_in.qt_env-entr_in.ql_env
-    #     pv     = pv_c(entr_in.p0, entr_in.qt_env, qv)
-    #     qv_s   = qv_star_c(entr_in.p0, entr_in.qt_env, pv)
-    #     Xc     = (entr_in.ql_up - 1e-5)/((qv_s-qv)+1e-5)
-    #     chi_c  = Xc/(1.0+Xc)
-    #     t_a = 1.0
-    #     a = k/t_a*(ql0/1e-5) + (qv_s-qv)/1e-5
-    #     b = k/t_a + (qv_s-qv)/1e-5
-    #     t_new = t_a*
-    #     t_mix = k*(Xc+Xc*Xc/2.0)
-    #     with gil:
-    #         print(qv ,qv_s ,Xc ,(entr_in.ql_up - 1e-5),((qv_s-qv)+1e-5),chi_c)
-    # else:
-    #     chi_c  = 1.0-entr_in.af
-    chi_c  = 1.0-entr_in.af
-
-    return chi_c
 
 cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil:
     cdef:
@@ -363,15 +284,7 @@ cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil:
 
 
     for i in xrange(0, 20):
-        # dx = x1 - x0
-        # dy = y1 - y0
-        # x0 = x1
-        # y0 = y1
-        # # if dy != 0.0:
-        # #     while fabs(y1)>xatol:
-        # x1 -= y1 * dx / dy
         x = (x0 * y1 - x1 * y0)/ (y1 - y0)
-        # f(x1) - calculate mixture buoyancy
         H_mix = (1.0-x)*entr_in.H_up + x*entr_in.H_env
         qt_mix = (1.0-x)*entr_in.qt_up + x*entr_in.qt_env
         sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, qt_mix, H_mix)
@@ -404,36 +317,6 @@ cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil:
             if lastside == 1.0:
                 y1 = y1/2.0
             lastside = -1.0
-
-
-
-        # if fabs(y1)<xatol:
-            
-        #     with gil:
-        #         print('secent worked')
-
-        #     return _ret
-
-        #         # with gil:
-        #         #     if x1>1.0 or x1<0.0:
-        #         #         print('x1',x1,'y1', y1)
-        #         #         print('T_up', T_up,'T_env', T_env, 'T_mix', T_mix)
-        #         #         print('ql_up', ql_up, 'ql_env', ql_env, 'ql_mix', ql_mix)
-        #         #         print('alpha_up', alpha_up, 'alpha_env', alpha_env, 'alpha_mix', alpha_mix)
-
-        #     # if fabs(x0-x1) < xatol:
-        #         # return _ret
-        # else:
-        #     with gil:
-        #         print('secent fails')
-        #     _ret.T_mix = entr_in.T_up
-        #     _ret.ql_mix = entr_in.ql_up
-        #     _ret.qt_mix = entr_in.qt_up
-        #     _ret.qv_ = 0.0
-        #     _ret.alpha_mix = entr_in.alpha0
-        #     _ret.y1 = entr_in.b
-        #     _ret.x1 = 0.5
-        #     return _ret
     return _ret
 
 

@@ -131,9 +131,6 @@ cdef class EnvironmentVariables:
                 self.Hvar = EnvironmentVariable_2m(nz, 'half', 'scalar', 'thetal_var', 'K^2')
                 self.HQTcov = EnvironmentVariable_2m(nz, 'half', 'scalar', 'thetal_qt_covar', 'K(kg/kg)' )
 
-        if self.EnvThermo_scheme == 'sommeria_deardorff':
-            self.THVvar = EnvironmentVariable(nz, 'half', 'scalar', 'thetav_var', 'K^2' )
-
         #TODO  - most likely a temporary solution (unless it could be useful for testing)
         try:
             self.use_prescribed_scalar_var = namelist['turbulence']['sgs']['use_prescribed_scalar_var']
@@ -144,7 +141,7 @@ cdef class EnvironmentVariables:
             self.prescribed_Hvar   = namelist['turbulence']['sgs']['prescribed_Hvar']
             self.prescribed_HQTcov = namelist['turbulence']['sgs']['prescribed_HQTcov']
 
-        if (self.EnvThermo_scheme == 'sommeria_deardorff' or self.EnvThermo_scheme == 'sa_quadrature'):
+        if self.EnvThermo_scheme == 'sa_quadrature':
             if (self.calc_scalar_var == False and self.use_prescribed_scalar_var == False ):
                 sys.exit('EDMF_Environment.pyx 96: scalar variance has to be specified for Sommeria Deardorff or quadrature saturation')
 
@@ -167,8 +164,6 @@ cdef class EnvironmentVariables:
             Stats.add_profile('env_Hvar')
             Stats.add_profile('env_QTvar')
             Stats.add_profile('env_HQTcov')
-        if self.EnvThermo_scheme == 'sommeria_deardorff':
-            Stats.add_profile('env_THVvar')
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
@@ -189,8 +184,6 @@ cdef class EnvironmentVariables:
             Stats.write_profile('env_Hvar', self.Hvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
             Stats.write_profile('env_QTvar', self.QTvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
             Stats.write_profile('env_HQTcov', self.HQTcov.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        if self.EnvThermo_scheme  == 'sommeria_deardorff':
-            Stats.write_profile('env_THVvar', self.THVvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
         #ToDo [suggested by CK for AJ ;]
         # Add output of environmental cloud fraction, cloud base, cloud top (while the latter can be gleaned from ql profiles
@@ -442,6 +435,6 @@ cdef class EnvironmentThermodynamics:
         elif EnvVar.EnvThermo_scheme == 'sa_quadrature':
             self.eos_update_SA_sgs(EnvVar, in_Env)
         else:
-            sys.exit('EDMF_Environment: Unrecognized EnvThermo_scheme. Possible options: sa_mean, sa_quadrature, sommeria_deardorff')
+            sys.exit('EDMF_Environment: Unrecognized EnvThermo_scheme. Possible options: sa_mean, sa_quadrature')
 
         return
