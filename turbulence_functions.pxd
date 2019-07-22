@@ -24,6 +24,7 @@ cdef struct entr_in_struct:
     double RH_env
     double RH_upd
     double erf_const
+    double c_del
     double dz
     double w
     double dw
