@@ -114,7 +114,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.surface_area = paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area']
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
-        self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
+        self.entrainment_erf_const = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const']
+        self.turbulent_entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor']
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
         self.pressure_drag_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff']
         self.pressure_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing']
@@ -895,7 +896,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV):
         cdef:
             Py_ssize_t k
-            double l, R_up, dw, wu_half, we_half, a
+            double l, R_up, dw, wu_half, we_half, a, c_eps_t
             double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
 
         with nogil:
@@ -910,8 +911,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         a = self.UpdVar.Area.values[i,k]
                         wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                         dw = (wu_half - we_half)
-                        self.horizontal_KM[i,k] = 1.0*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
-                        self.horizontal_KH[i,k] = 1.0*self.horizontal_KM[i,k] / self.prandtl_number
+                        c_eps_t = self.turbulent_entrainment_factor
+                        self.horizontal_KM[i,k] = c_eps_t*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
+                        self.horizontal_KH[i,k] = c_eps_t*self.horizontal_KM[i,k] / self.prandtl_number
                         #self.horizontal_KM[i,k] = a*self.tke_ed_coeff*sqrt(fmax(a*ae[k]*dw*dw,0.0))*l
                         #self.horizontal_KH[i,k] = a*self.horizontal_KM[i,k] / self.prandtl_number
                     else:
@@ -1192,6 +1194,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.RH_upd = self.UpdVar.RH.values[i,k]
                     input.RH_env = self.EnvVar.RH.values[k]
                     input.c_eps = self.entrainment_factor
+                    input.erf_const = self.entrainment_erf_const
 
                     if self.calc_tke:
                             input.tke = self.EnvVar.TKE.values[k]
