@@ -222,6 +222,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.add_profile('buoyant_frac')
         Stats.add_profile('b_mix')
         Stats.add_profile('chi_c')
+        Stats.add_ts('rd')
         Stats.add_profile('turbulent_entrainment')
         Stats.add_profile('turbulent_entrainment_full')
         Stats.add_profile('turbulent_entrainment_W')
@@ -307,6 +308,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         Stats.write_profile('eddy_viscosity', self.KM.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('eddy_diffusivity', self.KH.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_ts('rd', self.pressure_plume_spacing)
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 mf_h[k] = interp2pt(self.massflux_h[k], self.massflux_h[k-1])
