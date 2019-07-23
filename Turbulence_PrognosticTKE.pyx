@@ -1144,7 +1144,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
 
         self.UpdVar.get_cloud_base_top_cover()
-        ii=0
         input.wstar = self.wstar
 
         input.dz = self.Gr.dz
@@ -1239,7 +1238,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_nh_pressure(self):
         cdef:
             Py_ssize_t i, k
-            double a_k, B_k, press_buoy, press_drag, rd
+            double a_k, B_k, press_buoy, press_drag
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             for i in xrange(self.n_updrafts):
                 a_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
