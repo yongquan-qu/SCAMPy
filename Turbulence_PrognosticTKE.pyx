@@ -1224,15 +1224,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV, CasesBase Case):
         cdef:
-            double cpm, lv, HF
+            double cpm, lv
 
         cpm = cpm_c(Case.Sur.qsurface)
         lv = latent_heat(Case.Sur.Tsurface)
-        HF = (g * self.Ref.alpha0[self.Gr.gw-1] / cpm / Case.Sur.Tsurface * (Case.Sur.shf + (eps_vi-1.0) * cpm * Case.Sur.Tsurface * Case.Sur.lhf /lv))
-        # buoyancy flux
         self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
-        # naive sum of flux
-        # self.pressure_plume_spacing = (Case.Sur.lhf + Case.Sur.shf)/(self.Ref.rho0[self.Gr.gw]*Case.Sur.ustar**2.0)
         return
 
     cpdef compute_nh_pressure(self):
