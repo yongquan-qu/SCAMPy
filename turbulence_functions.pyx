@@ -30,29 +30,13 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
         entr_struct _ret
 
     eps_w = 1.0/(fmax(fabs(entr_in.w),1.0)* 1000)
-    buoyant_frac = buoyancy_sorting(entr_in)
-    _ret.entr_sc = buoyant_frac*eps_w/2.0
-    _ret.detr_sc = (1.0-buoyant_frac/2.0)*eps_w
-    return _ret
-
-cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
-    cdef:
-        entr_struct _ret
-        double chi_c, RH_env, RH_upd
-
-    c_eps = sqrt(entr_in.af*(1.0-entr_in.af)) # Bomex
-    RH_upd = entr_in.RH_upd
-    RH_env = entr_in.RH_env
-
-    eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-
-    _ret.entr_sc = eps_bw2
-    if entr_in.ql_up>0.0:
-        _ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**6.0
+    if entr_in.af>0.0:
+        buoyant_frac  = buoyancy_sorting(entr_in)
+        _ret.entr_sc = buoyant_frac*eps_w/2.0
+        _ret.detr_sc = (1.0-buoyant_frac/2.0)*eps_w
     else:
-        _ret.detr_sc =  del_bw2
-
+        _ret.entr_sc = 0.0
+        _ret.detr_sc = 0.0
     return _ret
 
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
@@ -121,7 +105,7 @@ cdef double buoyancy_sorting(entr_in_struct entr_in) nogil:
             Py_ssize_t m_q, m_h
             int i_b
 
-            double h_hat, qt_hat, sd_h, sd_q, corr, mu_h_star, sigma_h_star, qt_var, T_hat, h_hat_
+            double h_hat, qt_hat, sd_h, sd_q, corr, mu_h_star, sigma_h_star, qt_var, T_hat
             double sqpi_inv = 1.0/sqrt(pi)
             double sqrt2 = sqrt(2.0)
             double sd_q_lim, bmix, qv_
@@ -200,7 +184,7 @@ cdef double stochastic_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
         cdef:
             Py_ssize_t i
-            double Hmix, QTmix, corr, sigma_H, sigma_QT, bmix, alpha_mix,qv_, rand_H, rand_QT, T_hat, qt_hat
+            double Hmix, QTmix, corr, sigma_H, sigma_QT, bmix, alpha_mix,qv_, rand_H, rand_QT, qt_hat
             double a, b_up, b_env, b_mean0, T_up, buoyant_frac
             # double [:] mean
             # double [:,:] cov
@@ -319,17 +303,6 @@ cdef chi_struct inter_critical_env_frac(entr_in_struct entr_in) nogil:
             lastside = -1.0
     return _ret
 
-
-cdef entr_struct entr_detr_tke2(entr_in_struct entr_in) nogil:
-    cdef entr_struct _ret
-    # in cloud portion from Soares 2004
-    if entr_in.z >= entr_in.zi :
-        _ret.detr_sc= 3.0e-3
-    else:
-        _ret.detr_sc = 0.0
-
-    _ret.entr_sc = (0.05 * sqrt(entr_in.tke) / fmax(entr_in.w, 0.01) / fmax(entr_in.af, 0.001) / fmax(entr_in.z, 1.0))
-    return  _ret
 
 # yair - this is a new entr-detr function that takes entr as proportional to TKE/w and detr ~ b/w2
 cdef entr_struct entr_detr_tke(entr_in_struct entr_in) nogil:
