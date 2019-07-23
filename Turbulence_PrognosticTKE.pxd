@@ -42,7 +42,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:,:] nh_pressure
         double [:,:] buoyant_frac
         double [:,:] b_mix
-        double [:,:] chi_c
         double [:,:] frac_turb_entr
         double [:,:] frac_turb_entr_full
         double [:,:] turb_entr_W
@@ -117,7 +116,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
     cpdef compute_nh_pressure(self)
-    cpdef compute_nh_pressure_normalmodes(self)
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV,  CasesBase Case)
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
     cpdef decompose_environment(self, GridMeanVariables GMV, whichvals)
