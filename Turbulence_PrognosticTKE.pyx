@@ -1465,6 +1465,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             Py_ssize_t gw = self.Gr.gw
             double mf_tend_h=0.0, mf_tend_qt=0.0
             double env_h_interp, env_qt_interp
+            double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues) # area of environment
         self.massflux_h[:] = 0.0
         self.massflux_qt[:] = 0.0
 
@@ -1473,8 +1474,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for i in xrange(self.n_updrafts):
                 self.m[i,gw-1] = 0.0
                 for k in xrange(self.Gr.gw, self.Gr.nzg-1):
-                    self.m[i,k] = ((self.UpdVar.W.values[i,k] - self.EnvVar.W.values[k] )* self.Ref.rho0[k]
-                                   * interp2pt(self.UpdVar.Area.values[i,k],self.UpdVar.Area.values[i,k+1]))
+                    a = interp2pt(self.UpdVar.Area.values[i,k],self.UpdVar.Area.values[i,k+1])
+                    self.m[i,k] =  self.Ref.rho0[k]*a*ae[k]*(self.UpdVar.W.values[i,k] - self.EnvVar.W.values[k])
+
 
         self.massflux_h[gw-1] = 0.0
         self.massflux_qt[gw-1] = 0.0
