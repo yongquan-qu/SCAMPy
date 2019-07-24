@@ -48,9 +48,9 @@ def Soares():
 
     namelist['grid'] = {}
     namelist['grid']['dims'] = 1
-    namelist['grid']['nz'] = 150
+    namelist['grid']['nz'] = 125
     namelist['grid']['gw'] = 2
-    namelist['grid']['dz'] = 20.0
+    namelist['grid']['dz'] = 30.0
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
