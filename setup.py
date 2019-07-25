@@ -43,7 +43,7 @@ elif 'eu' in platform.node():
     f_compiler = 'gfortran'
 elif 'sampo' in platform.node():
     #Compile flags for sampo @ Caltech
-    library_dirs = string.split(os.environ['LD_LIBRARY_PATH'],':')
+    library_dirs = os.environ['LD_LIBRARY_PATH'].split(':')
     libraries = []
     libraries.append('mpi')
     libraries.append('gfortran')
@@ -69,6 +69,20 @@ elif 'linux' in sys.platform:
     tmp_path = get_python_lib()
     netcdf_include = tmp_path + '/netcdf4/include'
     netcdf_lib = tmp_path + "/netcdf4/lib"
+    f_compiler = 'gfortran'
+elif platform.machine()  == 'x86_64':
+    #Compile flags for Central @ Caltech
+    library_dirs = os.environ['LD_LIBRARY_PATH'].split(':')
+    libraries = []
+    libraries.append('mpi')
+    libraries.append('gfortran')
+    extensions = []
+    extra_compile_args=[]
+    extra_compile_args+=['-std=c99', '-O3', '-march=native', '-Wno-unused',
+                         '-Wno-#warnings', '-Wno-maybe-uninitialized', '-Wno-cpp', '-Wno-array-bounds','-fPIC']
+    extra_objects=['./RRTMG/rrtmg_build/rrtmg_combined.o']
+    netcdf_include = '/central/software/netcdf-c/4.6.1/include'
+    netcdf_lib = '/central/software/netcdf-c/4.6.1/lib'
     f_compiler = 'gfortran'
 else:
     print('Unknown system platform: ' + sys.platform  + 'or unknown system name: ' + platform.node())
