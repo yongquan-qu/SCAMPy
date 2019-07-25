@@ -887,22 +887,19 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV):
         cdef:
             Py_ssize_t k
-            double l, R_up, dw, wu_half, we_half, a, c_eps_t
+            double l, R_up, a, c_eps_t, l_full
             double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
 
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-                we_half = interp2pt(self.EnvVar.W.values[k], self.EnvVar.W.values[k-1])
                 for i in xrange(self.n_updrafts):
-                    if self.UpdVar.Area.values[i,k]>self.minimum_area:
+                    if self.UpdVar.Area.values[i,k]>0.0:
                         R_up = self.pressure_plume_spacing*sqrt(self.UpdVar.Area.values[i,k])
                         l = fmin(self.mixing_length[k],R_up)
-                        a = self.UpdVar.Area.values[i,k]
-                        wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
-                        dw = (wu_half - we_half)
+                        l_full = fmin(interp2pt(self.mixing_length[k],self.mixing_length[k-1]),R_up)
                         c_eps_t = self.turbulent_entrainment_factor
-                        self.horizontal_KM[i,k] = c_eps_t*self.tke_ed_coeff*sqrt(fmax(GMV.TKE.values[k],0.0))*l
-                        self.horizontal_KH[i,k] = c_eps_t*self.horizontal_KM[i,k] / self.prandtl_number
+                        self.horizontal_KM[i,k] = c_eps_t*sqrt(fmax(interp2pt(GMV.TKE.values[k],GMV.TKE.values[k-1]),0.0))*l_full
+                        self.horizontal_KH[i,k] = c_eps_t*sqrt(fmax(GMV.TKE.values[k],0.0))*l / self.prandtl_nvec[k]
                     else:
                         self.horizontal_KM[i,k] = 0.0
                         self.horizontal_KH[i,k] = 0.0
@@ -1139,7 +1136,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             entr_struct ret
             entr_in_struct input
             eos_struct sa
-            double transport_plus, transport_minus, ii, alpha_mix
+            double transport_plus, transport_minus
             long quadrature_order = 3
 
 
@@ -1200,8 +1197,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.entr_sc[i,k] = 0.0
                     self.detr_sc[i,k] = 0.0
                     self.buoyant_frac[i,k] = 0.0
-                    self.buoyant_frac[i,k] = ret.buoyant_frac
-                    self.b_mix[i,k] = (self.UpdVar.B.values[i,k]+self.EnvVar.B.values[k])/2.0
+                    self.buoyant_frac[i,k] = 0.0
+                    self.b_mix[i,k] = self.EnvVar.B.values[k]
         return
 
     cpdef double compute_zbl_qt_grad(self, GridMeanVariables GMV):
@@ -1227,7 +1224,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double cpm, lv
 
         cpm = cpm_c(Case.Sur.qsurface)
-        lv = latent_heat(Case.Sur.Tsurface)
         self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
         return
 
@@ -1475,7 +1471,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.m[i,gw-1] = 0.0
                 for k in xrange(self.Gr.gw, self.Gr.nzg-1):
                     a = interp2pt(self.UpdVar.Area.values[i,k],self.UpdVar.Area.values[i,k+1])
-                    self.m[i,k] =  self.Ref.rho0[k]*a*ae[k]*(self.UpdVar.W.values[i,k] - self.EnvVar.W.values[k])
+                    self.m[i,k] =  self.Ref.rho0[k]*a*interp2pt(ae[k],ae[k+1])*(self.UpdVar.W.values[i,k] - self.EnvVar.W.values[k])
 
 
         self.massflux_h[gw-1] = 0.0
@@ -1910,7 +1906,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     combined_detr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k]\
                                      + 2.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
 
-                    Covar.entr_gain[k]  -= combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
+                    Covar.entr_gain[k]  -= tke_factor*combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
                     Covar.detr_loss[k]  -= combined_detr * Covar.values[k]
         return
 
