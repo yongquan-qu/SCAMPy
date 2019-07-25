@@ -886,9 +886,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV):
         cdef:
-            Py_ssize_t k
-            double l, R_up, a, c_eps_t, l_full
-            double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
+            Py_ssize_t i, k
+            double l, R_up
 
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
@@ -896,10 +895,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     if self.UpdVar.Area.values[i,k]>0.0:
                         R_up = self.pressure_plume_spacing*sqrt(self.UpdVar.Area.values[i,k])
                         l = fmin(self.mixing_length[k],R_up)
-                        l_full = fmin(interp2pt(self.mixing_length[k],self.mixing_length[k-1]),R_up)
-                        c_eps_t = self.turbulent_entrainment_factor
-                        self.horizontal_KM[i,k] = c_eps_t*sqrt(fmax(interp2pt(GMV.TKE.values[k],GMV.TKE.values[k-1]),0.0))*l_full
-                        self.horizontal_KH[i,k] = c_eps_t*sqrt(fmax(GMV.TKE.values[k],0.0))*l / self.prandtl_nvec[k]
+                        self.horizontal_KM[i,k] = self.turbulent_entrainment_factor*sqrt(fmax(GMV.TKE.values[k],0.0))*l
+                        self.horizontal_KH[i,k] = self.horizontal_KM[i,k] / self.prandtl_nvec[k]
                     else:
                         self.horizontal_KM[i,k] = 0.0
                         self.horizontal_KH[i,k] = 0.0
