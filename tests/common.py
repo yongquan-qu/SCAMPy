@@ -61,7 +61,7 @@ def removing_files():
     subprocess.call(cmd , shell=True)
 
 
-def read_data_avg(sim_data, n_steps=0, var_covar=False):
+def read_data_avg(sim_data, n_steps=0, m_steps = -1, var_covar=False):
     """
     Read in the data from netcdf file into a dictionary that can be used for plots
 
@@ -73,7 +73,7 @@ def read_data_avg(sim_data, n_steps=0, var_covar=False):
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
                  "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "env_qr", "updraft_qr", "updraft_w", "env_w"]
+                 "env_qr", "updraft_qr", "updraft_w", "env_w", "entrainment_sc", "detrainment_sc"]
     variables_var = [\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
@@ -104,7 +104,8 @@ def read_data_avg(sim_data, n_steps=0, var_covar=False):
     # add averaging over last n_steps timesteps
     if(n_steps > 0):
         for var in variables:
-            for time_it in range(-2, -1*n_steps-1, -1):
+            # for time_it in range(-2, -1*n_steps-1, -1):
+            for time_it in range(n_steps, m_steps, 1):
                 if ("buoyancy" in var):
                     data[var][1] += np.array(sim_data["profiles/" + var][time_it, :]) * 10000  #cm2/s3
                 elif ("qt" in var or "ql" in var or "qr" in var):
@@ -119,7 +120,7 @@ def read_data_avg(sim_data, n_steps=0, var_covar=False):
     return data
 
 
-def read_rad_data_avg(sim_data, n_steps=0):
+def read_rad_data_avg(sim_data, n_steps=0, m_steps = -1):
     """
     Read in the radiation forcing data from netcdf files into a dictionary that can be used for plots
     (so far its only applicable to the DYCOMS radiative forcing)
@@ -143,7 +144,7 @@ def read_rad_data_avg(sim_data, n_steps=0):
     # add averaging over last n_steps timesteps
     if(n_steps > 0):
         for var in variables:
-            for time_it in range(-2, -1*n_steps-1, -1):
+            for time_it in range(n_steps, m_steps, 1):
                 if ("rad_dTdt" in var):
                     rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :] * 60 * 60 * 24) # K/day
                 else:
@@ -207,13 +208,22 @@ def read_data_timeseries(sim_data):
     sim_data - netcdf Dataset with simulation results
     """
     variables = ["updraft_cloud_cover", "updraft_cloud_base", "updraft_cloud_top",\
-                 "ustar", "shf", "lhf", "Tsurface"] #TODO add lwp and rwp
+                 "ustar", "shf", "lhf", "Tsurface", "rd"] #TODO add lwp and rwp
 
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
 
     for var in variables:
         data[var] = []
-        data[var] = np.array(sim_data["timeseries/" + var][:])
+        if ("updraft_cloud_top" in var):
+            CT = np.array(sim_data["timeseries/" + var][:])
+            CT[np.where(CT<=0.0)] = np.nan
+            data[var] = CT
+        if ("updraft_cloud_base" in var):
+            CB = np.array(sim_data["timeseries/" + var][:])
+            CB[np.where(CB>2000.0)] = np.nan
+            data[var] = CB
+        else:
+            data[var] = np.array(sim_data["timeseries/" + var][:])
 
     return data

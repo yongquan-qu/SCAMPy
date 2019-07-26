@@ -46,7 +46,7 @@ def plot_mean(data, title, folder="plots/output/"):
     # data to plot
     x_lab  = ['QV [g/kg]', 'QL [g/kg]',      'QR [g/kg]',      'THL [K]',           'buoyancy [cm2/s3]',   'TKE [m2/s2]']
     plot_x = [qv_mean,      data["ql_mean"],  data["qr_mean"], data["thetal_mean"],  data["buoyancy_mean"], data["tke_mean"]]
-    color  = ["palegreen", "forestgreen"]
+    color  = ["navy", "darkorange"]
     label  = ["ini", "end"]
 
     # iteration over plots
@@ -105,12 +105,12 @@ def plot_drafts(data, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         #plot updrafts
         if (plot_it != 5):
-            plots[plot_it].plot(plot_upd[plot_it][1], data["z_half"], ".-", color="blue", label="upd")
+            plots[plot_it].plot(plot_upd[plot_it][1], data["z_half"], ".-", color="royalblue", label="upd")
         if (plot_it == 5):
-            plots[plot_it].plot(plot_upd[plot_it][1] * 100, data["z_half"], ".-", color="blue", label="upd")
+            plots[plot_it].plot(plot_upd[plot_it][1] * 100, data["z_half"], ".-", color="royalblue", label="upd")
         # plot environment
         if (plot_it < 4):
-            plots[plot_it].plot(plot_env[plot_it][1], data["z_half"], ".-", color="red", label="env")
+            plots[plot_it].plot(plot_env[plot_it][1], data["z_half"], ".-", color="darkred", label="env")
         # plot mean
         if (plot_it < 3):
             plots[plot_it].plot(plot_mean[plot_it][1], data["z_half"], ".-", color="purple", label="mean")
@@ -152,8 +152,8 @@ def plot_var_covar_mean(data, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
-        plots[plot_it].plot(data[plot_var_mean[plot_it]][1], data["z_half"], ".-", label=plot_var_mean[plot_it], c="black")
-        plots[plot_it].plot(data[plot_var_env[plot_it]][1],  data["z_half"], ".-", label=plot_var_env[plot_it],  c="red")
+        plots[plot_it].plot(data[plot_var_mean[plot_it]][1], data["z_half"], ".-", label=plot_var_mean[plot_it], c="crimson")
+        plots[plot_it].plot(data[plot_var_env[plot_it]][1],  data["z_half"], ".-", label=plot_var_env[plot_it],  c="forestgreen")
 
     plots[0].legend()
     plt.tight_layout()
@@ -181,7 +181,7 @@ def plot_var_covar_components(data, title, folder="plots/output/"):
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
     plot_QTvar_c  = ["QTvar_dissipation",  "QTvar_entr_gain",  "QTvar_detr_loss",  "QTvar_shear",  "QTvar_rain"]
     plot_HQTcov_c = ["HQTcov_dissipation", "HQTcov_entr_gain", "HQTcov_detr_loss", "HQTcov_shear", "HQTcov_rain"]
-    color_c       = ['green',              'pink',             'purple',           'orange',       'blue']
+    color_c       = ['darkgreen',              'purple',             'purple',           'darkorange',       'royalblue']
 
     x_lab         = ["Hvar",      "QTvar",      "HQTcov"]
     plot_var_data = [plot_Hvar_c, plot_QTvar_c, plot_HQTcov_c]
@@ -237,8 +237,8 @@ def plot_timeseries_1D(data, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         plots[plot_it].plot(data["t"], plot_y[plot_it], '.-', color="b")
         if plot_it == 1:
-            plots[plot_it].plot(data["t"], data["updraft_cloud_base"], '.-', color="r", label="CB")
-            plots[plot_it].plot(data["t"], data["updraft_cloud_top"],  '.-', color="b", label="CT")
+            plots[plot_it].plot(data["t"], data["updraft_cloud_base"], '.-', color="crimson", label="CB")
+            plots[plot_it].plot(data["t"], data["updraft_cloud_top"],  '.-', color="royalblue", label="CT")
             plots[plot_it].legend()
 
     plt.tight_layout()
