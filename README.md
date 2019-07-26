@@ -13,32 +13,33 @@ subgrid-scale turbulence and convection. Journal of Advances in Modeling Earth S
 The code is written in Python and Cython.
 
 Code Contributors:
-	Colleen Kaul (Caltech)--initial/primary developer. Inquiries may be sent to cmkaul@caltech.edu;
-	Yair Cohen (Caltech);
-	Anna Jaruga (JPL/Caltech);
-        Ignacio Lopez-Gomez (Caltech);
-	Kyle Pressel (Caltech);
-	Zhihong Tan (U. Chicago);
+	Colleen Kaul (PNNL) --initial/primary developer,
+	Yair Cohen (Caltech),
+        Jia He (Caltech),
+	Anna Jaruga (JPL/Caltech),
+        Ignacio Lopez-Gomez (Caltech),
+	Kyle Pressel (PNNL),
+	Zhihong Tan (U. Chicago).
 
 Additional Acknowledgements:
-	Tapio Schneider (Caltech);
-	Joao Teixeira (JPL)
+	Tapio Schneider (Caltech),
+	Joao Teixeira (JPL).
 
 # installation #
 
-TODO - (Travis instructions in the future?)
+SCAMPy requires Cython, netcdf4, matplotlib, scipy and numpy.
 
 # building and running #
 ```
 $ cd scampy
 ```
 
-Generate the simulation specific parameters (accepted keywords: Soares, DYCOMS_RF01, DYCOMS_RF02, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III)
+Generate the simulation specific parameters (accepted keywords:  Bomex, life_cycle_Tan2018, Soares, Rico, TRMM_LBA, ARM_SGP, GATE_III, DYCOMS_RF01, GABLS, SP)
 ```
 $ python generate_namelist.py Soares
 ```
 
-Generate the turbulence parameters (accepted keywords: defaults, Soares, DYCOMS_RF01, DYCOMS_RF02, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III)
+Generate the turbulence parameters (accepted keywords: defaults, Soares, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III, DYCOMS_RF01, GABLS, SP)
 ```
 $ python generate_paramlist.py Soares
 ```
@@ -52,7 +53,3 @@ Serial execution of scampy (both turbulence and case specific parameters need to
 ```
 $ python main.py Soares.in paramlist_Soares.in
 ```
-
-# testing  #
-
-TODO - soon...
