@@ -1474,7 +1474,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.UpdVar.H.new[i,k] =  (c2 * self.UpdVar.H.values[i,k]  + c3 * self.UpdVar.H.values[i,k-1]
                                                    + c4 * H_entr + self.turb_entr_H[i,k])/c1
                         self.UpdVar.QT.new[i,k] = (c2 * self.UpdVar.QT.values[i,k] + c3 * self.UpdVar.QT.values[i,k-1]
-                                                   + c4* QT_entr + self.turb_entr_QT[i,k])/c1
+                                                   + c4 * QT_entr + self.turb_entr_QT[i,k])/c1
 
                         if self.use_local_micro:
                             # do saturation adjustment and autoconversion
@@ -1528,18 +1528,15 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.UpdVar.QT.new[i,k] = GMV.QT.values[k]
                         self.UpdVar.QL.new[i,k] = GMV.QL.values[k]
 
-        #if self.use_local_micro:
-        #    # save the total source terms for H and QT due to precipitation
-        #    self.UpdThermo.prec_source_h_tot = np.sum(np.multiply(self.UpdThermo.prec_source_h,
-        #                                                         self.UpdVar.Area.values), axis=0)
-        #    self.UpdThermo.prec_source_qt_tot = np.sum(np.multiply(self.UpdThermo.prec_source_qt,
-        #                                                          self.UpdVar.Area.values), axis=0)
         if not self.use_local_micro:
             # Compute the updraft microphysical sources (precipitation)
             # after the entrainment loop is finished
             # Update updraft variables with microphysical source tendencies
             self.UpdThermo.update_column_UpdVar_UpdRain(self.UpdVar, self.Rain)
 
+        # TODO: Should we have bcs here? What about other vars?
+        self.UpdVar.H.set_bcs(self.Gr)
+        self.UpdVar.QT.set_bcs(self.Gr)
         return
 
     # After updating the updraft variables themselves:
