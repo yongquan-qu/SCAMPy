@@ -454,23 +454,23 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.compute_covariance(GMV, Case, TS)
 
         if self.Rain.rain_model:
-            # apply autoconversion source terms
-            self.Rain.set_values_with_new()
-            self.Rain.update_bulk_rain()
-            # upstream for rain fall
+            # apply source terms from updraft rain
+            self.Rain.set_updraft_rain_values_with_new()
+            # sum updraft and environment rain into bulk rain
+            self.Rain.sum_subdomains_rain()
+            # rain fall (all three categories are assumed to be falling though "grid-mean" conditions
             self.RainPhysics.solve_rain_fall(GMV, TS, self.Rain.QR,     self.Rain.RainArea,     self.Rain.rain_area_value)
             self.RainPhysics.solve_rain_fall(GMV, TS, self.Rain.Upd_QR, self.Rain.Upd_RainArea, self.Rain.rain_area_value)
             self.RainPhysics.solve_rain_fall(GMV, TS, self.Rain.Env_QR, self.Rain.Env_RainArea, self.Rain.rain_area_value)
-            # rain evaporation
+            # rain evaporation (all three categories are assumed to be evaporating in "grid-mean" conditions
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.QR,     self.Rain.RainArea)
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.Upd_QR, self.Rain.Upd_RainArea)
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.Env_QR, self.Rain.Env_RainArea)
             # update GMV_new with rain evaporation source terms
-            self.update_GMV_Rain(GMV)
+            self.apply_rain_evaporation_sources_to_GMV_H_QT(GMV)
 
-            # dump rain evaporation source terms into the environment,
+            # TODO - maybe we dont want that - we want the last eos in the environment to be the quadrature run
             # update environment and buoyancy for nice output
-            #TODO - maybe we dont want that - we want the last eos in the environment to be the quadrature run
             #self.decompose_environment(GMV, 'new')
             #self.EnvThermo.eos_update_SA_smpl(self.EnvVar)
             #self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
@@ -1694,7 +1694,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         return
 
-    cpdef update_GMV_Rain(self, GridMeanVariables GMV):
+    cpdef apply_rain_evaporation_sources_to_GMV_H_QT(self, GridMeanVariables GMV):
         cdef:
             Py_ssize_t k
 

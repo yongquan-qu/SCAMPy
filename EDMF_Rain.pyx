@@ -45,7 +45,8 @@ cdef class RainVariables:
 
         self.QR           = RainVariable(nzg, 'qr',            'kg/kg')
         self.RainArea     = RainVariable(nzg, 'rain_area',     'rain_area_fraction [-]' )
-        # temporary variables for diagnostics:
+        # temporary variables for diagnostics (later we can have prognostic
+        # rain area fraction for both Updraft and Environment rain):
         self.Upd_QR       = RainVariable(nzg, 'upd_qr',        'kg/kg')
         self.Upd_RainArea = RainVariable(nzg, 'upd_rain_area', 'updraft_rain_area_fraction [-]' )
         self.Env_QR       = RainVariable(nzg, 'env_qr',        'kg/kg')
@@ -118,17 +119,18 @@ cdef class RainVariables:
             self.mean_rwp += Ref.rho0_half[k] * self.QR.values[k]     * self.RainArea.values[k]     * self.Gr.dz
         return
 
-    cpdef set_values_with_new(self):
+    cpdef set_updraft_rain_values_with_new(self):
         with nogil:
             for k in xrange(self.Gr.nzg):
                 self.Upd_RainArea.values[k] = self.Upd_RainArea.new[k]
                 self.Upd_QR.values[k]       = self.Upd_QR.new[k]
         return
 
-    cpdef update_bulk_rain(self):
+    cpdef sum_subdomains_rain(self):
         with nogil:
             for k in xrange(self.Gr.nzg):
-                #TODO tmp (I'm assuming that both the Upd and Env rain area fractions are 1)
+                # Assuming that updraft and environment rain area fractions are either 1 or 0.
+                # This should be changed for prognostic rain area fraction.
                 self.RainArea.values[k] = max(self.Upd_RainArea.new[k], self.Env_RainArea.values[k])
                 self.QR.values[k]       = self.Upd_QR.new[k] + self.Env_QR.values[k]
         return
@@ -160,6 +162,7 @@ cdef class RainPhysics:
             double dt_model = TS.dt
 
             double CFL_out, CFL_in
+            double CFL_limit = 0.95
             double rho_frac, area_frac
 
             double [:] term_vel = np.zeros((nzg,), dtype=np.double, order='c')
@@ -176,9 +179,9 @@ cdef class RainPhysics:
                               GMV.QT.values[k]
                            )
 
-        # calculate the allowed timestep (1 >= v dt / dz)
+        # calculate the allowed timestep (CFL_limit >= v dt / dz)
         if max(term_vel[:]) != 0.:
-            dt_rain = np.minimum(dt_model, 0.95 * self.Gr.dz / max(term_vel[:]))
+            dt_rain = np.minimum(dt_model, CFL_limit * self.Gr.dz / max(term_vel[:]))
 
         # rain falling through the domain
         while t_elapsed < dt_model:
@@ -191,8 +194,6 @@ cdef class RainPhysics:
                     CFL_in = 0.
                 else:
                     CFL_in = dt_rain / dz * term_vel[k+1]
-
-                assert(max(CFL_out, CFL_in) <= 1., "CFL not met for rain")
 
                 rho_frac = self.Ref.rho0_half[k+1] / self.Ref.rho0_half[k]
 
@@ -211,7 +212,7 @@ cdef class RainPhysics:
 
             t_elapsed += dt_rain
             if max(term_vel[:]) != 0.:
-                dt_rain = np.minimum(dt_model - t_elapsed, 0.95 * self.Gr.dz / max(term_vel[:]))
+                dt_rain = np.minimum(dt_model - t_elapsed, CFL_limit * self.Gr.dz / max(term_vel[:]))
             else:
                 dt_rain = dt_model - t_elapsed
 
