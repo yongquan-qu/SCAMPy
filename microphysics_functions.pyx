@@ -45,7 +45,6 @@ cdef double rain_source_to_thetal_detailed(double p0, double T, double qt, doubl
 # instantly convert all cloud water exceeding a threshold to rain water
 # the threshold is specified as axcess saturation
 # rain water is immediately removed from the domain
-# Tiedke:   TODO - add reference
 cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, double p0, double ar) nogil :
 
     cdef double psat = pv_star(T)
@@ -63,10 +62,9 @@ cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, do
 #    Grabowski and Smolarkiewicz 1996 eqs: 5b-5d
 #    https://doi.org/10.1175/1520-0493(1996)124<0487:TTLSLM>2.0.CO;2
 
-# unfortunately the rate expressions in the paper are for mixing ratios
+# rate expressions in the paper are for mixing ratios
 # need to convert to specific humidities
 
-# TODO - change it to saturation treshold
 cdef double acnv_rate(double ql, double qt) nogil :
 
     cdef double rl = q2r(ql, qt)
@@ -138,7 +136,7 @@ cdef rain_struct rain_area(double source_area,  double source_qr,
     """
     Source terams for rain and rain area
     """
-    cdef double eps = 0. #TODO
+    cdef double eps = 0.
 
     cdef rain_struct _ret
 
@@ -148,6 +146,8 @@ cdef rain_struct rain_area(double source_area,  double source_qr,
     else:
         _ret.qr = current_qr + source_area / a_const * source_qr
         _ret.ar = a_const
+
+    # sketch of what to do for prognostic rain area fraction:
 
     #cdef double a_big, q_big, a_sml, q_sml
     #cdef double a_const = 0.2
