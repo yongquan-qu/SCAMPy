@@ -25,7 +25,6 @@ cdef class RainVariables:
         double mean_rwp
         double env_rwp
         double upd_rwp
-        double puddle
         double rain_area_value
         double max_supersaturation
 
@@ -59,5 +58,5 @@ cdef class RainPhysics:
 
     cpdef solve_rain_evap(
         self, GridMeanVariables GMV, TimeStepping TS, RainVariable QR,
-        RainVariable RainArea, bint GMV_flag
+        RainVariable RainArea
     )
