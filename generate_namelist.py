@@ -52,13 +52,13 @@ def Soares():
     namelist['grid']['gw'] = 2
     namelist['grid']['dz'] = 30.0
 
+    namelist['thermodynamics'] = {}
+    namelist['thermodynamics']['thermal_variable'] = 'thetal'
+    namelist['thermodynamics']['sgs'] = 'mean'
+
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.1
     namelist['microphysics']['rain_model'] = False
-
-    namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
 
     namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 30.0
@@ -103,7 +103,7 @@ def Bomex():
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
 
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.1
@@ -151,7 +151,7 @@ def life_cycle_Tan2018():
     namelist['grid']['dz'] = 100 / 2.5
 
     namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
@@ -199,8 +199,8 @@ def Rico():
     namelist['grid']['dz'] = 40.0
 
     namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
-    namelist['thermodynamics']['quadrature_order'] = 5
+    namelist['thermodynamics']['sgs'] = 'mean'
+    #namelist['thermodynamics']['quadrature_order'] = 5
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
@@ -238,7 +238,7 @@ def Rico():
 
     return namelist
 
-def TRMM_LBA(): # yair
+def TRMM_LBA():
 
     namelist = {}
 
@@ -249,7 +249,7 @@ def TRMM_LBA(): # yair
     namelist['grid']['dz'] = 40
 
     namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
@@ -298,7 +298,7 @@ def ARM_SGP():
     namelist['grid']['dz'] = 20
 
     namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
@@ -348,7 +348,7 @@ def GATE_III(): # yair
     namelist['grid']['dz'] = 10
 
     namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
@@ -398,7 +398,7 @@ def DYCOMS_RF01():
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
 
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.1
@@ -447,7 +447,7 @@ def GABLS():
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
 
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.1
@@ -497,7 +497,7 @@ def SP():
 
     namelist['thermodynamics'] = {}
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
+    namelist['thermodynamics']['sgs'] = 'mean'
 
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.1

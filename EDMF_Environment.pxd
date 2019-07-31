@@ -87,8 +87,9 @@ cdef class EnvironmentThermodynamics:
         void update_EnvRain(self,   Py_ssize_t k, EnvironmentVariables EnvVar, RainVariables Rain, double qr) nogil
         void update_cloud_dry(self, Py_ssize_t k, EnvironmentVariables EnvVar, double T, double H, double qt, double ql, double qv) nogil
 
-        void eos_update_SA_smpl(self, EnvironmentVariables EnvVar)
-        void eos_update_SA_mean(self, EnvironmentVariables EnvVar, RainVariables Rain)
-        void eos_update_SA_sgs(self,  EnvironmentVariables EnvVar, RainVariables Rain)
+        void saturation_adjustment(self, EnvironmentVariables EnvVar)
 
-    cpdef satadjust(self, EnvironmentVariables EnvVar, RainVariables Rain)
+        void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain)
+        void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain)
+
+    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain)

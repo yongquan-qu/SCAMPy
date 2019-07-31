@@ -175,9 +175,9 @@ cdef class GridMeanVariables:
             self.calc_scalar_var = False
 
         try:
-            self.EnvThermo_scheme = str(namelist['thermodynamics']['saturation'])
+            self.EnvThermo_scheme = str(namelist['thermodynamics']['sgs'])
         except:
-            self.EnvThermo_scheme = 'sa_mean'
+            self.EnvThermo_scheme = 'mean'
 
         #Now add the 2nd moment variables
         if self.calc_tke:

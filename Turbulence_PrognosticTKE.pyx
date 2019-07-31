@@ -416,7 +416,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.wstar = get_wstar(Case.Sur.bflux, self.zi)
         if TS.nstep == 0:
             self.decompose_environment(GMV, 'values')
-            self.EnvThermo.satadjust(self.EnvVar, self.Rain)
+            self.EnvThermo.microphysics(self.EnvVar, self.Rain)
             self.initialize_covariance(GMV, Case)
 
             with nogil:
@@ -440,13 +440,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         self.update_GMV_MF(GMV, TS)
         # (###)
-        # decompose_environment +  EnvThermo.satadjust + UpdThermo.buoyancy should always be used together
+        # decompose_environment +  EnvThermo.saturation_adjustment + UpdThermo.buoyancy should always be used together
         # This ensures that:
         #   - the buoyancy of updrafts and environment is up to date with the most recent decomposition,
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
         self.decompose_environment(GMV, 'mf_update')
-        self.EnvThermo.satadjust(self.EnvVar, self.Rain)
+        self.EnvThermo.microphysics(self.EnvVar, self.Rain)
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
 
         self.compute_eddy_diffusivities_tke(GMV, Case)
@@ -472,7 +472,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             # TODO - maybe we dont want that - we want the last eos in the environment to be the quadrature run
             # update environment and buoyancy for nice output
             #self.decompose_environment(GMV, 'new')
-            #self.EnvThermo.eos_update_SA_smpl(self.EnvVar)
+            #self.EnvThermo.saturation_adjustment(self.EnvVar)
             #self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
 
         # update mean cloud fraction
@@ -514,7 +514,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             # If we are using quadratures this is expensive and probably unnecessary.
             # TODO - testing below with a simple saturation adjustment in the environment
             self.decompose_environment(GMV, 'values')
-            self.EnvThermo.eos_update_SA_smpl(self.EnvVar)
+            self.EnvThermo.saturation_adjustment(self.EnvVar)
             self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
             self.set_subdomain_bcs()
 
@@ -599,7 +599,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         # TODO - see comment (####)
         self.decompose_environment(GMV, 'values')
-        self.EnvThermo.eos_update_SA_smpl(self.EnvVar)
+        self.EnvThermo.saturation_adjustment(self.EnvVar)
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
 
         # Solve updraft velocity equation
@@ -662,7 +662,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         # TODO - see comment (####)
         self.decompose_environment(GMV, 'values')
-        self.EnvThermo.eos_update_SA_smpl(self.EnvVar)
+        self.EnvThermo.saturation_adjustment(self.EnvVar)
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
 
         self.UpdVar.Area.set_bcs(self.Gr)

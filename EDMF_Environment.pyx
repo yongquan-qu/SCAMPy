@@ -116,10 +116,10 @@ cdef class EnvironmentVariables:
             print('Defaulting to non-calculation of scalar variances')
 
         try:
-            self.EnvThermo_scheme = str(namelist['thermodynamics']['saturation'])
+            self.EnvThermo_scheme = str(namelist['thermodynamics']['sgs'])
         except:
-            self.EnvThermo_scheme = 'sa_mean'
-            print('Defaulting to saturation adjustment with respect to environmental means')
+            self.EnvThermo_scheme = 'mean'
+            print('Defaulting to saturation adjustment and microphysics with respect to environmental means')
 
         if self.calc_tke:
             self.TKE = EnvironmentVariable_2m( nz, 'half', 'scalar', 'tke','m^2/s^2' )
@@ -133,9 +133,9 @@ cdef class EnvironmentVariables:
                 self.Hvar = EnvironmentVariable_2m(nz, 'half', 'scalar', 'thetal_var', 'K^2')
                 self.HQTcov = EnvironmentVariable_2m(nz, 'half', 'scalar', 'thetal_qt_covar', 'K(kg/kg)' )
 
-        if self.EnvThermo_scheme == 'sa_quadrature':
+        if self.EnvThermo_scheme == 'quadrature':
             if (self.calc_scalar_var == False):
-                sys.exit('EDMF_Environment.pyx 96: scalar variance has to be calculated for quadrature saturation')
+                sys.exit('EDMF_Environment.pyx: scalar variance has to be calculated for quadrature saturation and microphysics')
 
         return
 
@@ -241,8 +241,9 @@ cdef class EnvironmentThermodynamics:
 
         return
 
-    cdef void update_EnvVar(self, Py_ssize_t k, EnvironmentVariables EnvVar, double T, double H, double qt, double ql, double alpha) nogil :
-        # TODO - replace with pointers ?
+    cdef void update_EnvVar(self, Py_ssize_t k, EnvironmentVariables EnvVar,
+                            double T, double H, double qt, double ql,
+                            double alpha) nogil :
         EnvVar.T.values[k]   = T
         EnvVar.THL.values[k] = H
         EnvVar.H.values[k]   = H
@@ -251,8 +252,9 @@ cdef class EnvironmentThermodynamics:
         EnvVar.B.values[k]   = buoyancy_c(self.Ref.alpha0_half[k], alpha)
         return
 
-    cdef void update_EnvRain(self, Py_ssize_t k, EnvironmentVariables EnvVar, RainVariables Rain, double qr) nogil:
-        # TODO - replace with pointers ?
+    cdef void update_EnvRain(self, Py_ssize_t k, EnvironmentVariables EnvVar,
+                             RainVariables Rain, double qr) nogil:
+
         cdef rain_struct rst
 
         rst = rain_area(EnvVar.EnvArea.values[k],    qr,
@@ -261,11 +263,11 @@ cdef class EnvironmentThermodynamics:
 
         Rain.Env_QR.values[k] = rst.qr
         Rain.Env_RainArea.values[k] = rst.ar
-
         return
 
-    cdef void update_cloud_dry(self, Py_ssize_t k, EnvironmentVariables EnvVar, double T, double th, double qt, double ql, double qv) nogil :
-        # TODO - replace with pointers ?
+    cdef void update_cloud_dry(self, Py_ssize_t k, EnvironmentVariables EnvVar,
+                               double T, double th, double qt, double ql,
+                               double qv) nogil :
         if ql > 0.0:
             EnvVar.cloud_fraction.values[k] = 1.
             self.th_cloudy[k]   = th
@@ -278,7 +280,7 @@ cdef class EnvironmentThermodynamics:
             self.qt_dry[k]      = qt
         return
 
-    cdef void eos_update_SA_smpl(self, EnvironmentVariables EnvVar):
+    cdef void saturation_adjustment(self, EnvironmentVariables EnvVar):
 
         cdef:
             Py_ssize_t k
@@ -296,7 +298,7 @@ cdef class EnvironmentThermodynamics:
         return
 
 
-    cdef void eos_update_SA_mean(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cdef void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain):
 
         cdef:
             Py_ssize_t k
@@ -326,7 +328,7 @@ cdef class EnvironmentThermodynamics:
 
         return
 
-    cdef void eos_update_SA_sgs(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cdef void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain):
         a, w = np.polynomial.hermite.hermgauss(self.quadrature_order)
 
         #TODO - remember you output source terms multipierd by dt (bec. of instanteneous autoconcv)
@@ -484,15 +486,15 @@ cdef class EnvironmentThermodynamics:
 
         return
 
-    cpdef satadjust(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain):
 
-        if EnvVar.EnvThermo_scheme == 'sa_mean':
-            self.eos_update_SA_mean(EnvVar, Rain)
+        if EnvVar.EnvThermo_scheme == 'mean':
+            self.sgs_mean(EnvVar, Rain)
 
-        elif EnvVar.EnvThermo_scheme == 'sa_quadrature':
-            self.eos_update_SA_sgs(EnvVar, Rain)
+        elif EnvVar.EnvThermo_scheme == 'quadrature':
+            self.sgs_quadrature(EnvVar, Rain)
 
         else:
-            sys.exit('EDMF_Environment: Unrecognized EnvThermo_scheme. Possible options: sa_mean, sa_quadrature')
+            sys.exit('EDMF_Environment: Unrecognized EnvThermo_scheme. Possible options: mean, quadrature')
 
         return
