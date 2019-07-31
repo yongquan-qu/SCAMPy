@@ -39,35 +39,43 @@ def test_plot_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 quicklook profiles
     """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100)
+    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
+    data_to_plot = cmn.read_data_avg(sim_data, tmin=1)
+    les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1)
 
-    pls.plot_mean(data_to_plot,   "DYCOMS_RF01_quicklook.pdf")
-    pls.plot_drafts(data_to_plot, "DYCOMS_RF01_quicklook_drafts.pdf")
+    pls.plot_mean(data_to_plot,les_data_to_plot,    "DYCOMS_RF01_quicklook.pdf")
+    pls.plot_drafts(data_to_plot, les_data_to_plot, "DYCOMS_RF01_quicklook_drafts.pdf")
 
 def test_plot_var_covar_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 quicklook profiles
     """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100, var_covar=True)
+    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
+    data_to_plot = cmn.read_data_avg(sim_data, z, var_covar=True)
+    les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1, var_covar=True)
 
-    pls.plot_var_covar_mean(data_to_plot,       "DYCOMS_RF01_var_covar_mean.pdf")
+    pls.plot_var_covar_mean(data_to_plot,  les_data_to_plot,     "DYCOMS_RF01_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "DYCOMS_RF01_var_covar_components.pdf")
 
 def test_plot_timeseries_DYCOMS(sim_data):
     """
     plot timeseries
     """
+    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
+    les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, "DYCOMS")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot, "DYCOMS")
 
 def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
     """
+    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
+    les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot, "DYCOMS_RF01_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot, les_data_to_plot, "DYCOMS_RF01_timeseries_1D.pdf")
 
 def test_DYCOMS_RF01_radiation(sim_data):
     """
@@ -83,8 +91,8 @@ def test_DYCOMS_RF01_radiation(sim_data):
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
 
-    plt_data = cmn.read_data_avg(sim_data,     n_steps=100, var_covar=False)
-    rad_data = cmn.read_rad_data_avg(sim_data, n_steps=100)
+    plt_data = cmn.read_data_avg(sim_data,     tmin=1, var_covar=False)
+    rad_data = cmn.read_rad_data_avg(sim_data, tmin=1)
 
     plots = []
     # loop over simulation and reference data for t=0 and t=-1
@@ -100,7 +108,7 @@ def test_DYCOMS_RF01_radiation(sim_data):
         plots.append(plt.subplot(2,2,plot_it+1))
                               #(rows, columns, number)
         for it in range(2):
-            plots[plot_it].plot(plot_y[plot_it][it], plot_x[plot_it], '.-', color=color[it], label=label[it])
+            plots[plot_it].plot(plot_y[plot_it][it], plot_x[plot_it], '-', color=color[it], label=label[it])
         plots[plot_it].legend(loc=legend[plot_it])
         plots[plot_it].set_xlabel(x_lab[plot_it])
         plots[plot_it].set_ylabel('z [m]')

@@ -35,6 +35,7 @@ def sim_data(request):
 
     return sim_data
 
+@pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_Tan2018(sim_data):
     """
     plot Tan2018 profiles
@@ -44,6 +45,7 @@ def test_plot_Tan2018(sim_data):
     pls.plot_mean(data_to_plot,   "Tan2018_quicklook.pdf")
     pls.plot_drafts(data_to_plot, "Tan2018_quicklook_drafts.pdf")
 
+@pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_timeseries_Tan2018(sim_data):
     """
     plot Tan2018 timeseries
@@ -52,6 +54,7 @@ def test_plot_timeseries_Tan2018(sim_data):
 
     pls.plot_timeseries(data_to_plot, "Tan2018")
 
+@pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_timeseries_1D_Tan2018(sim_data):
     """
     plot Tan2018 1D timeseries
@@ -60,6 +63,7 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
 
     pls.plot_timeseries_1D(data_to_plot, "Tan2018_timeseries_1D.pdf")
 
+@pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_var_covar_Tan2018(sim_data):
     """
     plot Tan2018 var covar
