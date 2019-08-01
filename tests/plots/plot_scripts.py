@@ -119,7 +119,7 @@ def plot_drafts(data, les, title, folder="plots/output/"):
             plots[plot_it].plot(les_plot_upd[plot_it][1], les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
             plots[plot_it].plot(plot_upd[plot_it][1], data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
         if (plot_it == 5):
-            plots[plot_it].plot(les_plot_upd[plot_it][1], les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
+            plots[plot_it].plot(les_plot_upd[plot_it][1]* 100, les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
             plots[plot_it].plot(plot_upd[plot_it][1] * 100, data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
         # plot environment
         if (plot_it < 4):
@@ -214,7 +214,7 @@ def plot_var_covar_components(data, title, folder="plots/output/"):
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
         for var in range(5):
-            plots[plot_it].plot(data[plot_var_data[plot_it][var]][1],   data["z_half"], ".-", label=plot_Hvar_c[var],  c=color_c[var])
+            plots[plot_it].plot(data[plot_var_data[plot_it][var]][1],   data["z_half"], "-", label=plot_Hvar_c[var],  c=color_c[var])
 
     plots[0].legend()
     plt.tight_layout()
@@ -239,25 +239,39 @@ def plot_timeseries_1D(data,  les, title, folder="plots/output/"):
     mpl.rc('lines', linewidth=2, markersize=6)
 
     # data to plot
-    plot_y = [data["updraft_cloud_cover"], data["updraft_cloud_top"], data["ustar"], data["lhf"], data["shf"], data["Tsurface"]]
-    y_lab  = ['updr cl. cover',            'updr CB, CT',             'ustar',       'lhf',      'shf',       'T surf']
+    plot_y     = [data["updraft_cloud_cover"],  data["lwp"], data["lhf"], data["shf"], data["rd"],      data["updraft_cloud_top"], data["updraft_cloud_base"]]
+    plot_les_y = [les["updraft_cloud_cover"],   les["lwp"],  les["lhf"],  les["shf"],  les["shf"],  les["updraft_cloud_top"],  les["updraft_cloud_base"]]
+    y_lab  =     ['updr cl. cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'updr CB, CT']
 
     # iteration over plots
     plots = []
     for plot_it in range(6):
         plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
-        plots[plot_it].set_xlabel('t [s]')
-        plots[plot_it].set_ylabel(y_lab[plot_it])
-        plots[plot_it].set_xlim([0, data["t"][-1]])
-        plots[plot_it].grid(True)
-        plots[plot_it].plot(data["t"], plot_y[plot_it], '-', color="b")
-        if plot_it == 1:
-            plots[plot_it].plot(les["t"], les["updraft_cloud_base"], '-', color="gray",   label="CB_les",  linewidth = 4)
-            plots[plot_it].plot(les["t"], les["updraft_cloud_top"],  '-', color="gray",   label="CT_les",  linewidth = 4)
-            plots[plot_it].plot(data["t"], data["updraft_cloud_base"], '-', color="crimson", label="CB",  linewidth = 2)
-            plots[plot_it].plot(data["t"], data["updraft_cloud_top"],  '-', color="royalblue", label="CT",  linewidth = 2)
+        if plot_it < 4:
+            plots[plot_it].set_xlabel('t [s]')
+            plots[plot_it].set_ylabel(y_lab[plot_it])
+            plots[plot_it].set_xlim([0, data["t"][-1]])
+            plots[plot_it].grid(True)
+            plots[plot_it].plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
+            plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
             plots[plot_it].legend()
+        elif plot_it == 4:
+            plots[plot_it].set_xlabel('t [s]')
+            plots[plot_it].set_ylabel(y_lab[plot_it])
+            plots[plot_it].set_xlim([0, data["t"][-1]])
+            plots[plot_it].grid(True)
+            plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
+            plots[plot_it].legend()
+        else:
+            plots[5].set_xlabel('t [s]')
+            plots[5].set_ylabel(y_lab[5])
+            plots[5].set_xlim([0, data["t"][-1]])
+            plots[5].grid(True)
+            plots[5].plot(les["t"][1:], les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
+            plots[5].plot(les["t"][1:], les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
+            plots[5].plot(data["t"][1:], data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
+            plots[5].plot(data["t"][1:], data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
     plt.tight_layout()
     plt.savefig(folder + title)
@@ -274,6 +288,9 @@ def plot_timeseries(data,  les, case, folder="plots/output/"):
     folder - folder where to save the created plot
     """
     # customize figure parameters
+
+
+
     fig = plt.figure(1)
     fig.set_figheight(15)
     fig.set_figwidth(30)
@@ -295,20 +312,20 @@ def plot_timeseries(data,  les, case, folder="plots/output/"):
     env_les_area     = 1. - les["updraft_fraction"]
 
     # data to plot
-    mean_les_data  = [les["thetali_mean"],    les["tke_mean"],       les_mean_qv,            les["ql_mean"],            les["qr_mean"]]
-    mean_data      = [data["thetal_mean"],    data["tke_mean"],      mean_qv,                data["ql_mean"],           data["qr_mean"]]
-    mean_label     = ["mean thl [K]",         "mean TKE [m2/s2]",    "mean qv [g/kg]",       "mean ql [g/kg]",          "mean qr [g/kg]"]
-    mean_les_label = ["mean les thl [K]",     "mean les TKE [m2/s2]","mean les qv [g/kg]",   "mean les ql [g/kg]",      "mean les qr [g/kg]"]
+    mean_les_data  = [les["thetali_mean"],    les["tke_mean"],       les_mean_qv,            les["ql_mean"],            les["qr_mean"],            les["qt_mean"]]
+    mean_data      = [data["thetal_mean"],    data["tke_mean"],      mean_qv,                data["ql_mean"],           data["qr_mean"],           data["qt_mean"]]
+    mean_label     = ["mean thl [K]",         "mean TKE [m2/s2]",    "mean qv [g/kg]",       "mean ql [g/kg]",          "mean qr [g/kg]",          "mean qt [g/kg]"]
+    mean_les_label = ["mean les thl [K]",     "mean les TKE [m2/s2]","mean les qv [g/kg]",   "mean les ql [g/kg]",      "mean les qr [g/kg]",      "mean les qt [g/kg]"]
     mean_cb        = [mpl.cm.Reds,            mpl.cm.Reds,           mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
 
-    env_les_data   = [les["env_thetali"],     env_les_area,             les["env_w"],          env_les_qv,             les["env_ql"]]#              les["env_qr"]
-    env_data       = [data["env_thetal"],     env_area,                 data["env_w"],         env_qv,                 data["env_ql"],            data["env_qr"]]
-    env_label      = ["env thl [K]",          "env area [%]",           "env w [m/s]",         "env qv [g/kg]",        "env ql [g/kg]",           "env qr [g/kg]"]
-    env_les_label  = ["env les thl [K]",      "env les area [%]",       "env les w [m/s]",     "env les qv [g/kg]",    "env les ql [g/kg]",       "env les qr [g/kg]"]
+    env_les_data   = [les["env_thetali"],     env_les_area,             les["env_w"],          les["env_qt"],          les["env_ql"],             les["env_qr"]]
+    env_data       = [data["env_thetal"],     env_area,                 data["env_w"],         data["env_qt"],         data["env_ql"],            data["env_qr"]]
+    env_label      = ["env thl [K]",          "env area [%]",           "env w [m/s]",         "env qt [g/kg]",        "env ql [g/kg]",           "env qr [g/kg]"]
+    env_les_label  = ["env les thl [K]",      "env les area [%]",       "env les w [m/s]",     "env les qt [g/kg]",    "env les ql [g/kg]",       "env les qr [g/kg]"]
     env_cb         = [mpl.cm.Reds,            mpl.cm.Reds,              mpl.cm.Reds_r,         mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
 
-    updr_les_data  = [les["updraft_thetali"], les["updraft_fraction"],  les["updraft_w"],      updr_les_qv,            les["updraft_ql"]]#,         les["updraft_qr"]]
-    updr_data      = [data["updraft_thetal"], data["updraft_area"],     data["updraft_w"],     updr_qv,                data["updraft_ql"],        data["updraft_qr"]]
+    updr_les_data  = [les["updraft_thetali"], les["updraft_fraction"],  les["updraft_w"],      les["updraft_qt"],      les["updraft_ql"],         les["updraft_qr"]]
+    updr_data      = [data["updraft_thetal"], data["updraft_area"],     data["updraft_w"],     data["updraft_qt"],     data["updraft_ql"],        data["updraft_qr"]]
     updr_label     = ["updr thl [K]",   "     updr area [%]",           "updr w [m/s]",        "updr qv [g/kg]",       "updr ql [g/kg]",          "updr qr [g/kg"]
     updr_les_label = ["updr les thl [K]", "   updr les area [%]",       "updr les w [m/s]",    "updr les qv [g/kg]",   "updr les ql [g/kg]",      "updr les qr [g/kg"]
     updr_cb        = [mpl.cm.Reds,            mpl.cm.Reds,              mpl.cm.Reds,           mpl.cm.Blues,           mpl.cm.Blues,              mpl.cm.Blues]
@@ -333,26 +350,27 @@ def plot_timeseries(data,  les, case, folder="plots/output/"):
         ax   = []
         plot = []
         if var<=2:
-            for plot_it in range(9):
-                ax.append(fig.add_subplot(3,3,plot_it+1))
+            for plot_it in range(12):
+                ax.append(fig.add_subplot(4,3,plot_it+1))
                                         #(rows, columns, number)
-                if plot_it+1<=3:
+                if plot_it+1<=6:
                     ax[plot_it].set_xlabel('t [hrs]')
                     ax[plot_it].set_ylabel('z [m]')
-                    plot.append(ax[plot_it].contourf(les_time, les_z_half, les_data_to_plot[var][plot_it], cmap='RdBu_r', rasterized=True))
+                    plot.append(ax[plot_it].contourf(les_time[1:], les_z_half, les_data_to_plot[var][plot_it][:,1:], cmap='RdBu_r'))
                     fig.colorbar(plot[plot_it], ax=ax[plot_it], label=les_labels[var][plot_it])
                 else:
-                    it = plot_it - 4
+                    it = plot_it - 6
+
                     ax[plot_it].set_xlabel('t [hrs]')
                     ax[plot_it].set_ylabel('z [m]')
-                    plot.append(ax[plot_it].contourf(time, z_half, data_to_plot[var][it], cmap='RdBu_r', rasterized=True))
+                    plot.append(ax[plot_it].contourf(time[1:], z_half, data_to_plot[var][it][:,1:], cmap='RdBu_r'))
                     fig.colorbar(plot[plot_it], ax=ax[plot_it], label=labels[var][it])
         else:
-            for plot_it in range(5):
+            for plot_it in range(6):
                 ax.append(fig.add_subplot(2,3,plot_it+1))
                 ax[plot_it].set_xlabel('t [hrs]')
                 ax[plot_it].set_ylabel('z [m]')
-                plot.append(ax[plot_it].contourf(time, z_half, data_to_plot[var][plot_it], cmap='RdBu_r', rasterized=True))
+                plot.append(ax[plot_it].contourf(time[1:], z_half, data_to_plot[var][plot_it][:,1:], cmap='RdBu_r'))
                 fig.colorbar(plot[plot_it], ax=ax[plot_it], label=labels[var][plot_it])
         #plt.tight_layout()
         plt.savefig(folder + case + "_timeseries_" + titles[var] + ".pdf")

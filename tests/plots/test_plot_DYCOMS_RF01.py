@@ -51,10 +51,10 @@ def test_plot_var_covar_DYCOMS_RF01(sim_data):
     plot DYCOMS_RF01 quicklook profiles
     """
     les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
-    data_to_plot = cmn.read_data_avg(sim_data, z, var_covar=True)
+    data_to_plot = cmn.read_data_avg(sim_data, tmin=1, var_covar=True)
     les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1, var_covar=True)
 
-    pls.plot_var_covar_mean(data_to_plot,  les_data_to_plot,     "DYCOMS_RF01_var_covar_mean.pdf")
+    pls.plot_var_covar_mean(data_to_plot,  les_data_to_plot, "DYCOMS_RF01_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot, "DYCOMS_RF01_var_covar_components.pdf")
 
 def test_plot_timeseries_DYCOMS(sim_data):

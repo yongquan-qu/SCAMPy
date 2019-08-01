@@ -99,9 +99,9 @@ def read_data_avg(sim_data, tmin=0, tmax = -1, var_covar=False):
     for var in variables:
         data[var] = []
         for it in range(2):
-            if ("buoyancy" in var):
-                data[var].append(np.array(sim_data["profiles/" + var][time[it], :]) * 10000) #cm2/s3
-            elif ("qt" in var or "ql" in var or "qr" in var):
+            # if ("buoyancy" in var):
+            #     data[var].append(np.array(sim_data["profiles/" + var][time[it], :]) * 10000) #cm2/s3
+            if ("qt" in var or "ql" in var or "qr" in var):
                 try:
                     data[var].append(np.array(sim_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
                 except:
@@ -110,26 +110,46 @@ def read_data_avg(sim_data, tmin=0, tmax = -1, var_covar=False):
                 data[var].append(np.array(sim_data["reference/" + var][time[it], :]) * 100)  #hPa
             else:
                 data[var].append(np.array(sim_data["profiles/" + var][time[it], :]))
+    for var in variables:
+        if ("updraft_thetal" in var):
+            temp = np.multiply(data[var],1.0)
+            a = np.multiply(data['updraft_area'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            data[var] = temp
 
     # add averaging over last n_steps timesteps
+    # if(n_steps > 0):
+    #     for var in variables:
+    #         # for time_it in range(-2, -1*n_steps-1, -1):
+    #         for time_it in range(t_start, t_end, 1):
+    #             if ("buoyancy" in var):
+    #                 data[var][1] += np.array(sim_data["profiles/" + var][time_it, :]) * 10000  #cm2/s3
+    #             elif ("qt" in var or "ql" in var or "qr" in var):
+    #                 try:
+    #                     data[var][1] += np.array(sim_data["profiles/" + var][time_it, :]) * 1000   #g/kg
+    #                 except:
+    #                     data[var][1] += np.array(sim_data["profiles/w_mean" ][time_it, :]) * 0   #g/kg
+    #             elif ("p0" in var):
+    #                 data[var][1] += np.array(sim_data["reference/" + var][time_it, :]) * 100   #hPa
+    #             else:
+    #                 data[var][1] += np.array(sim_data["profiles/" + var][time_it, :])
+
+    #         data[var][1] /= n_steps
+
     if(n_steps > 0):
         for var in variables:
-            # for time_it in range(-2, -1*n_steps-1, -1):
-            for time_it in range(t_start, t_end, 1):
-                if ("buoyancy" in var):
-                    data[var][1] += np.array(sim_data["profiles/" + var][time_it, :]) * 10000  #cm2/s3
-                elif ("qt" in var or "ql" in var or "qr" in var):
-                    try:
-                        data[var][1] += np.array(sim_data["profiles/" + var][time_it, :]) * 1000   #g/kg
-                    except:
-                        data[var][1] += np.array(sim_data["profiles/w_mean" ][time_it, :]) * 0   #g/kg
-                elif ("p0" in var):
-                    data[var][1] += np.array(sim_data["reference/" + var][time_it, :]) * 100   #hPa
-                else:
-                    data[var][1] += np.array(sim_data["profiles/" + var][time_it, :])
-
-            data[var][1] /= n_steps
-
+            # if ("buoyancy" in var):
+            #     data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin,tmax, :]) * 10000,axis=0)  #cm2/s3
+            if ("qt" in var or "ql" in var or "qr" in var):
+                try:
+                    data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin,tmax, :]) * 1000, axis=0)   #g/kg
+                except:
+                    data[var][1] = np.nanmean(np.array(sim_data["profiles/w_mean" ][tmin,tmax, :]) * 0, axis=0)   #g/kg
+            elif ("p0" in var):
+                data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin,tmax, :]) * 100,axis=0) #hPa
+            else:
+                data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin,tmax, :]),axis=0)
     return data
 
 
@@ -165,23 +185,18 @@ def read_les_data_avg(les_data, tmin=0, tmax = -1, var_covar=False):
     for var in variables:
         les[var] = []
         for it in range(2):
-            if ("buoyancy" in var):
-                les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 10000) #cm2/s3
-            elif ("qt" in var or "ql" in var):
+            # if ("buoyancy" in var):
+            #     les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 10000) #cm2/s3
+            if ("qt" in var or "ql" in var):
                 try:
                     les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
                 except:
                     les[var].append(np.array(les_data["profiles/w_mean" ][time[it], :]) *0)  #g/kg
             elif ("qr" in var):
                 try:
-                    les[var].append(np.array(les_data["profiles/w_mean"][time[it], :]) * 0.0)  #g/kg
+                    les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
                 except:
                     les[var].append(np.array(les_data["profiles/w_mean"][time[it], :]) * 0.0)  #g/kg
-                # try:
-                #     les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
-                # except:
-                #     print('replacing qr by 0 in LES')
-                #     les[var].append(np.array(les_data["profiles/qt"][time[it], :]) * 0.0)  #g/kg
             elif ("p0" in var):
                 les[var].append(np.array(les_data["reference/" + var][time[it], :]) * 100)  #hPa
             else:
@@ -189,34 +204,63 @@ def read_les_data_avg(les_data, tmin=0, tmax = -1, var_covar=False):
                     les[var].append(np.array(les_data["profiles/" + var][time[it], :]))
                 except:
                     les[var].append(np.array(les_data["profiles/" + "theta_mean"][time[it], :]))
+    for var in variables:
+        if ("updraft_thetal" in var):
+            temp = np.multiply(les[var],1.0)
+            a = np.multiply(les['updraft_fraction'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            les[var] = temp
+
 
     # add averaging over last n_steps timesteps
+    # if(n_steps > 0):
+    #     for var in variables:
+    #         # for time_it in range(-2, -1*n_steps-1, -1):
+    #         for time_it in range(t_start, t_end, 1):
+    #             if ("buoyancy" in var):
+    #                 les[var][1] += np.array(les_data["profiles/" + var][time_it, :]) * 10000  #cm2/s3
+    #             elif ("qt" in var or "ql" in var):
+    #                 try:
+    #                     les[var][1] += np.array(les_data["profiles/" + var][time_it, :]) * 1000   #g/kg
+    #                 except:
+    #                     les[var][1] += np.array(les_data["profiles/w_mean"][time_it, :]) * 0   #g/kg
+    #             elif ("qr" in var):
+    #                 try:
+    #                     les[var][1] += np.array(les_data["profiles/" + var][time_it, :]) * 1000   #g/kg
+    #                 except:
+    #                     les[var][1] += np.array(les_data["profiles/w_mean"][time_it, :]) * 0   #g/kg
+    #             elif ("p0" in var):
+    #                 les[var][1] += np.array(les_data["reference/" + var][time_it, :]) * 100   #hPa
+    #             else:
+    #                 try:
+    #                     les[var][1] += np.array(les_data["profiles/" + var][time_it, :])
+    #                 except:
+    #                     les[var][1] += np.array(les_data["profiles/" + "theta_mean"][time_it, :])
+
+    #         les[var][1] /= n_steps
+
     if(n_steps > 0):
         for var in variables:
-            # for time_it in range(-2, -1*n_steps-1, -1):
-            for time_it in range(t_start, t_end, 1):
-                if ("buoyancy" in var):
-                    les[var][1] += np.array(les_data["profiles/" + var][time_it, :]) * 10000  #cm2/s3
-                elif ("qt" in var or "ql" in var):
-                    try:
-                        les[var][1] += np.array(les_data["profiles/" + var][time_it, :]) * 1000   #g/kg
-                    except:
-                        les[var][1] += np.array(les_data["profiles/w_mean"][time_it, :]) * 0   #g/kg
-                elif ("qr" in var):
-                    les[var].append(np.array(les_data["profiles/w_mean"][time[it], :]) * 0.0)  #g/kg
-                    # try:
-                    #     les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
-                    # except:
-                    #     les[var].append(np.array(les_data["profiles/qt_mean"][time[it], :]) * 0.0)  #g/kg
-                elif ("p0" in var):
-                    les[var][1] += np.array(les_data["reference/" + var][time_it, :]) * 100   #hPa
-                else:
-                    try:
-                        les[var][1] += np.array(les_data["profiles/" + var][time_it, :])
-                    except:
-                        les[var][1] += np.array(les_data["profiles/" + "theta_mean"][time_it, :])
-
-            les[var][1] /= n_steps
+            # if ("buoyancy" in var):
+            #     les[var][1] = np.nanmean(np.array(les_data["profiles/" + var][tmin,tmax, :]) * 10000,axis=0)  #cm2/s3
+            if ("qt" in var or "ql" in var):
+                try:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/" + var][tmin,tmax, :]) * 1000,axis=0)    #g/kg
+                except:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/w_mean"][tmin,tmax, :]) * 0,axis=0)    #g/kg
+            elif ("qr" in var):
+                try:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/" + var][tmin,tmax, :]) * 1000 ,axis=0)   #g/kg
+                except:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/w_mean"][tmin,tmax, :]) * 0 ,axis=0)   #g/kg
+            elif ("p0" in var):
+                les[var][1] = np.nanmean(np.array(les_data["reference/" + var][tmin,tmax, :]) * 100,axis=0)    #hPa
+            else:
+                try:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/" + var][tmin,tmax, :]),axis=0)
+                except:
+                    les[var][1] = np.nanmean(np.array(les_data["profiles/" + "theta_mean"][tmin,tmax, :]),axis=0)
 
     if var_covar:
         les["Hvar_mean"] = []
@@ -246,12 +290,12 @@ def read_rad_data_avg(sim_data, tmin=0, tmax = -1):
 
     time = [0, -1]
     # rad_data = {"z" : np.array(sim_data["profiles/z"][:])}
-    data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
+    rad_data = {"z" : np.array(sim_data["profiles/z"][:]), "t" : np.array(sim_data["profiles/t"][:])}
     if tmax==-1:
-        tmax = np.max(data["t"])/3600.0
+        tmax = np.max(rad_data["t"])/3600.0
 
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_start = int(np.where(rad_data["t"] > tmin)[0][0])
+    t_end   = int(np.where(rad_data["t"] <= tmax)[0][0])
     n_steps = (t_end-t_start)
     for var in variables:
         rad_data[var] = []
@@ -264,13 +308,17 @@ def read_rad_data_avg(sim_data, tmin=0, tmax = -1):
     # add averaging over last n_steps timesteps
     if(n_steps > 0):
         for var in variables:
-            for time_it in range(n_steps, m_steps, 1):
-                if ("rad_dTdt" in var):
-                    rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :] * 60 * 60 * 24) # K/day
-                else:
-                    rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :])
+            rad_data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin:tmax, :] * 60 * 60 * 24),axis=0)
+    else:
+        for var in variables:
+            rad_data[var][1] = np.array(sim_data["profiles/" + var][tmax, :] * 60 * 60 * 24)
+            # for time_it in range(t_start, t_end, 1):
+            #     if ("rad_dTdt" in var):
+            #         rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :] * 60 * 60 * 24) # K/day
+            #     else:
+            #         rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :])
 
-            rad_data[var][1] /= n_steps
+            # rad_data[var][1] /= n_steps
 
     return rad_data
 
@@ -323,6 +371,14 @@ def read_data_srs(sim_data, var_covar=False):
             except:
                 data[var] = np.transpose(np.array(sim_data["profiles/theta_mean"][:, :]))
 
+    for var in variables:
+        if ("updraft_thetal" in var):
+            temp = np.multiply(data[var],1.0)
+            a = np.multiply(data['updraft_area'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            data[var] = temp
+
     return data
 
 
@@ -353,11 +409,10 @@ def read_les_data_srs(les_data, var_covar=False):
             except:
                 les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
         elif ("qr" in var):
-            les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0.0 #cm2/s3
-            # try:
-            #     les[var].append(np.array(les_data["profiles/" + var][time[it], :]) * 1000)  #g/kg
-            # except:
-            #     les[var].append(np.array(les_data["profiles/qt"][time[it], :]) * 0.0)  #g/kg
+            try:
+                les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
+            except:
+                les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
         elif ("p0" in var):
             les[var] = np.transpose(np.array(les_data["reference/" + var][:, :])) * 100   #hPa
         else:
@@ -365,6 +420,13 @@ def read_les_data_srs(les_data, var_covar=False):
                 les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
             except:
                 les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
+    for var in variables:
+        if ("updraft" in var):
+            temp = np.multiply(les[var],1.0)
+            a = np.multiply(les['updraft_fraction'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            les[var] = temp
 
     if var_covar:
         les["Hvar_mean"].append   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
@@ -385,7 +447,7 @@ def read_data_timeseries(sim_data):
     sim_data - netcdf Dataset with simulation results
     """
     variables = ["updraft_cloud_cover", "updraft_cloud_base", "updraft_cloud_top",\
-                 "ustar", "shf", "lhf", "Tsurface", "rd"] #TODO add lwp and rwp
+                 "ustar", "lwp", "shf", "lhf", "Tsurface", "rd"] #TODO add lwp and rwp
 
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
@@ -413,12 +475,12 @@ def read_les_data_timeseries(les_data):
     sim_data - netcdf Dataset with simulation results
     """
     variables = ["cloud_fraction", "cloud_base", "cloud_top",\
-                 "friction_velocity_mean", "shf_surface_mean", "lhf_surface_mean", "lwp"] #TODO add lwp and rwp
+                 "friction_velocity_mean", "shf_surface_mean", "lhf_surface_mean", "lwp", "thetali_srf_int"] #TODO add lwp and rwp
 
     # read the data
     les = {"z_half_les" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
     try:
-        CF = np.array(les_data["timeseries/cloud_top"][:])
+        CF = np.array(les_data["timeseries/cloud_fraction"][:])
         CF[np.where(CF<=0.0)] = np.nan
     except:
         CF = np.array(les_data["timeseries/shf_surface_mean"][:])
