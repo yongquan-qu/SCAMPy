@@ -258,8 +258,7 @@ cdef class EnvironmentThermodynamics:
         cdef rain_struct rst
 
         rst = rain_area(EnvVar.EnvArea.values[k],    qr,
-                        Rain.Env_RainArea.values[k], Rain.Env_QR.values[k],
-                        Rain.rain_area_value)
+                        Rain.Env_RainArea.values[k], Rain.Env_QR.values[k])
 
         Rain.Env_QR.values[k] = rst.qr
         Rain.Env_RainArea.values[k] = rst.ar

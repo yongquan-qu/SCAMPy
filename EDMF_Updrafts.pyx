@@ -311,15 +311,34 @@ cdef class UpdraftThermodynamics:
             self.t_to_prog_fp = t_to_thetali_c
             self.prog_to_t_fp = eos_first_guess_thetal
 
+        # rain source from each updraft
         self.prec_source_h  = np.zeros((n_updraft, Gr.nzg), dtype=np.double, order='c')
         self.prec_source_qt = np.zeros((n_updraft, Gr.nzg), dtype=np.double, order='c')
 
+        # rain source from all updrafts
         self.prec_source_h_tot  = np.zeros((Gr.nzg,), dtype=np.double, order='c')
         self.prec_source_qt_tot = np.zeros((Gr.nzg,), dtype=np.double, order='c')
 
         return
 
-    cpdef buoyancy(self,  UpdraftVariables UpdVar, EnvironmentVariables EnvVar,GridMeanVariables GMV, bint extrap):
+    cpdef clear_precip_sources(self):
+        """
+        clear precipitation source terms for QT and H
+        """
+        self.prec_source_qt[:,:] = 0.
+        self.prec_source_h[:,:]  = 0.
+        return
+
+    cpdef update_total_precip_sources(self):
+        """
+        sum precipitation source terms for QT and H from all sub-timesteps
+        """
+        self.prec_source_h_tot  = np.sum(self.prec_source_h,  axis=0)
+        self.prec_source_qt_tot = np.sum(self.prec_source_qt, axis=0)
+        return
+
+    cpdef buoyancy(self, UpdraftVariables UpdVar, EnvironmentVariables EnvVar,
+                   GridMeanVariables GMV, bint extrap):
         cdef:
             Py_ssize_t k, i
             double alpha, qv, qt, t, h
@@ -372,59 +391,49 @@ cdef class UpdraftThermodynamics:
 
         return
 
-    cpdef clear_precip_sources(self):
-        """
-        clear precipitation source terms for QT and H
-        """
-        self.prec_source_qt[:,:] = 0.
-        self.prec_source_h[:,:]  = 0.
-        return
-
-    cpdef update_total_precip_sources(self):
-        """
-        sum precipitation source terms for QT and H from all sub-timesteps
-        """
-        self.prec_source_h_tot  = np.sum(self.prec_source_h,  axis=0)
-        self.prec_source_qt_tot = np.sum(self.prec_source_qt, axis=0)
-        return
-
-    cpdef update_column_UpdVar_UpdRain(self, UpdraftVariables UpdVar, RainVariables Rain):
-    #TODO - I changed values to new here. Not sure if thats in the spirit of !local_micro?
+    cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain):
         """
         compute and apply precipitation source terms
         """
         cdef:
             Py_ssize_t k, i
-            double tmp_qr, tmp_th
+
             rain_struct rst
+            mph_struct  mph
+            eos_struct  sa
 
         with nogil:
             for i in xrange(self.n_updraft):
                 for k in xrange(self.Gr.nzg):
-                    tmp_qr = acnv_instant(
-                        UpdVar.QL.new[i,k], UpdVar.QT.new[i,k],
-                        Rain.max_supersaturation, UpdVar.T.new[i,k],
-                        self.Ref.p0_half[k], UpdVar.Area.new[i,k]
+
+                    # autoconversion
+                    mph = microphysics(
+                        UpdVar.T.new[i,k], UpdVar.QL.new[i,k], self.Ref.p0_half[k],
+                        UpdVar.QT.new[i,k], UpdVar.Area.new[i,k],
+                        Rain.max_supersaturation, True
                     )
-                    tmp_th = rain_source_to_thetal(
-                        self.Ref.p0_half[k], UpdVar.T.new[i,k], tmp_qr
-                    )
 
-                    UpdVar.QT.new[i,k] -= tmp_qr
-                    UpdVar.QL.new[i,k] -= tmp_qr
-                    UpdVar.H.new[i,k]  += tmp_th
+                    # update Updraft.new ...
+                    UpdVar.QT.new[i,k] = mph.qt
+                    UpdVar.QL.new[i,k] = mph.ql
+                    UpdVar.H.new[i,k]  = mph.thl
 
-                    self.prec_source_qt[i,k] -= tmp_qr * UpdVar.Area.new[i,k]
-                    self.prec_source_h[i,k]  += tmp_th * UpdVar.Area.new[i,k]
+                    # ... update rain sources of state variables ...
+                    self.prec_source_qt[i,k] -= mph.qr * UpdVar.Area.new[i,k]
+                    self.prec_source_h[i,k]  += mph.thl_rain_src * UpdVar.Area.new[i,k]
 
+                    # ... and update UpdraftRain.values
                     if Rain.rain_model:
-                        rst = rain_area(
-                            UpdVar.Area.new[i,k], tmp_qr,
-                            Rain.Upd_RainArea.new[k], Rain.Upd_QR.new[k],
-                            Rain.rain_area_value
+
+                        rst = rain_area(UpdVar.Area.new[i,k],
+                                        mph.qr,
+                                        Rain.Upd_RainArea.values[k],
+                                        Rain.Upd_QR.values[k]
                         )
-                        Rain.Upd_QR.new[k]       = rst.qr
-                        Rain.Upd_RainArea.new[k] = rst.ar
+
+                        Rain.Upd_RainArea.values[k] = rst.ar
+                        Rain.Upd_QR.values[k] = rst.qr
+
         return
 
     cdef void update_UpdVar(self, double *qt, double *ql, double *h, double *T, double *area,
@@ -433,6 +442,7 @@ cdef class UpdraftThermodynamics:
                             Py_ssize_t i, Py_ssize_t k) nogil :
         """
         update updraft variables after saturation adjustment and rain
+        (only called in diagnostc updrafts which are not tested)
         """
         self.prec_source_qt[i,k] -= qr_src * area[0]
         self.prec_source_h[i,k]  += th_src * area[0]
@@ -446,19 +456,5 @@ cdef class UpdraftThermodynamics:
         ql[0] = ql_new
         h[0]  = thl_new
         T[0]  = T_new
-
-        return
-
-    cdef void update_UpdRain(self, double *upd_area, double *qr,
-                             double *rain_Area, double qr_new,
-                             double a_const, Py_ssize_t i, Py_ssize_t k) nogil:
-        """
-        update rain variables
-        """
-        cdef rain_struct rst
-        rst = rain_area(upd_area[0], qr_new, rain_Area[0], qr[0], a_const)
-
-        qr[0]        = rst.qr
-        rain_Area[0] = rst.ar
 
         return

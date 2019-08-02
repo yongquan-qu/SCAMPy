@@ -20,7 +20,6 @@ cdef class RainVariable:
 cdef class RainVariables:
     cdef:
         bint rain_model
-        bint rain_const_area
 
         double mean_rwp
         double env_rwp
@@ -53,7 +52,7 @@ cdef class RainPhysics:
 
     cpdef solve_rain_fall(
         self, GridMeanVariables GMV, TimeStepping TS, RainVariable QR,
-        RainVariable RainArea, double rain_area_value
+        RainVariable RainArea
     )
 
     cpdef solve_rain_evap(

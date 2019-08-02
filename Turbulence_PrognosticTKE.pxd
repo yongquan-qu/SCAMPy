@@ -26,7 +26,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         EDMF_Rain.RainPhysics RainPhysics
 
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
-        bint use_local_micro
         bint similarity_diffusivity
         bint use_steady_updrafts
         bint calc_scalar_var

@@ -66,19 +66,6 @@ cdef class RainVariables:
             self.rain_model = namelist['microphysics']['rain_model']
         except:
             self.rain_model = False
-
-        if self.rain_model:
-            try:
-                self.rain_const_area = namelist['microphysics']['rain_const_area']
-            except:
-                self.rain_const_area = False
-
-            if self.rain_const_area:
-                try:
-                    self.rain_area_value = namelist['microphysics']['rain_area_fraction']
-                except:
-                    print "EDMF_Rain: assuming constant rain area fraction = 1"
-                    self.rain_area_value = 1.
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -150,8 +137,7 @@ cdef class RainPhysics:
         GridMeanVariables GMV,
         TimeStepping TS,
         RainVariable QR,
-        RainVariable RainArea,
-        double rain_area_value
+        RainVariable RainArea
     ):
         cdef:
             Py_ssize_t k
@@ -165,7 +151,9 @@ cdef class RainPhysics:
             double CFL_limit = 0.95
             double rho_frac, area_frac
 
-            double [:] term_vel = np.zeros((nzg,), dtype=np.double, order='c')
+            double [:] term_vel     = np.zeros((nzg,), dtype=np.double, order='c')
+            double [:] term_vel_new = np.zeros((nzg,), dtype=np.double, order='c')
+
             double dt_rain
             double t_elapsed = 0.
 
@@ -187,7 +175,6 @@ cdef class RainPhysics:
         while t_elapsed < dt_model:
             for k in xrange(nzg - gw - 1, gw - 1, -1):
 
-                # compute CFL and assert stability
                 CFL_out = dt_rain / dz * term_vel[k]
 
                 if k == (nzg - gw - 1):
@@ -195,22 +182,25 @@ cdef class RainPhysics:
                 else:
                     CFL_in = dt_rain / dz * term_vel[k+1]
 
-                rho_frac = self.Ref.rho0_half[k+1] / self.Ref.rho0_half[k]
-
+                rho_frac  = self.Ref.rho0_half[k+1] / self.Ref.rho0_half[k]
                 area_frac = 1. # RainArea.values[k] / RainArea.new[k]
-                QR.new[k] = (QR.values[k] * (1 - CFL_out) +\
-                             QR.new[k+1]  * CFL_in * rho_frac) * area_frac
 
-                term_vel[k] = terminal_velocity(
+                QR.new[k] = (QR.values[k]   * (1 - CFL_out) +\
+                             QR.values[k+1] * CFL_in * rho_frac) * area_frac
+                if QR.new[k] != 0.:
+                    RainArea.new[k] = 1.
+
+                term_vel_new[k] = terminal_velocity(
                                   self.Ref.rho0_half[k], self.Ref.rho0_half[gw],
                                   QR.new[k], GMV.QT.values[k])
 
-                QR.values[k] = QR.new[k]
-
-                if QR.values[k] != 0.:
-                    RainArea.values[k] = rain_area_value
-
             t_elapsed += dt_rain
+
+            QR.values[:] = QR.new[:]
+            RainArea.values[:] = RainArea.new[:]
+
+            term_vel[:] = term_vel_new[:]
+
             if max(term_vel[:]) != 0.:
                 dt_rain = np.minimum(dt_model - t_elapsed, CFL_limit * self.Gr.dz / max(term_vel[:]))
             else:

@@ -131,21 +131,19 @@ cdef mph_struct microphysics(double T, double ql, double p0, double qt, double a
     return _ret
 
 cdef rain_struct rain_area(double source_area,  double source_qr,
-                           double current_area, double current_qr,
-                           double a_const) nogil:
+                           double current_area, double current_qr ) nogil:
     """
     Source terams for rain and rain area
+    assuming constant rain area fraction of 1
     """
-    cdef double eps = 0.
-
     cdef rain_struct _ret
 
-    if source_qr <=  eps:
+    if source_qr <= 0.:
         _ret.qr = current_qr
         _ret.ar = current_area
     else:
-        _ret.qr = current_qr + source_area / a_const * source_qr
-        _ret.ar = a_const
+        _ret.qr = current_qr + source_area * source_qr
+        _ret.ar = 1.
 
     # sketch of what to do for prognostic rain area fraction:
 
