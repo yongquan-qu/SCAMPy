@@ -45,9 +45,9 @@ def plot_mean(data, les, title, folder="plots/output/"):
     qv_mean_les = np.array(les["qt_mean"]) - np.array(les["ql_mean"])
 
     # data to plot
-    x_lab  = ['QV [g/kg]', 'QL [g/kg]',      'QR [g/kg]',      'THL [K]',           'TKE [m2/s2]']
-    plot_x = [qv_mean,      data["ql_mean"],  data["qr_mean"], data["thetal_mean"], data["tke_mean"]]
-    plot_x_les = [qv_mean_les,      les["ql_mean"],  les["qr_mean"], les["thetali_mean"],  les["tke_mean"]]
+    x_lab  = ['qt [g/kg]', 'ql [g/kg]',      'qr [g/kg]',      'THL [K]',           'TKE [m2/s2]']
+    plot_x = [data["qt_mean"],      data["ql_mean"],  data["qr_mean"], data["thetal_mean"], data["tke_mean"]]
+    plot_x_les = [les["qt_mean"],      les["ql_mean"],  les["qr_mean"], les["thetali_mean"],  les["tke_mean"]]
     color  = ["navy", "darkorange"]
     label  = ["ini", "end"]
 
@@ -131,6 +131,84 @@ def plot_drafts(data, les, title, folder="plots/output/"):
             plots[plot_it].plot(plot_mean[plot_it][1], data["z_half"], "-", color="purple", label="mean", linewidth = 2)
 
     plots[0].legend()
+    plt.savefig(folder + title)
+    plt.clf()
+
+
+def plot_closures(data, les, title, folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # customize defaults
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # data to plot
+    x_lab    =  ["eddy_diffusivity",        "mixing_length_ratio",         "mixing_length",         "nonhydro_pressure",      "turbulent_entrainment",         "entrainment",             "detrainment"        ]
+    plot_vars = [data["eddy_diffusivity"]   ,data["mixing_length_ratio"],  data["mixing_length"],   data["nh_pressure"],       data["turbulent_entrainment"],  data["entrainment_sc"],    data["detrainment_sc"]]
+    xmax = np.max(data["detrainment_sc"])
+    if xmax == 0.0:
+        xmax = np.max(data["entrainment_sc"])
+    # iteration over plots
+    plots = []
+    for plot_it in range(6):
+        plots.append(plt.subplot(2,3,plot_it+1))
+                               #(rows, columns, number)
+        plots[plot_it].set_ylabel('z [m]')
+        plots[plot_it].set_ylim([0, data["z_half"][-1] + (data["z_half"][1] - data["z_half"][0]) * 0.5])
+        plots[plot_it].grid(True)
+        #plot updrafts
+        if (plot_it < 5):
+            plots[plot_it].plot(plot_vars[plot_it][1], data["z_half"], "-", color="royalblue", linewidth = 2)
+            plots[plot_it].set_xlabel(x_lab[plot_it])
+        if (plot_it == 5):
+            plots[plot_it].plot(plot_vars[5][1], data["z_half"], "-", color="royalblue", label="entr", linewidth = 2)
+            plots[plot_it].plot(plot_vars[6][1], data["z_half"], "-", color="darkorange", label="detr", linewidth = 2)
+            plots[plot_it].set_xlabel("entr/detr")
+            plots[5].set_xlim([-0.1*xmax, xmax])
+            plots[5].legend()
+
+    plt.savefig(folder + title)
+    plt.clf()
+
+
+def plot_velocities(data, les, title, folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # u_les = np.add(les["u_mean"][1],(data["u_mean"][1][-1]-les["u_mean"][1][-1]))
+    # v_les = np.add(les["v_mean"][1],(data["v_mean"][1][-1]-les["v_mean"][1][-1]))
+    u_les = np.add(les["u_mean"][1],les["u_translational_mean"][1][-1])
+    v_les = np.add(les["v_mean"][1],les["v_translational_mean"][1][-1])
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+    plt.subplot(1,2,1)
+    plt.plot(u_les, les["z_half"], color='gray', label='les upd', linewidth = 4)
+    plt.plot(data["u_mean"][1],data["z_half"], color="royalblue", label="scm", linewidth = 2)
+    plt.xlabel('u [m/s]')
+    plt.ylabel('z [m]')
+    plt.subplot(1,2,2)
+    plt.plot(v_les, les["z_half"],  color='gray', label='les upd', linewidth = 4)
+    plt.plot(data["v_mean"][1],data["z_half"],  color="royalblue", label="scm", linewidth = 2)
+    plt.xlabel('v [m/s]')
     plt.savefig(folder + title)
     plt.clf()
 

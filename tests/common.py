@@ -70,10 +70,21 @@ def read_data_avg(sim_data, tmin=0, tmax = -1, var_covar=False):
     n_steps   - number of timesteps to average over
     var_covar - flag for when we also want to read in the variance and covariance fields
     """
+    # var = ["u_mean","v_mean","qt_mean","qr_mean","thetal_mean","temperature_mean","buoyancy_mean","ql_mean","tke_mean","Hvar_mean","QTvar_mean",
+    #            "HQTcov_mean","rad_dTdt","rad_flux","updraft_area","updraft_w","updraft_qt","updraft_ql","updraft_qr","updraft_thetal","updraft_temperature",
+    #            "updraft_buoyancy","env_w","env_qt","env_ql","env_qr","env_thetal","env_temperature","env_tke","env_Hvar","env_QTvar","env_HQTcov","eddy_viscosity",
+    #            "eddy_diffusivity","entrainment_sc","detrainment_sc","nh_pressure","horizontal_KM","horizontal_KH","buoyant_frac","b_mix","turbulent_entrainment",
+    #            "turbulent_entrainment_full","turbulent_entrainment_W","turbulent_entrainment_H","turbulent_entrainment_QT","massflux","massflux_h","massflux_qt",
+    #            "massflux_tendency_h","massflux_tendency_qt","diffusive_flux_h","diffusive_flux_qt","diffusive_tendency_h","diffusive_tendency_qt","total_flux_h",
+    #            "total_flux_qt","mixing_length","updraft_qt_precip","updraft_thetal_precip","ed_length_scheme","mixing_length_ratio","entdet_balance_length",
+    #            "interdomain_tke_t","tke_buoy","tke_dissipation","tke_entr_gain","tke_detr_loss","tke_shear","tke_pressure","tke_interdomain","tke_transport",
+    #            "tke_advection","Hvar_dissipation","QTvar_dissipation","HQTcov_dissipation","Hvar_entr_gain","QTvar_entr_gain","Hvar_detr_loss","QTvar_detr_loss",
+    #            "HQTcov_detr_loss","HQTcov_entr_gain","Hvar_shear","QTvar_shear","HQTcov_shear","Hvar_rain","QTvar_rain","HQTcov_rain","Hvar_interdomain",
+    #            "QTvar_interdomain","HQTcov_interdomain"]
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
                  "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
-                 "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "env_qr", "updraft_qr", "updraft_w", "env_w", "entrainment_sc", "detrainment_sc"]
+                 "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql","mixing_length_ratio","turbulent_entrainment",\
+                 "env_qr", "updraft_qr", "updraft_w", "env_w", "entrainment_sc", "detrainment_sc", "nh_pressure", "mixing_length", "eddy_diffusivity"]
     variables_var = [\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
@@ -163,7 +174,7 @@ def read_les_data_avg(les_data, tmin=0, tmax = -1, var_covar=False):
     var_covar - flag for when we also want to read in the variance and covariance fields
     """
     variables = ["thetali_mean", "qt_mean", "ql_mean","temperature_mean",\
-                "u_mean", "v_mean", "tke_mean",\
+                "u_mean", "v_mean", "tke_mean", "v_translational_mean", "u_translational_mean", \
                  "updraft_b", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w"]
     variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali"]
@@ -336,9 +347,9 @@ def read_data_srs(sim_data, var_covar=False):
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql", "updraft_thetal",\
                  "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
                  "massflux_h", "diffusive_flux_h", "total_flux_h",\
-                 "massflux_qt","diffusive_flux_qt","total_flux_qt",\
-                 "eddy_viscosity", "eddy_diffusivity", "mixing_length",\
-                 "entrainment_sc", "detrainment_sc", "massflux"\
+                 "massflux_qt","diffusive_flux_qt","total_flux_qt","turbulent_entrainment",\
+                 "eddy_viscosity", "eddy_diffusivity", "mixing_length","mixing_length_ratio",\
+                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure","eddy_diffusivity"\
                 ]
     variables_var = [\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
@@ -391,7 +402,7 @@ def read_les_data_srs(les_data, var_covar=False):
     var_covar - flag for when we also want to read in the variance and covariance fields
     """
     variables = ["temperature_mean", "thetali_mean", "qt_mean", "ql_mean", \
-                "u_mean", "v_mean", "tke_mean",\
+                "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_b", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w"]
     variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali"]
@@ -447,23 +458,22 @@ def read_data_timeseries(sim_data):
     sim_data - netcdf Dataset with simulation results
     """
     variables = ["updraft_cloud_cover", "updraft_cloud_base", "updraft_cloud_top",\
-                 "ustar", "lwp", "shf", "lhf", "Tsurface", "rd"] #TODO add lwp and rwp
+                 "ustar", "lwp", "shf", "lhf", "Tsurface", "rd"]
 
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
-
+    maxz = np.max(data['z_half'])
+    maxz = 1400.0
     for var in variables:
         data[var] = []
-        if ("updraft_cloud_top" in var):
-            CT = np.array(sim_data["timeseries/" + var][:])
-            CT[np.where(CT<=0.0)] = np.nan
-            data[var] = CT
-        if ("updraft_cloud_base" in var):
-            CB = np.array(sim_data["timeseries/" + var][:])
-            CB[np.where(CB>2000.0)] = np.nan
-            data[var] = CB
-        else:
-            data[var] = np.array(sim_data["timeseries/" + var][:])
+        data[var] = np.array(sim_data["timeseries/" + var][:])
+
+    CT = np.array(sim_data["timeseries/updraft_cloud_top"][:])
+    CT[np.where(CT<=0.0)] = np.nan
+    data["updraft_cloud_top"] = CT
+    CB = np.array(sim_data["timeseries/updraft_cloud_base"][:])
+    CB[np.where(CB>=maxz)] = np.nan
+    data["updraft_cloud_base"] = CB
 
     return data
 
@@ -479,6 +489,7 @@ def read_les_data_timeseries(les_data):
 
     # read the data
     les = {"z_half_les" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
+    maxz = np.max(les['z_half_les'])
     try:
         CF = np.array(les_data["timeseries/cloud_fraction"][:])
         CF[np.where(CF<=0.0)] = np.nan
@@ -495,11 +506,12 @@ def read_les_data_timeseries(les_data):
     les["updraft_cloud_top"] = CT
     try:
         CB = np.array(les_data["timeseries/cloud_base"][:])
-        CB[np.where(CB>2000.0)] = np.nan
+        CB[np.where(CB>maxz)] = np.nan
     except:
         CB = np.array(les_data["timeseries/shf_surface_mean"][:])
         CB *= 0.0
     les["updraft_cloud_base"] = CB
+
     les["ustar"] = np.array(les_data["timeseries/friction_velocity_mean"][:])
     les["shf"] = np.array(les_data["timeseries/shf_surface_mean"][:])
     les["lhf"] = np.array(les_data["timeseries/lhf_surface_mean"][:])

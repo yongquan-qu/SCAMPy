@@ -11,7 +11,7 @@ from netCDF4 import Dataset
 
 import pytest
 import numpy as np
-
+import subprocess
 import main as scampy
 import common as cmn
 import plot_scripts as pls
@@ -25,6 +25,7 @@ def sim_data(request):
     setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
     scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
@@ -45,6 +46,8 @@ def test_plot_Soares(sim_data):
 
     pls.plot_mean(data_to_plot,les_data_to_plot,   "Soares_quicklook.pdf")
     pls.plot_drafts(data_to_plot,les_data_to_plot, "Soares_quicklook_drafts.pdf")
+    pls.plot_closures(data_to_plot, les_data_to_plot,  "Soares_closures.pdf")
+    pls.plot_velocities(data_to_plot, les_data_to_plot,  "Soares_velocities.pdf")
 
 def test_plot_timeseries_Soares(sim_data):
     """

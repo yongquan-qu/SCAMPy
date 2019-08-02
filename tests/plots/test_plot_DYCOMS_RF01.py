@@ -25,6 +25,7 @@ def sim_data(request):
     setup["namelist"]['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
     scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
@@ -45,6 +46,8 @@ def test_plot_DYCOMS_RF01(sim_data):
 
     pls.plot_mean(data_to_plot,les_data_to_plot,    "DYCOMS_RF01_quicklook.pdf")
     pls.plot_drafts(data_to_plot, les_data_to_plot, "DYCOMS_RF01_quicklook_drafts.pdf")
+    pls.plot_closures(data_to_plot, les_data_to_plot,  "DYCOMS_RF01_closures.pdf")
+    pls.plot_velocities(data_to_plot, les_data_to_plot,  "DYCOMS_RF01_velocities.pdf")
 
 def test_plot_var_covar_DYCOMS_RF01(sim_data):
     """
