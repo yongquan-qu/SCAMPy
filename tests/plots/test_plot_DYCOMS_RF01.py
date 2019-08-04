@@ -69,6 +69,7 @@ def test_plot_timeseries_DYCOMS(sim_data):
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries(data_to_plot, les_data_to_plot, "DYCOMS")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,3,4, "DYCOMS_main.pdf")
 
 def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """

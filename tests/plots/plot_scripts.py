@@ -212,6 +212,68 @@ def plot_velocities(data, les, title, folder="plots/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
+def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # customize defaults
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # data to plot
+    x_lab    =  ["qt_mean",        "ql_mean",         "thetal_mean",         "updraft_w",        "updraft_area"]
+    plot_vars = [data["qt_mean"]   ,data["ql_mean"],  data["thetal_mean"],   data["updraft_w"],  data["updraft_area"]]
+    plot_x_les = [les["qt_mean"],      les["ql_mean"],  les["thetali_mean"], les["updraft_w"],  les["updraft_fraction"]]
+    xmax = 2*np.max(np.nanmean(data["entrainment_sc"][3:,t_start:t_end],axis=1))
+    # xmax = 1e-2
+    # iteration over plots
+    plots = []
+    for plot_it in range(6):
+        plots.append(plt.subplot(2,3,plot_it+1))
+                               #(rows, columns, number)
+        plots[plot_it].set_ylabel('z [m]')
+        plots[plot_it].grid(True)
+        if plot_it<5:
+            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label='les', linewidth = 2)
+            plots[plot_it].set_xlabel(x_lab[plot_it])
+            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
+
+        else:
+            plots[plot_it].plot(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue",  label="d. entr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkorange", label="d. detr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(np.add(data["entrainment_sc"][:,t_start:t_end],data["turbulent_entrainment"][:,t_start:t_end]),axis=1), data["z_half"], "--", color="royalblue",  label="tot entr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(np.add(data["detrainment_sc"][:,t_start:t_end],data["turbulent_entrainment"][:,t_start:t_end]),axis=1), data["z_half"], "--", color="darkorange", label="tot detr", linewidth = 2)
+            plots[plot_it].set_xlabel('entr detr [1/m]')
+            plots[plot_it].set_xlim([-1e-4, xmax])
+            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
+            plots[plot_it].legend()
+
+    plt.savefig(folder + title)
+    plt.clf()
+
 
 def plot_var_covar_mean(data, les, title, folder="plots/output/"):
     """

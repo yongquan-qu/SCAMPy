@@ -59,6 +59,7 @@ def test_plot_timeseries_Bomex(sim_data):
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries(data_to_plot,  les_data_to_plot, "Bomex")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,5,6, "Bomex_main.pdf")
 
 def test_plot_timeseries_1D_Bomex(sim_data):
     """

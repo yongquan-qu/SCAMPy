@@ -50,6 +50,9 @@ def test_plot_TRMM_LBA(sim_data):
     pls.plot_closures(data_to_plot, les_data_to_plot,  "TRMM_LBA_closures.pdf")
     pls.plot_velocities(data_to_plot, les_data_to_plot,  "TRMM_LBA_velocities.pdf")
 
+    # data_to_plot = cmn.read_data_avg_new(sim_data, 5, 6 )
+    # les_data_to_plot = cmn.read_les_data_avg_new(les_data, 5, tmax = 6 )
+
 # @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_TRMM_LBA(sim_data):
     """
@@ -60,6 +63,7 @@ def test_plot_timeseries_TRMM_LBA(sim_data):
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries(data_to_plot, les_data_to_plot, "TRMM_LBA")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,5,6, "TRMM_LBA_main.pdf")
 
 # @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_TRMM_LBA(sim_data):

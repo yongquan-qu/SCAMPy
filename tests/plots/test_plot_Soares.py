@@ -58,6 +58,7 @@ def test_plot_timeseries_Soares(sim_data):
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries(data_to_plot,les_data_to_plot, "Soares")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,5,7, "Soares_main.pdf")
 
 def test_plot_timeseries_1D_Soares(sim_data):
     """

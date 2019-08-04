@@ -431,13 +431,13 @@ def read_les_data_srs(les_data, var_covar=False):
                 les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
             except:
                 les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
-    for var in variables:
-        if ("updraft" in var):
-            temp = np.multiply(les[var],1.0)
-            a = np.multiply(les['updraft_fraction'],1.0)
-            temp[np.where(a==0.0)] = np.nan
-            temp[np.where(np.isnan(a))] = np.nan
-            les[var] = temp
+    # for var in variables:
+    #     if ("updraft" in var):
+    #         temp = np.multiply(les[var],1.0)
+    #         a = np.multiply(les['updraft_fraction'],1.0)
+    #         temp[np.where(a==0.0)] = np.nan
+    #         temp[np.where(np.isnan(a))] = np.nan
+    #         les[var] = temp
 
     if var_covar:
         les["Hvar_mean"].append   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
@@ -526,3 +526,144 @@ def calc_covar(var_sq, var1, var2):
 
     covar = np.subtract(var_sq,np.multiply(var1,var2))
     return covar
+
+def read_les_data_avg_new(les_data, tmin=0, tmax = -1, var_covar=False):
+    """
+    Read in the data from netcdf file into a dictionary that can be used for plots
+
+    Input:
+    sim_data  - netcdf Dataset with simulation results
+    n_steps   - number of timesteps to average over
+    var_covar - flag for when we also want to read in the variance and covariance fields
+    """
+    variables = ["thetali_mean", "qt_mean", "ql_mean","temperature_mean",\
+                "u_mean", "v_mean", "tke_mean", "v_translational_mean", "u_translational_mean", \
+                 "updraft_b", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
+                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w","thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali"]
+
+
+    # les = {"z_half" : np.array(les_data["profiles/z_half"][:])}
+    les = {"z_half" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
+    if tmax==-1:
+        tmax = np.max(les["t"])/3600.0
+
+    t_start = 145 #int(np.where(data["t"] > tmin*3600.0)[0][0])
+    t_end   = 215#int(np.where(data["t"] <= tmax*3600.0-1.0)[0][0])
+    if t_end == 0:
+        t_end = 360
+    # n_steps = (t_end-t_start)
+
+    for var in variables:
+        les[var] = []
+        if ("qt" in var or "ql" in var):
+            try:
+                les[var] = np.array(np.nanmean(les_data["profiles/" + var][t_start:t_end, :],axis=0) ) * 1000 #g/kg
+            except:
+                les[var]  = np.array(np.nanmean(les_data["profiles/w_mean" ][t_start:t_end, :],axis=0)) *0  #g/kg
+        elif ("qr" in var):
+            try:
+                les[var]  = np.array(np.nanmean(les_data["profiles/" + var][t_start:t_end, :],axis=0))  * 1000  #g/kg
+            except:
+                les[var]  = np.array(np.nanmean(les_data["profiles/w_mean"][t_start:t_end, :],axis=0)) * 0.0 #g/kg
+        elif ("p0" in var):
+            les[var]  = np.array(np.nanmean(les_data["reference/" + var][t_start:t_end, :],axis=0)) * 100 #hPa
+        else:
+            try:
+                les[var]  = np.array(np.nanmean(les_data["profiles/" + var][t_start:t_end, :],axis=0))
+            except:
+                les[var]  = np.array(np.nanmean(les_data["profiles/" + "theta_mean"][t_start:t_end, :],axis=0))
+    for var in variables:
+        if ("updraft_thetal" in var):
+            temp = np.multiply(les[var],1.0)
+            a = np.multiply(les['updraft_fraction'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            les[var] = temp
+    if var_covar:
+        les["Hvar_mean"] = []
+        temp = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
+        les["Hvar_mean"] = np.nanmean(temp[t_start:t_end, :],axis=0)
+        les["QTvar_mean"] = []
+        temp = calc_covar(les["qt_mean2"],       les["qt_mean"],      les["qt_mean"])
+        les["QTvar_mean"]= np.nanmean(temp[t_start:t_end, :],axis=0)
+        les["env_Hvar"] = []
+        temp = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
+        les["env_Hvar"] = np.nanmean(temp[t_start:t_end, :],axis=0)
+        les["env_QTvar"] = []
+        temp = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
+        les["env_QTvar"] = np.nanmean(temp[t_start:t_end, :],axis=0)
+        les["env_HQTcov"] = []
+        temp = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
+        les["env_HQTcov"]= np.nanmean(temp[t_start:t_end, :],axis=0)
+
+    return les
+
+def read_data_avg_new(sim_data, tmin=0, tmax = -1, var_covar=False):
+    """
+    Read in the data from netcdf file into a dictionary that can be used for plots
+
+    Input:
+    sim_data  - netcdf Dataset with simulation results
+    n_steps   - number of timesteps to average over
+    var_covar - flag for when we also want to read in the variance and covariance fields
+    """
+    # var = ["u_mean","v_mean","qt_mean","qr_mean","thetal_mean","temperature_mean","buoyancy_mean","ql_mean","tke_mean","Hvar_mean","QTvar_mean",
+    #            "HQTcov_mean","rad_dTdt","rad_flux","updraft_area","updraft_w","updraft_qt","updraft_ql","updraft_qr","updraft_thetal","updraft_temperature",
+    #            "updraft_buoyancy","env_w","env_qt","env_ql","env_qr","env_thetal","env_temperature","env_tke","env_Hvar","env_QTvar","env_HQTcov","eddy_viscosity",
+    #            "eddy_diffusivity","entrainment_sc","detrainment_sc","nh_pressure","horizontal_KM","horizontal_KH","buoyant_frac","b_mix","turbulent_entrainment",
+    #            "turbulent_entrainment_full","turbulent_entrainment_W","turbulent_entrainment_H","turbulent_entrainment_QT","massflux","massflux_h","massflux_qt",
+    #            "massflux_tendency_h","massflux_tendency_qt","diffusive_flux_h","diffusive_flux_qt","diffusive_tendency_h","diffusive_tendency_qt","total_flux_h",
+    #            "total_flux_qt","mixing_length","updraft_qt_precip","updraft_thetal_precip","ed_length_scheme","mixing_length_ratio","entdet_balance_length",
+    #            "interdomain_tke_t","tke_buoy","tke_dissipation","tke_entr_gain","tke_detr_loss","tke_shear","tke_pressure","tke_interdomain","tke_transport",
+    #            "tke_advection","Hvar_dissipation","QTvar_dissipation","HQTcov_dissipation","Hvar_entr_gain","QTvar_entr_gain","Hvar_detr_loss","QTvar_detr_loss",
+    #            "HQTcov_detr_loss","HQTcov_entr_gain","Hvar_shear","QTvar_shear","HQTcov_shear","Hvar_rain","QTvar_rain","HQTcov_rain","Hvar_interdomain",
+    #            "QTvar_interdomain","HQTcov_interdomain"]
+    variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
+                 "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
+                 "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql","mixing_length_ratio","turbulent_entrainment",\
+                 "env_qr", "updraft_qr", "updraft_w", "env_w", "entrainment_sc", "detrainment_sc", "nh_pressure", "mixing_length", "eddy_diffusivity"]
+    variables_var = [\
+                 "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
+                 "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
+                 "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
+                 "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
+                 "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
+                 "Hvar_rain", "QTvar_rain", "HQTcov_rain"
+                ]
+    if var_covar:
+        variables.extend(variables_var)
+
+    # read the data from t=init and t=end
+    data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
+    if tmax==-1:
+        tmax = np.max(data["t"])/3600.0
+
+    t_start = 145 #int(np.where(data["t"] > tmin*3600.0)[0][0])
+    t_end   = 215 #int(np.where(data["t"] <= tmax*3600.0-1.0)[0][0])
+    # if t_end == 0:
+    #     t_end = 360
+    print(t_start,t_end)
+    print(tmin,tmax)
+    # print(np.where(data["t"] > tmin*3600.0)[0],np.where(data["t"] <= tmax*3600.0)[0])
+    for var in variables:
+        data[var] = []
+        # if ("buoyancy" in var):
+        #     data[var].append(np.array(sim_data["profiles/" + var][time[it], :]) * 10000) #cm2/s3
+        if ("qt" in var or "ql" in var or "qr" in var):
+            try:
+                data[var] = np.array(np.nanmean(sim_data["profiles/" + var][t_start: t_end, :],axis=0)) * 1000  #g/kg
+            except:
+                data[var] = np.array(np.nanmean(sim_data["profiles/w_mean"][t_start: t_end, :],axis=0) ) * 0  #g/kg
+        elif ("p0" in var):
+            data[var] = np.array(np.nanmean(sim_data["reference/" + var][t_start: t_end, :]),axis=0)  * 100  #hPa
+        else:
+            data[var] = np.array(np.nanmean(sim_data["profiles/" + var][t_start: t_end, :],axis=0))
+    for var in variables:
+        if ("updraft_thetal" in var):
+            temp = np.multiply(data[var],1.0)
+            a = np.multiply(data['updraft_area'],1.0)
+            temp[np.where(a==0.0)] = np.nan
+            temp[np.where(np.isnan(a))] = np.nan
+            data[var] = temp
+
+    return data
