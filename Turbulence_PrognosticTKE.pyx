@@ -1172,6 +1172,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.c_eps = self.entrainment_factor
                     input.erf_const = self.entrainment_erf_const
                     input.c_del = self.detrainment_factor
+                    input.rd = self.pressure_plume_spacing
 
                     if self.calc_tke:
                             input.tke = self.EnvVar.TKE.values[k]
@@ -1222,6 +1223,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         cpm = cpm_c(Case.Sur.qsurface)
         self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
+        self.pressure_plume_spacing = 500.0
         return
 
     cpdef compute_nh_pressure(self):

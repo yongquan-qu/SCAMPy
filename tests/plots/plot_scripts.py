@@ -246,7 +246,7 @@ def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
     x_lab    =  ["qt_mean",        "ql_mean",         "thetal_mean",         "updraft_w",        "updraft_area"]
     plot_vars = [data["qt_mean"]   ,data["ql_mean"],  data["thetal_mean"],   data["updraft_w"],  data["updraft_area"]]
     plot_x_les = [les["qt_mean"],      les["ql_mean"],  les["thetali_mean"], les["updraft_w"],  les["updraft_fraction"]]
-    xmax = 2*np.max(np.nanmean(data["entrainment_sc"][3:,t_start:t_end],axis=1))
+    xmax = 5*np.max(np.nanmean(data["entrainment_sc"][3:,t_start:t_end],axis=1))
     # xmax = 1e-2
     # iteration over plots
     plots = []
@@ -264,9 +264,10 @@ def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
         else:
             plots[plot_it].plot(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue",  label="d. entr", linewidth = 2)
             plots[plot_it].plot(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkorange", label="d. detr", linewidth = 2)
-            plots[plot_it].plot(np.nanmean(np.add(data["entrainment_sc"][:,t_start:t_end],data["turbulent_entrainment"][:,t_start:t_end]),axis=1), data["z_half"], "--", color="royalblue",  label="tot entr", linewidth = 2)
-            plots[plot_it].plot(np.nanmean(np.add(data["detrainment_sc"][:,t_start:t_end],data["turbulent_entrainment"][:,t_start:t_end]),axis=1), data["z_half"], "--", color="darkorange", label="tot detr", linewidth = 2)
+            plots[plot_it].plot(np.add(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1),np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1)), data["z_half"], "--", color="royalblue",  label="tot entr", linewidth = 2)
+            plots[plot_it].plot(np.add(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1),np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1)), data["z_half"], "--", color="darkorange", label="tot detr", linewidth = 2)
             plots[plot_it].set_xlabel('entr detr [1/m]')
+            # plots[plot_it].set_xlim([-1e-4, xmax])
             plots[plot_it].set_xlim([-1e-4, xmax])
             plots[plot_it].set_ylim([0, np.max(data["z_half"])])
             plots[plot_it].legend()
