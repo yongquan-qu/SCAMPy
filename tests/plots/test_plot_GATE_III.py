@@ -55,8 +55,19 @@ def test_plot_timeseries_GATE_III(sim_data):
     plot timeseries
     """
     data_to_plot = cmn.read_data_srs(sim_data)
+    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/simualtions_stats/Output.GATE_III.Tracers_no_evap/Stats.GATE_III.nc', 'r')
+    data_to_plot = cmn.read_data_srs(sim_data)
+    les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries(data_to_plot, "GATE_III")
+    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            "GATE_III_quicklook.pdf")
+    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "GATE_III_closures.pdf")
+    pls.plot_drafts(data_to_plot, les_data_to_plot,3,4,          "GATE_III_quicklook_drafts.pdf")
+    pls.plot_velocities(data_to_plot, les_data_to_plot,3,4,      "GATE_III_velocities.pdf")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,3,4,           "GATE_III_main.pdf")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "GATE_III_var_covar_mean.pdf")
+    pls.plot_var_covar_components(data_to_plot,3,4,              "GATE_III_var_covar_components.pdf")
+
 
 @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_GATE_III(sim_data):

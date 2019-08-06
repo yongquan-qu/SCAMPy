@@ -24,7 +24,7 @@ def discrete_cmap(N, base_cmap=None):
     return base.from_list(cmap_name, color_list, N)
 
 
-def plot_mean(data, les, title, folder="plots/output/"):
+def plot_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     """
     Plots mean profiles from Scampy
 
@@ -33,6 +33,17 @@ def plot_mean(data, les, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
     # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(12)
@@ -61,8 +72,8 @@ def plot_mean(data, les, title, folder="plots/output/"):
         plots[plot_it].set_ylim([0, data["z_half"][-1] + (data["z_half"][1] - data["z_half"][0]) * 0.5])
         plots[plot_it].grid(True)
         for it in range(2): #init, end
-            plots[plot_it].plot(plot_x_les[plot_it][it], les["z_half"], '-', color='gray', label='les', linewidth = 4)
-            plots[plot_it].plot(plot_x[plot_it][it], data["z_half"], '-', color=color[it], label=label[it], linewidth = 2)
+            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start:t_end],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"], '-', color=color[it], label=label[it], linewidth = 2)
 
     plots[0].legend()
     plt.tight_layout()
@@ -70,7 +81,7 @@ def plot_mean(data, les, title, folder="plots/output/"):
     plt.clf()
 
 
-def plot_drafts(data, les, title, folder="plots/output/"):
+def plot_drafts(data, les, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -79,6 +90,19 @@ def plot_drafts(data, les, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
     # customize defaults
 
     fig = plt.figure(1)
@@ -116,26 +140,26 @@ def plot_drafts(data, les, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         #plot updrafts
         if (plot_it != 5):
-            plots[plot_it].plot(les_plot_upd[plot_it][1], les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
-            plots[plot_it].plot(plot_upd[plot_it][1], data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1), les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_upd[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
         if (plot_it == 5):
-            plots[plot_it].plot(les_plot_upd[plot_it][1]* 100, les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
-            plots[plot_it].plot(plot_upd[plot_it][1] * 100, data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1)* 100, les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_upd[plot_it][:,t_start:t_end],axis=1) * 100, data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
         # plot environment
         if (plot_it < 4):
-            plots[plot_it].plot(les_plot_env[plot_it][1], les["z_half"], '--', color='gray', label='les env', linewidth = 4)
-            plots[plot_it].plot(plot_env[plot_it][1], data["z_half"], "-", color="darkred", label="env", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(les_plot_env[plot_it][:,t_start:t_end],axis=1), les["z_half"], '--', color='gray', label='les env', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_env[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkred", label="env", linewidth = 2)
         # plot mean
         if (plot_it < 3):
-            plots[plot_it].plot(les_plot_upd[plot_it][1], les["z_half"], '-', color='gray', label='les mean', linewidth = 4)
-            plots[plot_it].plot(plot_mean[plot_it][1], data["z_half"], "-", color="purple", label="mean", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1), les["z_half"], '-', color='gray', label='les mean', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_mean[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="purple", label="mean", linewidth = 2)
 
     plots[0].legend()
     plt.savefig(folder + title)
     plt.clf()
 
 
-def plot_closures(data, les, title, folder="plots/output/"):
+def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -144,6 +168,20 @@ def plot_closures(data, les, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
     # customize defaults
 
     fig = plt.figure(1)
@@ -168,11 +206,11 @@ def plot_closures(data, les, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         #plot updrafts
         if (plot_it < 5):
-            plots[plot_it].plot(plot_vars[plot_it][1], data["z_half"], "-", color="royalblue", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", linewidth = 2)
             plots[plot_it].set_xlabel(x_lab[plot_it])
         if (plot_it == 5):
-            plots[plot_it].plot(plot_vars[5][1], data["z_half"], "-", color="royalblue", label="entr", linewidth = 2)
-            plots[plot_it].plot(plot_vars[6][1], data["z_half"], "-", color="darkorange", label="detr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(plot_vars[5][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label="entr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(plot_vars[6][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkorange", label="detr", linewidth = 2)
             plots[plot_it].set_xlabel("entr/detr")
             plots[5].set_xlim([-0.1*xmax, xmax])
             plots[5].legend()
@@ -181,7 +219,7 @@ def plot_closures(data, les, title, folder="plots/output/"):
     plt.clf()
 
 
-def plot_velocities(data, les, title, folder="plots/output/"):
+def plot_velocities(data, les, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -190,10 +228,20 @@ def plot_velocities(data, les, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
-    # u_les = np.add(les["u_mean"][1],(data["u_mean"][1][-1]-les["u_mean"][1][-1]))
-    # v_les = np.add(les["v_mean"][1],(data["v_mean"][1][-1]-les["v_mean"][1][-1]))
-    u_les = np.add(les["u_mean"][1],les["u_translational_mean"][1][-1])
-    v_les = np.add(les["v_mean"][1],les["v_translational_mean"][1][-1])
+
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
 
     fig = plt.figure(1)
     fig.set_figheight(12)
@@ -201,13 +249,13 @@ def plot_velocities(data, les, title, folder="plots/output/"):
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
     plt.subplot(1,2,1)
-    plt.plot(u_les, les["z_half"], color='gray', label='les upd', linewidth = 4)
-    plt.plot(data["u_mean"][1],data["z_half"], color="royalblue", label="scm", linewidth = 2)
+    plt.plot(np.nanmean(les["u_translational_mean"][:,t_start:t_end],axis = 1), les["z_half"], color='gray', label='les upd', linewidth = 4)
+    plt.plot(np.nanmean(data["u_mean"][:,t_start:t_end],axis = 1),data["z_half"], color="royalblue", label="scm", linewidth = 2)
     plt.xlabel('u [m/s]')
     plt.ylabel('z [m]')
     plt.subplot(1,2,2)
-    plt.plot(v_les, les["z_half"],  color='gray', label='les upd', linewidth = 4)
-    plt.plot(data["v_mean"][1],data["z_half"],  color="royalblue", label="scm", linewidth = 2)
+    plt.plot(np.nanmean(les["v_translational_mean"][:,t_start:t_end],axis=1) , les["z_half"],  color='gray', label='les upd', linewidth = 4)
+    plt.plot(np.nanmean(data["v_mean"][:,t_start:t_end],axis=1) ,data["z_half"],  color="royalblue", label="scm", linewidth = 2)
     plt.xlabel('v [m/s]')
     plt.savefig(folder + title)
     plt.clf()
@@ -275,8 +323,7 @@ def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
-
-def plot_var_covar_mean(data, les, title, folder="plots/output/"):
+def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance profiles from Scampy
 
@@ -285,6 +332,19 @@ def plot_var_covar_mean(data, les, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
     # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(8)
@@ -308,9 +368,9 @@ def plot_var_covar_mean(data, les, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
-        plots[plot_it].plot(les[plot_var_env[plot_it]][0][1],   les["z_half"],  "-", label='_les',              c="gray",linewidth = 4)
-        plots[plot_it].plot(data[plot_var_mean[plot_it]][1], data["z_half"], "-",    label=plot_var_mean[plot_it], c="crimson", linewidth = 2)
-        plots[plot_it].plot(data[plot_var_env[plot_it]][1],  data["z_half"], "-",    label=plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
+        plots[plot_it].plot(np.nanmean(les[plot_var_env[plot_it]][:,t_start_les:t_end_les],axis=1),   les["z_half"],  "-", label= '_les',              c="gray",linewidth = 4)
+        plots[plot_it].plot(np.nanmean(data[plot_var_mean[plot_it]][:,t_start:t_end],axis=1), data["z_half"], "-", label= plot_var_mean[plot_it], c="crimson", linewidth = 2)
+        plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"], "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
     plots[0].legend()
     plt.tight_layout()
@@ -318,7 +378,7 @@ def plot_var_covar_mean(data, les, title, folder="plots/output/"):
     plt.clf()
 
 
-def plot_var_covar_components(data, title, folder="plots/output/"):
+def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance components profiles from Scampy
 
@@ -327,6 +387,15 @@ def plot_var_covar_components(data, title, folder="plots/output/"):
     title  - name for the created plot
     folder - folder where to save the created plot
     """
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
     # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(8)
@@ -355,7 +424,7 @@ def plot_var_covar_components(data, title, folder="plots/output/"):
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
         for var in range(5):
-            plots[plot_it].plot(data[plot_var_data[plot_it][var]][1],   data["z_half"], "-", label=plot_Hvar_c[var],  c=color_c[var])
+            plots[plot_it].plot(np.nanmean(data[plot_var_data[plot_it][var]][:,t_start:t_end],axis=1),   data["z_half"], "-", label=plot_Hvar_c[var],  c=color_c[var])
 
     plots[0].legend()
     plt.tight_layout()

@@ -45,10 +45,10 @@ def test_plot_Rico(sim_data):
     data_to_plot = cmn.read_data_avg(sim_data, tmin=1)
     les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1)
 
-    pls.plot_mean(data_to_plot,les_data_to_plot,   "Rico_quicklook.pdf")
-    pls.plot_drafts(data_to_plot,les_data_to_plot, "Rico_quicklook_drafts.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,  "Rico_closures.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,  "Rico_velocities.pdf")
+    # pls.plot_mean(data_to_plot,les_data_to_plot,   "Rico_quicklook.pdf")
+    # pls.plot_drafts(data_to_plot,les_data_to_plot, "Rico_quicklook_drafts.pdf")
+    # pls.plot_closures(data_to_plot, les_data_to_plot,  "Rico_closures.pdf")
+    # pls.plot_velocities(data_to_plot, les_data_to_plot,  "Rico_velocities.pdf")
 
 @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_var_covar_Rico(sim_data):
@@ -62,7 +62,7 @@ def test_plot_var_covar_Rico(sim_data):
     pls.plot_var_covar_mean(data_to_plot,les_data_to_plot,       "Rico_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot,"Rico_var_covar_components.pdf")
 
-@pytest.mark.skip(reason="deep convection not working with current defaults")
+# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_Rico(sim_data):
     """
     plot timeseries
@@ -71,9 +71,16 @@ def test_plot_timeseries_Rico(sim_data):
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot,les_data_to_plot, "Rico")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "Rico")
+    pls.plot_mean(data_to_plot, les_data_to_plot,23,24,            "Rico_quicklook.pdf")
+    pls.plot_closures(data_to_plot, les_data_to_plot,23,24,        "Rico_closures.pdf")
+    pls.plot_drafts(data_to_plot, les_data_to_plot,23,24,          "Rico_quicklook_drafts.pdf")
+    pls.plot_velocities(data_to_plot, les_data_to_plot,23,24,      "Rico_velocities.pdf")
+    pls.plot_tapio(data_to_plot, les_data_to_plot,23,24,           "Rico_main.pdf")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 23,24, "Rico_var_covar_mean.pdf")
+    pls.plot_var_covar_components(data_to_plot,23,24,              "Rico_var_covar_components.pdf")
 
-@pytest.mark.skip(reason="deep convection not working with current defaults")
+# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_Rico(sim_data):
     """
     plot Rico 1D timeseries

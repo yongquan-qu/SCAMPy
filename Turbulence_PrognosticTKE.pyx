@@ -1223,7 +1223,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         cpm = cpm_c(Case.Sur.qsurface)
         self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
-        self.pressure_plume_spacing = 500.0
+        # self.pressure_plume_spacing = 500.0
         return
 
     cpdef compute_nh_pressure(self):

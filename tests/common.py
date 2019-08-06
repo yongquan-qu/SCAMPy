@@ -359,8 +359,8 @@ def read_data_srs(sim_data, var_covar=False):
                  "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
                  "Hvar_rain", "QTvar_rain", "HQTcov_rain"\
                 ]
-    if var_covar:
-        variables.extend(variables_var)
+    # if var_covar:
+    variables.extend(variables_var)
 
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
@@ -407,8 +407,8 @@ def read_les_data_srs(les_data, var_covar=False):
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w"]
     variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali"]
     # read the data
-    if var_covar:
-        variables.extend(variables_var)
+    # if var_covar:
+    variables.extend(variables_var)
     les = {"z_half" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
     for var in variables:
         les[var] = []
@@ -431,6 +431,18 @@ def read_les_data_srs(les_data, var_covar=False):
                 les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
             except:
                 les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
+
+    les["Hvar_mean"] = []
+    les["QTvar_mean"] = []
+    les["env_Hvar"] = []
+    les["env_QTvar"] = []
+    les["env_HQTcov"] = []
+    les["Hvar_mean"]   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
+    les["QTvar_mean"]  = calc_covar(les["qt_mean2"],       les["qt_mean"],      les["qt_mean"])
+    les["env_Hvar"]    = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
+    les["env_QTvar"]   = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
+    les["env_HQTcov"]  = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
+
     # for var in variables:
     #     if ("updraft" in var):
     #         temp = np.multiply(les[var],1.0)
@@ -439,13 +451,12 @@ def read_les_data_srs(les_data, var_covar=False):
     #         temp[np.where(np.isnan(a))] = np.nan
     #         les[var] = temp
 
-    if var_covar:
-        les["Hvar_mean"].append   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
-        les["QTvar_mean"].append  = calc_covar(les["qt_mean2"],       les["qt_mean"],      les["qt_mean"])
-        les["env_Hvar"].append    = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
-        les["env_QTvar"].append   = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
-        les["env_HQTcov"].append  = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
-
+    # if var_covar:
+    #     les["Hvar_mean"].append   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
+    #     les["QTvar_mean"].append  = calc_covar(les["qt_mean2"],       les["qt_mean"],      les["qt_mean"])
+    #     les["env_Hvar"].append    = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
+    #     les["env_QTvar"].append   = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
+    #     les["env_HQTcov"].append  = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
 
     return les
 
