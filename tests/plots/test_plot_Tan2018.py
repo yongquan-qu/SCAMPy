@@ -37,7 +37,7 @@ def sim_data(request):
     return sim_data
 
 
-# @pytest.mark.skip(reason="need to run new LES with tracers")
+@pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_timeseries_Tan2018(sim_data):
     """
     plot Tan2018 timeseries
