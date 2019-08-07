@@ -36,23 +36,13 @@ def sim_data(request):
 
     return sim_data
 
-@pytest.mark.skip(reason="need to run new LES with tracers")
-def test_plot_Tan2018(sim_data):
-    """
-    plot Tan2018 profiles
-    """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100)
-
-    pls.plot_mean(data_to_plot,   "Tan2018_quicklook.pdf")
-    pls.plot_drafts(data_to_plot, "Tan2018_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,  "Tan2018_velocities.pdf")
 
 # @pytest.mark.skip(reason="need to run new LES with tracers")
 def test_plot_timeseries_Tan2018(sim_data):
     """
     plot Tan2018 timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -71,18 +61,8 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
     """
     plot Tan2018 1D timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
     pls.plot_timeseries_1D(data_to_plot, "Tan2018_timeseries_1D.pdf")
-
-@pytest.mark.skip(reason="need to run new LES with tracers")
-def test_plot_var_covar_Tan2018(sim_data):
-    """
-    plot Tan2018 var covar
-    """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100, var_covar=True)
-
-    pls.plot_var_covar_mean(data_to_plot,       "Tan2018_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot, "Tan2018_var_covar_components.pdf")

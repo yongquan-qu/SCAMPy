@@ -36,25 +36,13 @@ def sim_data(request):
 
     return sim_data
 
-@pytest.mark.skip(reason="deep convection not working with current defaults")
-def test_plot_Soares(sim_data):
-    """
-    plot Soares profiles
-    """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
-    data_to_plot = cmn.read_data_avg(sim_data, tmin=1)
-    les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1)
-
-    pls.plot_mean(data_to_plot,les_data_to_plot,   "Soares_quicklook.pdf")
-    pls.plot_drafts(data_to_plot,les_data_to_plot, "Soares_quicklook_drafts.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,  "Soares_closures.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,  "Soares_velocities.pdf")
-
+# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_Soares(sim_data):
     """
     plot Soares timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -70,24 +58,14 @@ def test_plot_timeseries_Soares(sim_data):
     pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf")
 
+# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_Soares(sim_data):
     """
     plot Soares 1D timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
     pls.plot_timeseries_1D(data_to_plot,les_data_to_plot, "Soares_timeseries_1D.pdf")
-
-@pytest.mark.skip(reason="deep convection not working with current defaults")
-def test_plot_var_covar_Soares(sim_data):
-    """
-    plot Soares var covar profiles
-    """
-    les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
-    data_to_plot = cmn.read_data_avg(sim_data, tmin=1, var_covar=True)
-    les_data_to_plot = cmn.read_les_data_avg(les_data, tmin=1, var_covar=True)
-
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot,   "Soares_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot, "Soares_var_covar_comp.pdf")

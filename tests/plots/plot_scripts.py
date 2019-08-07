@@ -40,10 +40,10 @@ def plot_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     tmin = tmin*3600.0
     t_start = int(np.where(data["t"] > tmin)[0][0])
     t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_end   = len(data["t"])-1
     t_start_les = int(np.where(les["t"] > tmin)[0][0])
     t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+    t_end_les   = len(les["t"])-1
     # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(12)
@@ -72,7 +72,7 @@ def plot_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].set_ylim([0, data["z_half"][-1] + (data["z_half"][1] - data["z_half"][0]) * 0.5])
         plots[plot_it].grid(True)
         for it in range(2): #init, end
-            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start:t_end],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
             plots[plot_it].plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"], '-', color=color[it], label=label[it], linewidth = 2)
 
     plots[0].legend()
