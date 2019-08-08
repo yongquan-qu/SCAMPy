@@ -42,7 +42,7 @@ def test_plot_timeseries_Soares(sim_data):
     plot Soares timeseries
     """
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Soares.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -64,7 +64,7 @@ def test_plot_timeseries_1D_Soares(sim_data):
     plot Soares 1D timeseries
     """
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Soares.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 

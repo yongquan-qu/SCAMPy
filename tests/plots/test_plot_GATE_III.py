@@ -43,7 +43,7 @@ def test_plot_timeseries_GATE_III(sim_data):
     plot timeseries
     """
     data_to_plot = cmn.read_data_srs(sim_data)
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/GATE_III.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 

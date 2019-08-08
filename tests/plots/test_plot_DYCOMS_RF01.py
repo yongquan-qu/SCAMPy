@@ -41,7 +41,7 @@ def test_plot_timeseries_DYCOMS(sim_data):
     plot timeseries
     """
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/DYCOMS_RF01.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -63,7 +63,7 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     plot DYCOMS_RF01 1D timeseries
     """
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/DYCOMS_RF01.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 

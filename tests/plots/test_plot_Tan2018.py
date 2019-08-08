@@ -42,7 +42,7 @@ def test_plot_timeseries_Tan2018(sim_data):
     """
     plot Tan2018 timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Bomex.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -61,7 +61,7 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
     """
     plot Tan2018 1D timeseries
     """
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/les_data/Bomex.nc', 'r')
+    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
