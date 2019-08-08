@@ -4,13 +4,13 @@ import pylab as plt
 import argparse
 
 # command line:              input                                 output
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc  /Users/yaircohen/Desktop/Bomex.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc /Users/yaircohen/Desktop/TRMM_LBA.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/simualtions_stats/Output.GATE_III.Tracers_no_evap/Stats.GATE_III.nc  /Users/yaircohen/Desktop/GATE_III.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/stats/staRico_TL/Stats.Rico.nc  /Users/yaircohen/Desktop/Rico.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Desktop/DYCOMS_RF01.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc  /Users/yaircohen/Desktop/Soares.nc
-# python reduce_netcdf.py /Users/yaircohen/Documents/PyCLES_out/GABLS/Stats.Gabls.nc   /Users/yaircohen/Desktop/Gabls.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc  /Users/yaircohen/Desktop/Bomex.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc /Users/yaircohen/Desktop/TRMM_LBA.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/simualtions_stats/Output.GATE_III.Tracers_no_evap/Stats.GATE_III.nc  /Users/yaircohen/Desktop/GATE_III.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/stats/staRico_TL/Stats.Rico.nc  /Users/yaircohen/Desktop/Rico.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Desktop/DYCOMS_RF01.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc  /Users/yaircohen/Desktop/Soares.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/GABLS/Stats.Gabls.nc   /Users/yaircohen/Documents/codes/scampy/tests/les_data/Gabls.nc
 def main():
     parser = argparse.ArgumentParser(prog='PyCLES')
     parser.add_argument("fullfilename")
@@ -32,6 +32,23 @@ def main():
     updraft_fraction_ = data.groups['profiles'].variables['updraft_fraction']
 
 
+    # try the TKE diagnostics outputs
+    try:
+        tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
+        tke_prod_B_ = data.groups['profiles'].variables['tke_prod_B']
+        tke_prod_D_ = data.groups['profiles'].variables['tke_prod_D']
+        tke_prod_P_ = data.groups['profiles'].variables['tke_prod_P']
+        tke_prod_T_ = data.groups['profiles'].variables['tke_prod_T']
+        tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
+        tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
+    except:
+        tke_prod_A_ = np.zeros_like(env_w_)
+        tke_prod_B_ = np.zeros_like(env_w_)
+        tke_prod_D_ = np.zeros_like(env_w_)
+        tke_prod_P_ = np.zeros_like(env_w_)
+        tke_prod_T_ = np.zeros_like(env_w_)
+        tke_prod_S_ = np.zeros_like(env_w_)
+        tke_nd_mean_ = np.zeros_like(env_w_)
     try:
         qr_mean_ = data.groups['profiles'].variables['qr_mean']
         env_qr_ = data.groups['profiles'].variables['env_qr']
@@ -136,6 +153,13 @@ def main():
     env_thetali2 = profiles_grp.createVariable('env_thetali2','f4',('t','z'))
     env_qt2 = profiles_grp.createVariable('env_qt2','f4',('t','z'))
     env_qt_thetali = profiles_grp.createVariable('env_qt_thetali','f4',('t','z'))
+    tke_prod_A = profiles_grp.createVariable('tke_prod_A','f4',('t','z'))
+    tke_prod_B = profiles_grp.createVariable('tke_prod_B','f4',('t','z'))
+    tke_prod_D = profiles_grp.createVariable('tke_prod_D','f4',('t','z'))
+    tke_prod_P = profiles_grp.createVariable('tke_prod_P','f4',('t','z'))
+    tke_prod_T = profiles_grp.createVariable('tke_prod_T','f4',('t','z'))
+    tke_prod_S = profiles_grp.createVariable('tke_prod_S','f4',('t','z'))
+    tke_nd_mean = profiles_grp.createVariable('tke_nd_mean','f4',('t','z'))
 
     timeseries_grp = output.groups['timeseries']
     cloud_fraction = timeseries_grp.createVariable('cloud_fraction','f4','t')
@@ -174,6 +198,13 @@ def main():
     env_thetali2[:,:] = env_thetali2_[:,:]
     env_qt2[:,:] = env_qt2_[:,:]
     env_qt_thetali[:,:] = env_qt_thetali_[:,:]
+    tke_prod_A[:,:] = tke_prod_A_[:,:]
+    tke_prod_B[:,:] = tke_prod_B_[:,:]
+    tke_prod_D[:,:] = tke_prod_D_[:,:]
+    tke_prod_P[:,:] = tke_prod_P_[:,:]
+    tke_prod_T[:,:] = tke_prod_T_[:,:]
+    tke_prod_S[:,:] = tke_prod_S_[:,:]
+    tke_nd_mean[:,:] = tke_nd_mean_[:,:]
 
     cloud_fraction[:] = cloud_fraction_[:]
     cloud_base[:] = cloud_base_[:]
