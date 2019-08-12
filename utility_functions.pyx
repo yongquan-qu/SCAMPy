@@ -38,7 +38,6 @@ cdef double smooth_minimum(double [:] x, double a) nogil:
       double leng
 
     num = 0; den = 0
-    #leng = len(x)
     leng = x.shape[0]
     while(i<leng):
       if (x[i]>1.0e-5):
@@ -59,10 +58,7 @@ cdef double auto_smooth_minimum( const double [:] x, double f):
       double a = 1.0
       np.ndarray[double, ndim=1] x_ = np.empty(len(x))
 
-
-
     lmin = 1.0e5; lmin2 = 1.0e5
-    #leng = len(x)
     leng = x.shape[0]
     while (i<leng):
       x_[i] = x[i]
@@ -99,7 +95,6 @@ cdef double smooth_minimum2(double [:] x, double l0) nogil:
       double smin = 0.0
       double leng
 
-    #leng = len(x)
     leng = x.shape[0]
     while(i<leng):
       if (x[i]>1.0e-5):
@@ -118,7 +113,6 @@ cdef double softmin(double [:] x, double k):
       double smin = 0.0, lmin, num, den, eps = 0.1, lam = 1.0
       double leng
 
-    #leng = len(x)
     leng = x.shape[0]
     lmin = min(x)
     num = 1.0
@@ -145,7 +139,6 @@ cdef double hardmin(double [:] x):
       double lmin = 1.0e6
       double leng
 
-    #leng = len(x)
     leng = x.shape[0]
     while(i<leng):
       if (x[i]>1.0e-5 and x[i]<lmin):
@@ -153,8 +146,3 @@ cdef double hardmin(double [:] x):
       i += 1
 
     return min(x)
-
-
-
-
-
