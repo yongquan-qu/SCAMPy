@@ -57,8 +57,6 @@ def removing_files():
     subprocess.call(cmd , shell=True)
     cmd = "rm *.in"
     subprocess.call(cmd , shell=True)
-    cmd = "rm *.pyc"
-    subprocess.call(cmd , shell=True)
 
 
 def read_data_avg(sim_data, n_steps=0, var_covar=False):

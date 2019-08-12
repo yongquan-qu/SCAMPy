@@ -58,12 +58,22 @@ $ python main.py Soares.in paramlist_Soares.in
 
 All automated plots are located in the tests folder and are generated using [pytest](https://pytest.org/en/latest/).
 
-To run automatic plots please try:
+To run all automatic plots please try:
 
 ```
 $ cd tests/
 
 $ py.test -s -v plots/
+
+$ cd ../
+
+```
+To run an individual plot please try:
+
+```
+$ cd tests/
+
+$ py.test -s -v plots/test_plot_Soares.py
 
 $ cd ../
 
