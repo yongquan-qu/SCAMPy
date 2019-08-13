@@ -201,7 +201,7 @@ def Rico():
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
-    namelist['microphysics']['max_supersaturation'] = 0.1
+    namelist['microphysics']['max_supersaturation'] = 0.01
     namelist['microphysics']['rain_model'] = False
 
     namelist['time_stepping'] = {}
