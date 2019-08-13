@@ -189,6 +189,7 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     fig.set_figwidth(14)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
+    nh_pressure = -np.multiply(les["updraft_fraction"],les["updraft_ddz_p_alpha"])
 
     # data to plot
     x_lab    =  ["eddy_diffusivity",        "mixing_length_ratio",         "mixing_length",         "nonhydro_pressure",      "turbulent_entrainment",         "entrainment",             "detrainment"        ]
@@ -206,6 +207,8 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
         plots[plot_it].grid(True)
         #plot updrafts
         if (plot_it < 5):
+            if x_lab[plot_it] =="nonhydro_pressure":
+                plots[plot_it].plot(np.multiply(les["rho"],np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1)), les["z_half"], "-", color="gray", linewidth = 4)
             plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", linewidth = 2)
             plots[plot_it].set_xlabel(x_lab[plot_it])
         if (plot_it == 5):
@@ -260,7 +263,7 @@ def plot_velocities(data, les, tmin, tmax, title, folder="plots/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
+def plot_main(data, les,tmin, tmax, title,  folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -320,6 +323,121 @@ def plot_tapio(data, les,tmin, tmax, title,  folder="plots/output/"):
             plots[plot_it].set_ylim([0, np.max(data["z_half"])])
             plots[plot_it].legend()
 
+    plt.savefig(folder + title)
+    plt.clf()
+
+def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # customize defaults
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    # data to plot
+    x_lab    =  ["tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"]
+    # ["tke_entr_gain","tke_detr_loss","tke_interdomain"]
+    plot_vars =  [data["tke_advection"], data["tke_buoy"],  data["tke_dissipation"], data["tke_pressure"],  data["tke_transport"], data["tke_shear"]]
+    plot_x_les = [les["tke_prod_A"],     les["tke_prod_B"], les["tke_prod_D"]      , les["tke_prod_P"],     les["tke_prod_T"],     les["tke_prod_S"]]
+    xmax = 5*np.max(np.nanmean(data["tke_entr_gain"][3:,t_start:t_end],axis=1))
+    # xmax = 1e-2
+    # iteration over plots
+    plots = []
+    for plot_it in range(6):
+        plots.append(plt.subplot(2,3,plot_it+1))
+                               #(rows, columns, number)
+        plots[plot_it].set_ylabel('z [m]')
+        plots[plot_it].grid(True)
+        if plot_it<6:
+            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label='les', linewidth = 2)
+            plots[plot_it].set_xlabel(x_lab[plot_it])
+            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
+
+        else:
+            plots[plot_it].plot(np.nanmean(data["tke_entr_gain"][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue",  label="tke entr", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(data["tke_detr_loss"][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkorange", label="tke detr", linewidth = 2)
+            plots[plot_it].set_xlabel('tke entr detr [1/m]')
+            # plots[plot_it].set_xlim([-1e-4, xmax])
+            plots[plot_it].set_xlim([-1e-4, xmax])
+            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
+            plots[plot_it].legend()
+
+    plt.savefig(folder + title)
+    plt.clf()
+
+def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+
+    Input:
+    data   - dictionary with previousely read it data
+    title  - name for the created plot
+    folder - folder where to save the created plot
+    """
+    # customize defaults
+    if tmax==-1:
+        tmax = np.max(data["t"])
+    else:
+        tmax = tmax*3600.0
+    tmin = tmin*3600.0
+    t_start = int(np.where(data["t"] > tmin)[0][0])
+    t_start = 0
+    t_end   = int(np.where(data["t"] <= tmax)[0][0])
+    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+    t_start_les = int(np.where(les["t"] > tmin)[0][0])
+    t_start_les = 0
+    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
+    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+
+    ig = plt.figure(1)
+    plt.subplot(121)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+    # plt.plot(np.nanmean(data["tke_mean"][:,t_start:t_end],axis=1),        data["z_half"], "-", color="gray",       label="tke_mean",        linewidth = 4)
+    plt.plot(np.nanmean(data["tke_advection"][:,t_start:t_end],axis=1),   data["z_half"], "-", color="royalblue",  label="tke_advection",   linewidth = 2)
+    plt.plot(np.nanmean(data["tke_buoy"][:,t_start:t_end],axis=1),        data["z_half"], "-", color="darkorange", label="tke_buoy",        linewidth = 2)
+    plt.plot(np.nanmean(data["tke_dissipation"][:,t_start:t_end],axis=1), data["z_half"], "-", color="k",          label="tke_dissipation", linewidth = 2)
+    plt.plot(np.nanmean(data["tke_pressure"][:,t_start:t_end],axis=1),    data["z_half"], "-", color="darkgreen",  label="tke_pressure",    linewidth = 2)
+    plt.plot(np.nanmean(data["tke_transport"][:,t_start:t_end],axis=1),   data["z_half"], "-", color="red",        label="tke_transport",   linewidth = 2)
+    plt.plot(np.nanmean(data["tke_shear"][:,t_start:t_end],axis=1),       data["z_half"], "-", color="purple",     label="tke_shear",       linewidth = 2)
+    plt.xlabel('tke componenets scm')
+    plt.legend()
+    plt.ylim([0, np.max(data["z_half"])])
+    plt.subplot(122)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+    # plt.plot(np.nanmean(les["tke_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-", color="gray",       label="tke_mean", linewidth = 4)
+    plt.plot(np.nanmean(les["tke_prod_A"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="royalblue",  label="tke_A",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_B"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="darkorange", label="tke_B",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_D"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="k",          label="tke_D",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_P"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="darkgreen",  label="tke_P",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_T"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="red",        label="tke_T",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_S"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="purple",     label="tke_S",    linewidth = 2)
+    plt.xlabel('tke componenets les')
+    plt.ylim([0, np.max(les["z_half"])])
     plt.savefig(folder + title)
     plt.clf()
 

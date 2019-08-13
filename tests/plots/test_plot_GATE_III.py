@@ -52,7 +52,7 @@ def test_plot_timeseries_GATE_III(sim_data):
     pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "GATE_III_closures.pdf")
     pls.plot_drafts(data_to_plot, les_data_to_plot,3,4,          "GATE_III_quicklook_drafts.pdf")
     pls.plot_velocities(data_to_plot, les_data_to_plot,3,4,      "GATE_III_velocities.pdf")
-    pls.plot_tapio(data_to_plot, les_data_to_plot,3,4,           "GATE_III_main.pdf")
+    pls.plot_main(data_to_plot, les_data_to_plot,3,4,           "GATE_III_main.pdf")
     pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "GATE_III_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot,3,4,              "GATE_III_var_covar_components.pdf")
 

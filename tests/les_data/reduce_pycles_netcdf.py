@@ -4,13 +4,13 @@ import pylab as plt
 import argparse
 
 # command line:              input                                 output
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc  /Users/yaircohen/Desktop/Bomex.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc /Users/yaircohen/Desktop/TRMM_LBA.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/simualtions_stats/Output.GATE_III.Tracers_no_evap/Stats.GATE_III.nc  /Users/yaircohen/Desktop/GATE_III.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/stats/staRico_TL/Stats.Rico.nc  /Users/yaircohen/Desktop/Rico.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Desktop/DYCOMS_RF01.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc  /Users/yaircohen/Desktop/Soares.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/GABLS/Stats.Gabls.nc   /Users/yaircohen/Documents/codes/scampy/tests/les_data/Gabls.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/SF100/stats/Stats.Bomex.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc     /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GATE_III/stats/Stats.GATE_III.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Rico/stats/Stats.Rico.nc                /Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Soares/stats/Stats.Soares.nc            /Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GABLS/stats/Stats.Gabls.nc              /Users/yaircohen/Documents/codes/scampy/tests/les_data/Gabls.nc
 def main():
     parser = argparse.ArgumentParser(prog='PyCLES')
     parser.add_argument("fullfilename")
@@ -30,25 +30,18 @@ def main():
     u_translational_mean_ = data.groups['profiles'].variables['u_translational_mean']
     updraft_b_ = data.groups['profiles'].variables['updraft_b']
     updraft_fraction_ = data.groups['profiles'].variables['updraft_fraction']
+    updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
+    rho_ = data.groups['reference'].variables['rho0_half']
 
 
     # try the TKE diagnostics outputs
-    try:
-        tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
-        tke_prod_B_ = data.groups['profiles'].variables['tke_prod_B']
-        tke_prod_D_ = data.groups['profiles'].variables['tke_prod_D']
-        tke_prod_P_ = data.groups['profiles'].variables['tke_prod_P']
-        tke_prod_T_ = data.groups['profiles'].variables['tke_prod_T']
-        tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
-        tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
-    except:
-        tke_prod_A_ = np.zeros_like(env_w_)
-        tke_prod_B_ = np.zeros_like(env_w_)
-        tke_prod_D_ = np.zeros_like(env_w_)
-        tke_prod_P_ = np.zeros_like(env_w_)
-        tke_prod_T_ = np.zeros_like(env_w_)
-        tke_prod_S_ = np.zeros_like(env_w_)
-        tke_nd_mean_ = np.zeros_like(env_w_)
+    tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
+    tke_prod_B_ = data.groups['profiles'].variables['tke_prod_B']
+    tke_prod_D_ = data.groups['profiles'].variables['tke_prod_D']
+    tke_prod_P_ = data.groups['profiles'].variables['tke_prod_P']
+    tke_prod_T_ = data.groups['profiles'].variables['tke_prod_T']
+    tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
+    tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
     try:
         qr_mean_ = data.groups['profiles'].variables['qr_mean']
         env_qr_ = data.groups['profiles'].variables['env_qr']
@@ -126,7 +119,9 @@ def main():
 
     profiles_grp = output.groups["profiles"]
 
+    rho = profiles_grp.createVariable('rho','f4',('z'))
     temperature_mean = profiles_grp.createVariable('temperature_mean','f4',('t','z'))
+    updraft_ddz_p_alpha = profiles_grp.createVariable('updraft_ddz_p_alpha','f4',('t','z'))
     thetali_mean = profiles_grp.createVariable('thetali_mean','f4',('t','z'))
     qt_mean = profiles_grp.createVariable('qt_mean','f4',('t','z'))
     ql_mean = profiles_grp.createVariable('ql_mean','f4',('t','z'))
@@ -171,7 +166,9 @@ def main():
     lwp = timeseries_grp.createVariable('lwp','f4','t')
     # thetali_srf_int = timeseries_grp.createVariable('thetali_srf_int','f4','t')
 
+    rho[:] = rho_[:]
     temperature_mean[:,:] = temperature_mean_[:,:]
+    updraft_ddz_p_alpha[:,:] = updraft_ddz_p_alpha_[:,:]
     thetali_mean[:,:] = thetali_mean_[:,:]
     qt_mean[:,:] = qt_mean_[:,:]
     ql_mean[:,:] = ql_mean_[:,:]

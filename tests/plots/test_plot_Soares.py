@@ -54,7 +54,7 @@ def test_plot_timeseries_Soares(sim_data):
     pls.plot_closures(data_to_plot, les_data_to_plot,7,8,        "Soares_closures.pdf")
     pls.plot_drafts(data_to_plot, les_data_to_plot,7,8,          "Soares_quicklook_drafts.pdf")
     pls.plot_velocities(data_to_plot, les_data_to_plot,7,8,      "Soares_velocities.pdf")
-    pls.plot_tapio(data_to_plot, les_data_to_plot,7,8,           "Soares_main.pdf")
+    pls.plot_main(data_to_plot, les_data_to_plot,7,8,           "Soares_main.pdf")
     pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf")
 

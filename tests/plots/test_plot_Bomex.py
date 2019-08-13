@@ -51,9 +51,11 @@ def test_plot_timeseries_Bomex(sim_data):
     pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf")
     pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Bomex_quicklook_drafts.pdf")
     pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Bomex_velocities.pdf")
-    pls.plot_tapio(data_to_plot, les_data_to_plot,5,6,           "Bomex_main.pdf")
+    pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Bomex_main.pdf")
     pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf")
     pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Bomex_tke_components.pdf")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Bomex_tke_breakdown.pdf")
 
 def test_plot_timeseries_1D_Bomex(sim_data):
     """

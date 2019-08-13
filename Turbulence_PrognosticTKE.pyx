@@ -894,6 +894,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 for i in xrange(self.n_updrafts):
                     if self.UpdVar.Area.values[i,k]>0.0:
                         R_up = self.pressure_plume_spacing*sqrt(self.UpdVar.Area.values[i,k])
+                        # R_up = 500.0*sqrt(self.UpdVar.Area.values[i,k])
                         l = fmin(self.mixing_length[k],R_up)
                         self.horizontal_KM[i,k] = self.turbulent_entrainment_factor*sqrt(fmax(GMV.TKE.values[k],0.0))*l
                         self.horizontal_KH[i,k] = self.horizontal_KM[i,k] / self.prandtl_nvec[k]
@@ -1219,11 +1220,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV, CasesBase Case):
         cdef:
-            double cpm, lv
+            double aspect_ratio = 0.4
 
         cpm = cpm_c(Case.Sur.qsurface)
-        self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
-        # self.pressure_plume_spacing = 500.0
+        # self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)
+        # self.pressure_plume_spacing = 100.0
+        # if self.UpdVar.updraft_top[0] > self.pressure_plume_spacing/aspect_ratio:
+        self.pressure_plume_spacing = fmax(aspect_ratio*self.UpdVar.updraft_top[0],500.0)
         return
 
     cpdef compute_nh_pressure(self):

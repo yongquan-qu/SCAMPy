@@ -76,8 +76,8 @@ def read_data_srs(sim_data):
                  "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
                  "massflux_h", "diffusive_flux_h", "total_flux_h",\
                  "massflux_qt","diffusive_flux_qt","total_flux_qt","turbulent_entrainment",\
-                 "eddy_viscosity", "eddy_diffusivity", "mixing_length","mixing_length_ratio",\
-                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure","eddy_diffusivity"\
+                 "eddy_viscosity", "eddy_diffusivity", "mixing_length", "mixing_length_ratio",\
+                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "eddy_diffusivity"\
                 ]
     variables_var = [\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
@@ -85,7 +85,8 @@ def read_data_srs(sim_data):
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
                  "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
                  "Hvar_shear", "QTvar_shear", "HQTcov_shear",\
-                 "Hvar_rain", "QTvar_rain", "HQTcov_rain"\
+                 "Hvar_rain", "QTvar_rain", "HQTcov_rain","tke_entr_gain","tke_detr_loss",\
+                 "tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"\
                 ]
     # if var_covar:
     variables.extend(variables_var)
@@ -108,6 +109,7 @@ def read_data_srs(sim_data):
             try:
                 data[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :]))
             except:
+                print(var)
                 data[var] = np.transpose(np.array(sim_data["profiles/theta_mean"][:, :]))
 
     for var in variables:
@@ -128,11 +130,12 @@ def read_les_data_srs(les_data):
     Input:
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """
-    variables = ["temperature_mean", "thetali_mean", "qt_mean", "ql_mean", \
+    variables = ["rho","temperature_mean", "thetali_mean", "qt_mean", "ql_mean", \
                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_b", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w"]
-    variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali"]
+                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w", "updraft_ddz_p_alpha"]
+    variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali", "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S"]
+
     # read the data
     # if var_covar:
     variables.extend(variables_var)
@@ -154,11 +157,15 @@ def read_les_data_srs(les_data):
                 les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
         elif ("p0" in var):
             les[var] = np.transpose(np.array(les_data["reference/" + var][:, :])) * 100   #hPa
-        else:
+        elif ("thetali" in var):
             try:
                 les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
             except:
                 les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
+        elif ("rho" in var):
+            les[var] = np.array(les_data["profiles/"  + var][ :])
+        else:
+            les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
 
     les["Hvar_mean"] = []
     les["QTvar_mean"] = []
