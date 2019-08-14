@@ -42,6 +42,7 @@ cdef struct entr_in_struct:
     double env_QTvar
     double env_HQTcov
     double dw_env
+    double nh_pressure
     double dw2dz
     double L
     double zbl

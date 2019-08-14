@@ -43,7 +43,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double eps_bw2, del_bw2, D_, buoyant_frac, eta
+        double eps_bw2, del_bw2, D_, buoyant_frac, eta, pressure
 
     ret_b = buoyancy_sorting_mean(entr_in)
     b_mix = ret_b.b_mix
