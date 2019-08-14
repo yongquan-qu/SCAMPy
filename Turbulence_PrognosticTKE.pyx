@@ -1220,7 +1220,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV, CasesBase Case):
         cdef:
-            double aspect_ratio = 0.4
+            double aspect_ratio = 0.25
 
         cpm = cpm_c(Case.Sur.qsurface)
         # self.pressure_plume_spacing = fmax(cpm*Case.Sur.Tsurface*Case.Sur.bflux /(g*Case.Sur.ustar**2.0),self.Gr.dz)

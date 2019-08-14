@@ -5,7 +5,7 @@ import argparse
 
 # command line:              input                                 output
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/SF100/stats/Stats.Bomex.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc     /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
+# python reduce_pycles_netcdf.py  /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GATE_III/stats/Stats.GATE_III.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Rico/stats/Stats.Rico.nc                /Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc
@@ -50,6 +50,14 @@ def main():
         qr_mean_ = np.zeros_like(env_w_)
         env_qr_ = np.zeros_like(env_w_)
         updraft_qr_ = np.zeros_like(env_w_)
+    try:
+        qi_mean_ = data.groups['profiles'].variables['qi_mean']
+        env_qi_ = data.groups['profiles'].variables['env_qi']
+        updraft_qi_ = data.groups['profiles'].variables['updraft_qi']
+    except:
+        qi_mean_ = np.zeros_like(env_w_)
+        env_qi_ = np.zeros_like(env_w_)
+        updraft_qi_ = np.zeros_like(env_w_)
     try:
         qt_mean_ = data.groups['profiles'].variables['qt_mean']
         qt_mean2_ = data.groups['profiles'].variables['qt_mean2']
