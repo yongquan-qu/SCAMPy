@@ -21,7 +21,7 @@ def main():
     fname = args.fname
 
     data = nc.Dataset(fullfilename, 'r')
-    buoyancy_mean_  = data.groups['profiles'].variables['buoyancy_mean']
+    buoyancy_mean_  = np.multiply(data.groups['profiles'].variables['buoyancy_mean'],1.0)
     env_w_ = data.groups['profiles'].variables['env_w']
     temperature_mean_ = data.groups['profiles'].variables['temperature_mean']
     u_mean_ = data.groups['profiles'].variables['u_mean']
@@ -127,6 +127,32 @@ def main():
     z_ = data.groups['profiles'].variables['z']
     t_ = data.groups['profiles'].variables['t']
 
+
+    # ----------------------------------------
+    a_1_a = np.multiply(updraft_fraction_, np.subtract(1.0,updraft_fraction_))
+    rho_temp = np.tile(rho_,(np.shape(updraft_fraction_)[0],1))
+    updraft_buoyancy_ -=buoyancy_mean_
+    env_buoyancy_ -=buoyancy_mean_
+    Hvar_mean_ = calc_covar(thetali_mean2_, thetali_mean_, thetali_mean_)
+    QTvar_mean_ = calc_covar(qt_mean2_,       qt_mean_,      qt_mean_)
+    env_Hvar_ = calc_covar(env_thetali2_,   env_thetali_,  env_thetali_)
+    env_QTvar_ = calc_covar(env_qt2_,        env_qt_,       env_qt_)
+    env_HQTcov_ = calc_covar(env_qt_thetali_, env_qt_,       env_thetali_)
+    massflux_h_        = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_thetali_, env_thetali_)))
+    massflux_qt_       = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_qt_, env_qt_)))
+    total_flux_h_      = np.array(resolved_z_flux_thetali_[:, :])
+    total_flux_qt_     = np.array(resolved_z_flux_qt_[:, :])
+    diffusive_flux_h_  = np.subtract(total_flux_h_,massflux_h_)
+    diffusive_flux_qt_ = np.subtract(total_flux_qt_,massflux_qt_)
+    massflux_h_        = np.multiply(rho_temp, massflux_h_)
+    massflux_qt_       = np.multiply(rho_temp, massflux_qt_)
+    total_flux_h_      = np.multiply(rho_temp, total_flux_h_)
+    total_flux_qt_     = np.multiply(rho_temp, total_flux_qt_)
+    diffusive_flux_h_  = np.multiply(rho_temp, diffusive_flux_h_)
+    diffusive_flux_qt_ = np.multiply(rho_temp, diffusive_flux_qt_)
+
+    # ----------------------------------------
+
     output = nc.Dataset(fname, "w", format="NETCDF4")
     output.createDimension('z', len(z_))
     output.createDimension('t', len(t_))
@@ -140,6 +166,17 @@ def main():
     profiles_grp = output.groups["profiles"]
 
     rho = profiles_grp.createVariable('rho','f4',('z'))
+    Hvar_mean = profiles_grp.createVariable('Hvar_mean','f4',('t','z'))
+    QTvar_mean = profiles_grp.createVariable('QTvar_mean','f4',('t','z'))
+    env_Hvar = profiles_grp.createVariable('env_Hvar','f4',('t','z'))
+    env_QTvar = profiles_grp.createVariable('env_QTvar','f4',('t','z'))
+    env_HQTcov = profiles_grp.createVariable('env_HQTcov','f4',('t','z'))
+    massflux_h = profiles_grp.createVariable('massflux_h','f4',('t','z'))
+    massflux_qt = profiles_grp.createVariable('massflux_qt','f4',('t','z'))
+    total_flux_h = profiles_grp.createVariable('total_flux_h','f4',('t','z'))
+    total_flux_qt = profiles_grp.createVariable('total_flux_qt','f4',('t','z'))
+    diffusive_flux_h = profiles_grp.createVariable('diffusive_flux_h','f4',('t','z'))
+    diffusive_flux_qt = profiles_grp.createVariable('diffusive_flux_qt','f4',('t','z'))
     buoyancy_mean = profiles_grp.createVariable('buoyancy_mean','f4',('t','z'))
     resolved_z_flux_thetali = profiles_grp.createVariable('resolved_z_flux_thetali','f4',('t','z'))
     resolved_z_flux_qt = profiles_grp.createVariable('resolved_z_flux_qt','f4',('t','z'))
@@ -191,6 +228,17 @@ def main():
     # thetali_srf_int = timeseries_grp.createVariable('thetali_srf_int','f4','t')
 
     rho[:] = rho_[:]
+    Hvar_mean[:,:] = Hvar_mean_[:,:]
+    QTvar_mean[:,:] = QTvar_mean_[:,:]
+    env_Hvar[:,:] = env_Hvar_[:,:]
+    env_QTvar[:,:] = env_QTvar_[:,:]
+    env_HQTcov[:,:] = env_HQTcov_[:,:]
+    massflux_h[:,:] = massflux_h_[:,:]
+    massflux_qt[:,:] = massflux_qt_[:,:]
+    total_flux_h[:,:] = total_flux_h_[:,:]
+    total_flux_qt[:,:] = total_flux_qt_[:,:]
+    diffusive_flux_h[:,:] = diffusive_flux_h_[:,:]
+    diffusive_flux_qt[:,:] = diffusive_flux_qt_[:,:]
     buoyancy_mean[:,:] = buoyancy_mean_[:,:]
     resolved_z_flux_thetali[:,:] = resolved_z_flux_thetali_[:,:]
     resolved_z_flux_qt[:,:] = resolved_z_flux_qt_[:,:]
@@ -243,5 +291,11 @@ def main():
     t[:] = t_[:]
     output.close()
 
+def calc_covar(var_sq, var1, var2):
+
+    covar = np.subtract(var_sq,np.multiply(var1,var2))
+    return covar
+
 if __name__ == '__main__':
     main()
+

@@ -77,9 +77,7 @@ def read_data_srs(sim_data):
                  "massflux_h", "diffusive_flux_h", "total_flux_h",\
                  "massflux_qt","diffusive_flux_qt","total_flux_qt","turbulent_entrainment",\
                  "eddy_viscosity", "eddy_diffusivity", "mixing_length", "mixing_length_ratio",\
-                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "eddy_diffusivity"\
-                ]
-    variables_var = [\
+                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "eddy_diffusivity",\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
@@ -88,9 +86,6 @@ def read_data_srs(sim_data):
                  "Hvar_rain", "QTvar_rain", "HQTcov_rain","tke_entr_gain","tke_detr_loss",\
                  "tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"\
                 ]
-    # if var_covar:
-    variables.extend(variables_var)
-
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
 
@@ -104,11 +99,7 @@ def read_data_srs(sim_data):
         elif ("p0" in var):
             data[var] = np.transpose(np.array(sim_data["reference/" + var][:, :])) * 100   #hPa
         else:
-            try:
-                data[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :]))
-            except:
-                print(var)
-                data[var] = np.transpose(np.array(sim_data["profiles/theta_mean"][:, :]))
+            data[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :]))
 
     return data
 
@@ -123,13 +114,11 @@ def read_les_data_srs(les_data):
     variables = ["rho","temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha"]
-    variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",
-                      "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S"]
+                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\
+                 "thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",\
+                 "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S", "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov",\
+                 "massflux_h" ,"massflux_qt" ,"total_flux_h" ,"total_flux_qt" ,"diffusive_flux_h" ,"diffusive_flux_qt"]
 
-    # read the data
-    # if var_covar:
-    variables.extend(variables_var)
     les = {"z_half" : np.array(les_data["z"][:]), "t" : np.array(les_data["t"][:])}
     # les = {"z_half" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
     for var in variables:
@@ -146,44 +135,15 @@ def read_les_data_srs(les_data):
                 les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
         elif ("p0" in var):
             les[var] = np.transpose(np.array(les_data["reference/" + var][:, :])) * 100   #hPa
-        elif ("thetali" in var):
-            try:
-                les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
-            except:
-                les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
+        # elif ("thetali" in var):
+        #     try:
+        #         les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
+        #     except:
+        #         les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
         elif ("rho" in var):
             les[var] = np.array(les_data["profiles/"  + var][ :])
         else:
             les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
-
-    les["updraft_buoyancy"] -= les["buoyancy_mean"]
-    les["env_buoyancy"] -= les["buoyancy_mean"]
-    les["Hvar_mean"] = []
-    les["QTvar_mean"] = []
-    les["env_Hvar"] = []
-    les["env_QTvar"] = []
-    les["env_HQTcov"] = []
-    les["Hvar_mean"]   = calc_covar(les["thetali_mean2"],  les["thetali_mean"], les["thetali_mean"])
-    les["QTvar_mean"]  = calc_covar(les["qt_mean2"],       les["qt_mean"],      les["qt_mean"])
-    les["env_Hvar"]    = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
-    les["env_QTvar"]   = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
-    les["env_HQTcov"]  = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
-
-    a_1_a = np.multiply(les["updraft_fraction"], np.subtract(1.0,les["updraft_fraction"]))
-    les["massflux_h"]        = np.multiply(a_1_a,np.multiply(np.subtract(les["updraft_w"], les["env_w"]), np.subtract(les["updraft_thetali"], les["env_thetali"])))
-    les["massflux_qt"]       = np.multiply(a_1_a,np.multiply(np.subtract(les["updraft_w"], les["env_w"]), np.subtract(les["updraft_qt"], les["env_qt"])))
-    les["total_flux_h"]      = np.transpose(np.array(les_data["profiles/resolved_z_flux_thetali"][:, :]))
-    les["total_flux_qt"]     = np.transpose(np.array(les_data["profiles/resolved_z_flux_qt"][:, :]))
-    les["diffusive_flux_h"]  = np.subtract(les["total_flux_h"],les["massflux_h"])
-    les["diffusive_flux_qt"] = np.subtract(les["total_flux_qt"],les["massflux_qt"])
-
-    rho = np.transpose(np.tile(les["rho"],(np.shape(les["massflux_h"])[1],1)))
-    les["massflux_h"]        = np.multiply(rho, les["massflux_h"])
-    les["massflux_qt"]       = np.multiply(rho, les["massflux_qt"])
-    les["total_flux_h"]      = np.multiply(rho, les["total_flux_h"])
-    les["total_flux_qt"]     = np.multiply(rho, les["total_flux_qt"])
-    les["diffusive_flux_h"]  = np.multiply(rho, les["diffusive_flux_h"])
-    les["diffusive_flux_qt"] = np.multiply(rho, les["diffusive_flux_qt"])
 
     return les
 
@@ -223,7 +183,7 @@ def read_les_data_timeseries(les_data):
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """
     variables = ["cloud_fraction", "cloud_base", "cloud_top",\
-                 "friction_velocity_mean", "shf_surface_mean", "lhf_surface_mean", "lwp", "thetali_srf_int"] #TODO add lwp and rwp
+                 "friction_velocity_mean", "shf_surface_mean", "lhf_surface_mean", "lwp", "thetali_srf_int"] #TODO add rwp
 
     # read the data
     les = {"z_half_les" : np.array(les_data["z"][:]), "t" : np.array(les_data["t"][:])}
@@ -259,53 +219,3 @@ def read_les_data_timeseries(les_data):
         les["lwp"] = np.array(les_data["timeseries/shf_surface_mean"][:])
         les["lwp"] *= 0.0
     return les
-
-def read_rad_data_avg(sim_data, tmin=0, tmax = -1):
-    """
-    Read in the radiation forcing data from netcdf files into a dictionary that can be used for plots
-    (so far its only applicable to the DYCOMS radiative forcing)
-
-    Input:
-    sim_data - netcdf Dataset with simulation results
-    n_steps  - number of timesteps to average over
-    """
-    variables = ["rad_flux", "rad_dTdt"]
-
-    time = [0, -1]
-    # rad_data = {"z" : np.array(sim_data["profiles/z"][:])}
-    rad_data = {"z" : np.array(sim_data["profiles/z"][:]), "t" : np.array(sim_data["profiles/t"][:])}
-    if tmax==-1:
-        tmax = np.max(rad_data["t"])/3600.0
-
-    t_start = int(np.where(rad_data["t"] > tmin)[0][0])
-    t_end   = int(np.where(rad_data["t"] <= tmax)[0][0])
-    n_steps = (t_end-t_start)
-    for var in variables:
-        rad_data[var] = []
-        for it in range(2):
-            if ("rad_dTdt" in var):
-                rad_data[var].append(np.array(sim_data["profiles/" + var][time[it], :]) * 60 * 60 * 24) # K/day
-            else:
-                rad_data[var].append(np.array(sim_data["profiles/" + var][time[it], :]))
-
-    # add averaging over last n_steps timesteps
-    if(n_steps > 0):
-        for var in variables:
-            rad_data[var][1] = np.nanmean(np.array(sim_data["profiles/" + var][tmin:tmax, :] * 60 * 60 * 24),axis=0)
-    else:
-        for var in variables:
-            rad_data[var][1] = np.array(sim_data["profiles/" + var][tmax, :] * 60 * 60 * 24)
-            # for time_it in range(t_start, t_end, 1):
-            #     if ("rad_dTdt" in var):
-            #         rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :] * 60 * 60 * 24) # K/day
-            #     else:
-            #         rad_data[var][1] += np.array(sim_data["profiles/" + var][time_it, :])
-
-            # rad_data[var][1] /= n_steps
-
-    return rad_data
-
-def calc_covar(var_sq, var1, var2):
-
-    covar = np.subtract(var_sq,np.multiply(var1,var2))
-    return covar
