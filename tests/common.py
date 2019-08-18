@@ -96,9 +96,7 @@ def read_data_srs(sim_data):
 
     for var in variables:
         data[var] = []
-        if ("buoyancy" in var):
-            data[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :])) * 10000 #cm2/s3
-        elif ("qt" in var or "ql" in var or "qr" in var):
+        if ("qt" in var or "ql" in var or "qr" in var):
             try:
                 data[var] = np.transpose(np.array(sim_data["profiles/"  + var][:, :])) * 1000  #g/kg
             except:
@@ -112,14 +110,6 @@ def read_data_srs(sim_data):
                 print(var)
                 data[var] = np.transpose(np.array(sim_data["profiles/theta_mean"][:, :]))
 
-    for var in variables:
-        if ("updraft_thetal" in var):
-            temp = np.multiply(data[var],1.0)
-            a = np.multiply(data['updraft_area'],1.0)
-            temp[np.where(a==0.0)] = np.nan
-            temp[np.where(np.isnan(a))] = np.nan
-            data[var] = temp
-
     return data
 
 
@@ -130,11 +120,12 @@ def read_les_data_srs(les_data):
     Input:
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """
-    variables = ["rho","temperature_mean", "thetali_mean", "qt_mean", "ql_mean", \
+    variables = ["rho","temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
-                 "updraft_b", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
-                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w", "updraft_ddz_p_alpha"]
-    variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali", "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S"]
+                 "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
+                 "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha"]
+    variables_var = ["thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",
+                      "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S"]
 
     # read the data
     # if var_covar:
@@ -143,9 +134,7 @@ def read_les_data_srs(les_data):
     # les = {"z_half" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
     for var in variables:
         les[var] = []
-        if ("buoyancy" in var):
-            les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 10000 #cm2/s3
-        elif ("qt" in var or "ql" in var):
+        if ("qt" in var or "ql" in var):
             try:
                 les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
             except:
@@ -167,6 +156,8 @@ def read_les_data_srs(les_data):
         else:
             les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
 
+    les["updraft_buoyancy"] -= les["buoyancy_mean"]
+    les["env_buoyancy"] -= les["buoyancy_mean"]
     les["Hvar_mean"] = []
     les["QTvar_mean"] = []
     les["env_Hvar"] = []
@@ -177,6 +168,22 @@ def read_les_data_srs(les_data):
     les["env_Hvar"]    = calc_covar(les["env_thetali2"],   les["env_thetali"],  les["env_thetali"])
     les["env_QTvar"]   = calc_covar(les["env_qt2"],        les["env_qt"],       les["env_qt"])
     les["env_HQTcov"]  = calc_covar(les["env_qt_thetali"], les["env_qt"],       les["env_thetali"])
+
+    a_1_a = np.multiply(les["updraft_fraction"], np.subtract(1.0,les["updraft_fraction"]))
+    les["massflux_h"]        = np.multiply(a_1_a,np.multiply(np.subtract(les["updraft_w"], les["env_w"]), np.subtract(les["updraft_thetali"], les["env_thetali"])))
+    les["massflux_qt"]       = np.multiply(a_1_a,np.multiply(np.subtract(les["updraft_w"], les["env_w"]), np.subtract(les["updraft_qt"], les["env_qt"])))
+    les["total_flux_h"]      = np.transpose(np.array(les_data["profiles/resolved_z_flux_thetali"][:, :]))
+    les["total_flux_qt"]     = np.transpose(np.array(les_data["profiles/resolved_z_flux_qt"][:, :]))
+    les["diffusive_flux_h"]  = np.subtract(les["total_flux_h"],les["massflux_h"])
+    les["diffusive_flux_qt"] = np.subtract(les["total_flux_qt"],les["massflux_qt"])
+
+    rho = np.transpose(np.tile(les["rho"],(np.shape(les["massflux_h"])[1],1)))
+    les["massflux_h"]        = np.multiply(rho, les["massflux_h"])
+    les["massflux_qt"]       = np.multiply(rho, les["massflux_qt"])
+    les["total_flux_h"]      = np.multiply(rho, les["total_flux_h"])
+    les["total_flux_qt"]     = np.multiply(rho, les["total_flux_qt"])
+    les["diffusive_flux_h"]  = np.multiply(rho, les["diffusive_flux_h"])
+    les["diffusive_flux_qt"] = np.multiply(rho, les["diffusive_flux_qt"])
 
     return les
 

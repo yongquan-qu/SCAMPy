@@ -4,8 +4,8 @@ import pylab as plt
 import argparse
 
 # command line:              input                                 output
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/SF100/stats/Stats.Bomex.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
-# python reduce_pycles_netcdf.py  /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/stats/Stats.Bomex.nc              /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GATE_III/stats/Stats.GATE_III.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Rico/stats/Stats.Rico.nc                /Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc
@@ -20,7 +20,7 @@ def main():
     fname = args.fname
 
     data = nc.Dataset(fullfilename, 'r')
-
+    buoyancy_mean_  = data.groups['profiles'].variables['buoyancy_mean']
     env_w_ = data.groups['profiles'].variables['env_w']
     temperature_mean_ = data.groups['profiles'].variables['temperature_mean']
     u_mean_ = data.groups['profiles'].variables['u_mean']
@@ -28,11 +28,16 @@ def main():
     tke_mean_ = data.groups['profiles'].variables['tke_mean']
     v_translational_mean_ = data.groups['profiles'].variables['v_translational_mean']
     u_translational_mean_ = data.groups['profiles'].variables['u_translational_mean']
-    updraft_b_ = data.groups['profiles'].variables['updraft_b']
+    updraft_buoyancy_ = data.groups['profiles'].variables['updraft_b']
     updraft_fraction_ = data.groups['profiles'].variables['updraft_fraction']
+
+    # resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
+    # resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
+    resolved_z_flux_thetali_ = data.groups['profiles'].variables['qt_mean']
+    resolved_z_flux_qt_ = data.groups['profiles'].variables['qt_mean']
+
     updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
     rho_ = data.groups['reference'].variables['rho0_half']
-
 
     # try the TKE diagnostics outputs
     tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
@@ -92,6 +97,7 @@ def main():
 
     env_thetali_ = data.groups['profiles'].variables['env_thetali']
     env_thetali2_ = data.groups['profiles'].variables['env_thetali2']
+    env_buoyancy_ = data.groups['profiles'].variables['env_b']
     updraft_thetali_ = data.groups['profiles'].variables['updraft_thetali']
     updraft_w_ = data.groups['profiles'].variables['updraft_w']
 
@@ -128,6 +134,9 @@ def main():
     profiles_grp = output.groups["profiles"]
 
     rho = profiles_grp.createVariable('rho','f4',('z'))
+    buoyancy_mean = profiles_grp.createVariable('buoyancy_mean','f4',('t','z'))
+    resolved_z_flux_thetali = profiles_grp.createVariable('resolved_z_flux_thetali','f4',('t','z'))
+    resolved_z_flux_qt = profiles_grp.createVariable('resolved_z_flux_qt','f4',('t','z'))
     temperature_mean = profiles_grp.createVariable('temperature_mean','f4',('t','z'))
     updraft_ddz_p_alpha = profiles_grp.createVariable('updraft_ddz_p_alpha','f4',('t','z'))
     thetali_mean = profiles_grp.createVariable('thetali_mean','f4',('t','z'))
@@ -138,13 +147,14 @@ def main():
     tke_mean = profiles_grp.createVariable('tke_mean','f4',('t','z'))
     v_translational_mean = profiles_grp.createVariable('v_translational_mean','f4',('t','z'))
     u_translational_mean = profiles_grp.createVariable('u_translational_mean','f4',('t','z'))
-    updraft_b = profiles_grp.createVariable('updraft_b','f4',('t','z'))
+    updraft_buoyancy = profiles_grp.createVariable('updraft_buoyancy','f4',('t','z'))
     updraft_fraction = profiles_grp.createVariable('updraft_fraction','f4',('t','z'))
     env_thetali = profiles_grp.createVariable('env_thetali','f4',('t','z'))
     updraft_thetali = profiles_grp.createVariable('updraft_thetali','f4',('t','z'))
     env_qt = profiles_grp.createVariable('env_qt','f4',('t','z'))
     updraft_qt = profiles_grp.createVariable('updraft_qt','f4',('t','z'))
     env_ql = profiles_grp.createVariable('env_ql','f4',('t','z'))
+    env_buoyancy = profiles_grp.createVariable('env_buoyancy','f4',('t','z'))
     updraft_ql = profiles_grp.createVariable('updraft_ql','f4',('t','z'))
     qr_mean = profiles_grp.createVariable('qr_mean','f4',('t','z'))
     env_qr = profiles_grp.createVariable('env_qr','f4',('t','z'))
@@ -175,6 +185,9 @@ def main():
     # thetali_srf_int = timeseries_grp.createVariable('thetali_srf_int','f4','t')
 
     rho[:] = rho_[:]
+    buoyancy_mean[:,:] = buoyancy_mean_[:,:]
+    resolved_z_flux_thetali[:,:] = resolved_z_flux_thetali_[:,:]
+    resolved_z_flux_qt[:,:] = resolved_z_flux_qt_[:,:]
     temperature_mean[:,:] = temperature_mean_[:,:]
     updraft_ddz_p_alpha[:,:] = updraft_ddz_p_alpha_[:,:]
     thetali_mean[:,:] = thetali_mean_[:,:]
@@ -185,7 +198,7 @@ def main():
     tke_mean[:,:] = tke_mean_[:,:]
     v_translational_mean[:,:] = v_translational_mean_[:,:]
     u_translational_mean[:,:] = u_translational_mean_[:,:]
-    updraft_b[:,:] = updraft_b_[:,:]
+    updraft_buoyancy[:,:] = updraft_buoyancy_[:,:]
     updraft_fraction[:,:] = updraft_fraction_[:,:]
     env_thetali[:,:] = env_thetali_[:,:]
     updraft_thetali[:,:] = updraft_thetali_[:,:]
@@ -203,6 +216,7 @@ def main():
     env_thetali2[:,:] = env_thetali2_[:,:]
     env_qt2[:,:] = env_qt2_[:,:]
     env_qt_thetali[:,:] = env_qt_thetali_[:,:]
+    env_buoyancy[:,:] = env_buoyancy_[:,:]
     tke_prod_A[:,:] = tke_prod_A_[:,:]
     tke_prod_B[:,:] = tke_prod_B_[:,:]
     tke_prod_D[:,:] = tke_prod_D_[:,:]

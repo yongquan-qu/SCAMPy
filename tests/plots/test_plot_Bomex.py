@@ -41,29 +41,38 @@ def test_plot_timeseries_Bomex(sim_data):
     """
     plot Bomex timeseries
     """
+    # make directory
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Bomex/")
+    except:
+        print('Bomex folder exists')
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "Bomex")
-    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            "Bomex_quicklook.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf")
-    pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Bomex_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Bomex_velocities.pdf")
-    pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Bomex_main.pdf")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Bomex_tke_components.pdf")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Bomex_tke_breakdown.pdf")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Bomex/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/Bomex/")
+    # pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf")
+    # pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Bomex_quicklook_drafts.pdf")
+    # pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Bomex_velocities.pdf")
+    # pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Bomex_main.pdf")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf", folder="plots/output/Bomex/")
+    pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf", folder="plots/output/Bomex/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Bomex_tke_components.pdf", folder="plots/output/Bomex/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Bomex_tke_breakdown.pdf", folder="plots/output/Bomex/")
 
 def test_plot_timeseries_1D_Bomex(sim_data):
     """
     plot Bomex 1D timeseries
     """
     # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Bomex/")
+    except:
+        print('Bomex folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, "Bomex_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, "Bomex/Bomex_timeseries_1D.pdf")
