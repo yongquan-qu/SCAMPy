@@ -53,10 +53,7 @@ def test_plot_timeseries_Bomex(sim_data):
 
     pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Bomex/")
     pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/Bomex/")
-    # pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf")
-    # pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Bomex_quicklook_drafts.pdf")
-    # pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Bomex_velocities.pdf")
-    # pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Bomex_main.pdf")
+    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf", folder="plots/output/Bomex/")
     pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf", folder="plots/output/Bomex/")
     pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf", folder="plots/output/Bomex/")
     pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Bomex_tke_components.pdf", folder="plots/output/Bomex/")
@@ -75,4 +72,4 @@ def test_plot_timeseries_1D_Bomex(sim_data):
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, "Bomex/Bomex_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Bomex/")

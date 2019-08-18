@@ -39,31 +39,42 @@ def sim_data(request):
 # @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_Rico(sim_data):
     """
-    plot timeseries
+    plot Rico timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/stats/staRico_TL/Stats.Rico.nc', 'r')
+    # make directory
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Rico/")
+    except:
+        print('Rico folder exists')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Rico.newtracers/stats/Stats.Rico.nc', 'r')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "Rico")
-    pls.plot_mean(data_to_plot, les_data_to_plot,23,24,            "Rico_quicklook.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,23,24,        "Rico_closures.pdf")
-    pls.plot_drafts(data_to_plot, les_data_to_plot,23,24,          "Rico_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,23,24,      "Rico_velocities.pdf")
-    pls.plot_main(data_to_plot, les_data_to_plot,23,24,           "Rico_main.pdf")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 23,24, "Rico_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot,23,24,              "Rico_var_covar_components.pdf")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Rico/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/Rico/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Rico_closures.pdf", folder="plots/output/Rico/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Rico_var_covar_mean.pdf", folder="plots/output/Rico/")
+    pls.plot_var_covar_components(data_to_plot,5,6,              "Rico_var_covar_components.pdf", folder="plots/output/Rico/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Rico_tke_components.pdf", folder="plots/output/Rico/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Rico_tke_breakdown.pdf", folder="plots/output/Rico/")
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
+    # pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Rico_quicklook_drafts.pdf")
+    # pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Rico_velocities.pdf")
+    # pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Rico_main.pdf")
 def test_plot_timeseries_1D_Rico(sim_data):
     """
     plot Rico 1D timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/stats/staRico_TL/Stats.Rico.nc', 'r')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Rico.newtracers/stats/Stats.Rico.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Rico/")
+    except:
+        print('Rico folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,les_data_to_plot, "Rico_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Rico/")
+
 

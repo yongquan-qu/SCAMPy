@@ -133,88 +133,8 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
         plt.plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"], '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
-        plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
-
-
-def plot_drafts(data, les, tmin, tmax, title, folder="plots/output/"):
-    """
-    Plots updraft and environment profiles from Scampy
-
-    Input:
-    data   - dictionary with previousely read it data
-    title  - name for the created plot
-    folder - folder where to save the created plot
-    """
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
-    # customize defaults
-
-    fig = plt.figure(1)
-    fig.set_figheight(12)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
-    mpl.rc('lines', linewidth=4, markersize=10)
-
-    # read data
-    qv_mean    = np.array(data["qt_mean"])    - np.array(data["ql_mean"])
-    env_qv     = np.array(data["env_qt"])     - np.array(data["env_ql"])
-    updraft_qv = np.array(data["updraft_qt"]) - np.array(data["updraft_ql"])
-
-    # data to plot
-    x_lab    = ["QV [g/kg]", "QL [g/kg]",        "QR [g/kg]",        "w [m/s]",         "updraft buoyancy [cm2/s3]",  "updraft area [%]"]
-    plot_upd = [qv_mean,     data["updraft_ql"], data["updraft_qr"], data["updraft_w"], data["updraft_buoyancy"],     data["updraft_area"]]
-    plot_env = [env_qv,      data["env_ql"],     data["env_qr"],     data["env_w"]]
-    plot_mean= [updraft_qv,  data["ql_mean"],    data["qr_mean"]]
-
-    qv_mean_les    = np.array(les["qt_mean"])    - np.array(les["ql_mean"])
-    env_qv_les     = np.array(les["env_qt"])     - np.array(les["env_ql"])
-    updraft_qv_les = np.array(les["updraft_qt"]) - np.array(les["updraft_ql"])
-    les_plot_upd = [qv_mean_les,     les["updraft_ql"], les["updraft_qr"], les["updraft_w"], les["updraft_buoyancy"], les["updraft_fraction"] ]
-    les_plot_env = [env_qv_les,      les["env_ql"],     les["env_qr"],     les["env_w"]]
-    les_plot_mean= [updraft_qv_les,  les["ql_mean"],    les["qr_mean"]]
-
-    # iteration over plots
-    plots = []
-    for plot_it in range(6):
-        plots.append(plt.subplot(2,3,plot_it+1))
-                               #(rows, columns, number)
-        plots[plot_it].set_xlabel(x_lab[plot_it])
-        plots[plot_it].set_ylabel('z [m]')
-        plots[plot_it].set_ylim([0, data["z_half"][-1] + (data["z_half"][1] - data["z_half"][0]) * 0.5])
-        plots[plot_it].grid(True)
-        #plot updrafts
-        if (plot_it != 5):
-            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1), les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_upd[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
-        if (plot_it == 5):
-            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1)* 100, les["z_half"], ':', color='gray', label='les upd', linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_upd[plot_it][:,t_start:t_end],axis=1) * 100, data["z_half"], "-", color="royalblue", label="upd", linewidth = 2)
-        # plot environment
-        if (plot_it < 4):
-            plots[plot_it].plot(np.nanmean(les_plot_env[plot_it][:,t_start:t_end],axis=1), les["z_half"], '--', color='gray', label='les env', linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_env[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkred", label="env", linewidth = 2)
-        # plot mean
-        if (plot_it < 3):
-            plots[plot_it].plot(np.nanmean(les_plot_upd[plot_it][:,t_start:t_end],axis=1), les["z_half"], '-', color='gray', label='les mean', linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_mean[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="purple", label="mean", linewidth = 2)
-
-    plots[0].legend()
-    plt.savefig(folder + title)
-    plt.clf()
-
 
 def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     """
@@ -274,111 +194,6 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
             plots[plot_it].set_xlabel("entr/detr")
             plots[5].set_xlim([-0.1*xmax, xmax])
             plots[5].legend()
-
-    plt.savefig(folder + title)
-    plt.clf()
-
-
-def plot_velocities(data, les, tmin, tmax, title, folder="plots/output/"):
-    """
-    Plots updraft and environment profiles from Scampy
-
-    Input:
-    data   - dictionary with previousely read it data
-    title  - name for the created plot
-    folder - folder where to save the created plot
-    """
-
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
-
-    fig = plt.figure(1)
-    fig.set_figheight(12)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
-    mpl.rc('lines', linewidth=4, markersize=10)
-    plt.subplot(1,2,1)
-    plt.plot(np.nanmean(les["u_translational_mean"][:,t_start:t_end],axis = 1), les["z_half"], color='gray', label='les upd', linewidth = 4)
-    plt.plot(np.nanmean(data["u_mean"][:,t_start:t_end],axis = 1),data["z_half"], color="royalblue", label="scm", linewidth = 2)
-    plt.xlabel('u [m/s]')
-    plt.ylabel('z [m]')
-    plt.subplot(1,2,2)
-    plt.plot(np.nanmean(les["v_translational_mean"][:,t_start:t_end],axis=1) , les["z_half"],  color='gray', label='les upd', linewidth = 4)
-    plt.plot(np.nanmean(data["v_mean"][:,t_start:t_end],axis=1) ,data["z_half"],  color="royalblue", label="scm", linewidth = 2)
-    plt.xlabel('v [m/s]')
-    plt.savefig(folder + title)
-    plt.clf()
-
-def plot_main(data, les,tmin, tmax, title,  folder="plots/output/"):
-    """
-    Plots updraft and environment profiles from Scampy
-
-    Input:
-    data   - dictionary with previousely read it data
-    title  - name for the created plot
-    folder - folder where to save the created plot
-    """
-    # customize defaults
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
-
-    fig = plt.figure(1)
-    fig.set_figheight(12)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
-    mpl.rc('lines', linewidth=4, markersize=10)
-
-    # data to plot
-    x_lab    =  ["qt_mean",        "ql_mean",         "thetal_mean",         "updraft_w",        "updraft_area"]
-    plot_vars = [data["qt_mean"]   ,data["ql_mean"],  data["thetal_mean"],   data["updraft_w"],  data["updraft_area"]]
-    plot_x_les = [les["qt_mean"],      les["ql_mean"],  les["thetali_mean"], les["updraft_w"],  les["updraft_fraction"]]
-    xmax = 5*np.max(np.nanmean(data["entrainment_sc"][3:,t_start:t_end],axis=1))
-    # xmax = 1e-2
-    # iteration over plots
-    plots = []
-    for plot_it in range(6):
-        plots.append(plt.subplot(2,3,plot_it+1))
-                               #(rows, columns, number)
-        plots[plot_it].set_ylabel('z [m]')
-        plots[plot_it].grid(True)
-        if plot_it<5:
-            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue", label='les', linewidth = 2)
-            plots[plot_it].set_xlabel(x_lab[plot_it])
-            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
-
-        else:
-            plots[plot_it].plot(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="royalblue",  label="d. entr", linewidth = 2)
-            plots[plot_it].plot(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1), data["z_half"], "-", color="darkorange", label="d. detr", linewidth = 2)
-            plots[plot_it].plot(np.add(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1),np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1)), data["z_half"], "--", color="royalblue",  label="tot entr", linewidth = 2)
-            plots[plot_it].plot(np.add(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1),np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1)), data["z_half"], "--", color="darkorange", label="tot detr", linewidth = 2)
-            plots[plot_it].set_xlabel('entr detr [1/m]')
-            # plots[plot_it].set_xlim([-1e-4, xmax])
-            plots[plot_it].set_xlim([-1e-4, xmax])
-            plots[plot_it].set_ylim([0, np.max(data["z_half"])])
-            plots[plot_it].legend()
 
     plt.savefig(folder + title)
     plt.clf()
@@ -548,7 +363,6 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"], "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
     plots[0].legend()
-    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -602,12 +416,11 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
             plots[plot_it].plot(np.nanmean(data[plot_var_data[plot_it][var]][:,t_start:t_end],axis=1),   data["z_half"], "-", label=plot_Hvar_c[var],  c=color_c[var])
 
     plots[0].legend()
-    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
 
-def plot_timeseries_1D(data,  les, title, folder="plots/output/"):
+def plot_timeseries_1D(data,  les, folder="plots/output/"):
     """
     Plots timeseries from Scampy
 
@@ -617,95 +430,50 @@ def plot_timeseries_1D(data,  les, title, folder="plots/output/"):
     folder - folder where to save the created plot
     """
     # customize defaults
-    fig = plt.figure(1)
-    fig.set_figheight(8)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 12})
-    mpl.rc('lines', linewidth=2, markersize=6)
 
     # data to plot
     plot_y     = [data["updraft_cloud_cover"],  data["lwp"], data["lhf"], data["shf"], data["rd"],      data["updraft_cloud_top"], data["updraft_cloud_base"]]
     plot_les_y = [les["updraft_cloud_cover"],   les["lwp"],  les["lhf"],  les["shf"],  les["shf"],  les["updraft_cloud_top"],  les["updraft_cloud_base"]]
     y_lab  =     ['updr cl. cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'updr CB, CT']
+    fig_name  =  ['updraft_cloud_cover', 'liquid_water_path',  'latent_heat_flux',  'sensible_heat_flux',       'plume_separation_radius',   'updraft_cloud_base_top']
 
     # iteration over plots
     plots = []
     for plot_it in range(6):
-        plots.append(plt.subplot(2,3,plot_it+1))
+        fig = plt.figure(1)
+        fig.set_figheight(8)
+        fig.set_figwidth(14)
+        mpl.rcParams.update({'font.size': 12})
+        mpl.rc('lines', linewidth=2, markersize=6)
+        # plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
         if plot_it < 4:
-            plots[plot_it].set_xlabel('t [s]')
-            plots[plot_it].set_ylabel(y_lab[plot_it])
-            plots[plot_it].set_xlim([0, data["t"][-1]])
-            plots[plot_it].grid(True)
-            plots[plot_it].plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
-            plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
-            plots[plot_it].legend()
+            plt.xlabel('t [s]')
+            plt.ylabel(y_lab[plot_it])
+            plt.xlim([0, data["t"][-1]])
+            plt.grid(True)
+            plt.plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
+            plt.plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
+            plt.legend()
         elif plot_it == 4:
-            plots[plot_it].set_xlabel('t [s]')
-            plots[plot_it].set_ylabel(y_lab[plot_it])
-            plots[plot_it].set_xlim([0, data["t"][-1]])
-            plots[plot_it].grid(True)
-            plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
-            plots[plot_it].legend()
+            plt.xlabel('t [s]')
+            plt.ylabel(y_lab[plot_it])
+            plt.xlim([0, data["t"][-1]])
+            plt.grid(True)
+            plt.plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
+            plt.legend()
         else:
-            plots[5].set_xlabel('t [s]')
-            plots[5].set_ylabel(y_lab[5])
-            plots[5].set_xlim([0, data["t"][-1]])
-            plots[5].grid(True)
-            plots[5].plot(les["t"][1:], les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
-            plots[5].plot(les["t"][1:], les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
-            plots[5].plot(data["t"][1:], data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
-            plots[5].plot(data["t"][1:], data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
+            plt.xlabel('t [s]')
+            plt.ylabel(y_lab[5])
+            plt.xlim([0, data["t"][-1]])
+            plt.grid(True)
+            plt.plot(les["t"][1:], les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
+            plt.plot(les["t"][1:], les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
+            plt.plot(data["t"][1:], data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
+            plt.plot(data["t"][1:], data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
-    plt.tight_layout()
-    plt.savefig(folder + title)
-    plt.clf()
-
-
-    # fig = plt.figure(1)
-    # fig.set_figheight(8)
-    # fig.set_figwidth(14)
-    # mpl.rcParams.update({'font.size': 12})
-    # mpl.rc('lines', linewidth=2, markersize=6)
-
-    # # data to plot
-    # plot_y     = [data["updraft_cloud_cover"],  data["lwp"], data["lhf"], data["shf"], data["rd"],      data["updraft_cloud_top"], data["updraft_cloud_base"]]
-    # plot_les_y = [les["updraft_cloud_cover"],   les["lwp"],  les["lhf"],  les["shf"],  les["shf"],  les["updraft_cloud_top"],  les["updraft_cloud_base"]]
-    # y_lab  =     ['updr cl. cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'updr CB, CT']
-
-    # # iteration over plots
-    # plots = []
-    # for plot_it in range(np.shape(plot_y)):
-    #     plots[plot_it].set_xlabel('t [s]')
-    #     plots[plot_it].set_ylabel(y_lab[plot_it])
-    #     plots[plot_it].set_xlim([0, data["t"][-1]])
-    #     plots[plot_it].grid(True)
-    #     plots[plot_it].plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
-    #     plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
-    #     plots[plot_it].legend()
-    #     elif plot_it == 4:
-    #         plots[plot_it].set_xlabel('t [s]')
-    #         plots[plot_it].set_ylabel(y_lab[plot_it])
-    #         plots[plot_it].set_xlim([0, data["t"][-1]])
-    #         plots[plot_it].grid(True)
-    #         plots[plot_it].plot(data["t"][1:], plot_y[plot_it][1:], '-', color="b")
-    #         plots[plot_it].legend()
-    #     else:
-    #         plots[5].set_xlabel('t [s]')
-    #         plots[5].set_ylabel(y_lab[5])
-    #         plots[5].set_xlim([0, data["t"][-1]])
-    #         plots[5].grid(True)
-    #         plots[5].plot(les["t"][1:], les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
-    #         plots[5].plot(les["t"][1:], les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
-    #         plots[5].plot(data["t"][1:], data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
-    #         plots[5].plot(data["t"][1:], data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
-
-    # plt.tight_layout()
-    # plt.savefig(folder + title)
-    # plt.clf()
-
-
+        plt.savefig(folder + fig_name[plot_it]+".pdf")
+        plt.clf()
 
 def plot_timeseries(data,  les, folder="plots/output/"):
     """
@@ -753,6 +521,7 @@ def plot_timeseries(data,  les, folder="plots/output/"):
     plots = []
     for plot_it in range(len(labels)):
         fig = plt.figure(fig_name[plot_it])
+        # there is a bag in the initial condition for env thetal in scampy, its starts with zeros, this quick fix should be removed after the bag is fixed
         if scm_vars[plot_it]=="env_thetal":
             data[scm_vars[plot_it]][:,0] = data[scm_vars[plot_it]][:,1]
         scm_field = np.multiply(data[scm_vars[plot_it]],1.0)

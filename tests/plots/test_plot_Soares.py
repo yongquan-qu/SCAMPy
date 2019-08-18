@@ -41,31 +41,35 @@ def test_plot_timeseries_Soares(sim_data):
     """
     plot Soares timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    # make directory
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Soares/")
+    except:
+        print('Soares folder exists')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Soares.newtracers/stats/Stats.Soares.nc', 'r')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    # pls.plot_timeseries(data_to_plot,les_data_to_plot, "Soares")
-    # pls.plot_tapio(data_to_plot, les_data_to_plot,5,7, "Soares_main.pdf")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Soares/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,7,8,            folder="plots/output/Soares/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,7,8,        "Soares_closures.pdf", folder="plots/output/Soares/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf", folder="plots/output/Soares/")
+    pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf", folder="plots/output/Soares/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 7,8, "Soares_tke_components.pdf", folder="plots/output/Soares/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 7,8,  "Soares_tke_breakdown.pdf", folder="plots/output/Soares/")
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "Soares")
-    pls.plot_mean(data_to_plot, les_data_to_plot,7,8,            "Soares_quicklook.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,7,8,        "Soares_closures.pdf")
-    pls.plot_drafts(data_to_plot, les_data_to_plot,7,8,          "Soares_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,7,8,      "Soares_velocities.pdf")
-    pls.plot_main(data_to_plot, les_data_to_plot,7,8,           "Soares_main.pdf")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf")
-
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_Soares(sim_data):
     """
     plot Soares 1D timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/Soares/stats/Stats.Soares.nc', 'r')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Soares.newtracers/stats/Stats.Soares.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Soares/")
+    except:
+        print('Soares folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,les_data_to_plot, "Soares_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Soares/")

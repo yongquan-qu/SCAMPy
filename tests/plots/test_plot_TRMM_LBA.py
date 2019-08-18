@@ -40,30 +40,37 @@ def sim_data(request):
 # @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_TRMM_LBA(sim_data):
     """
-    plot timeseries
+    plot TRMM_LBA timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc', 'r')
+    # make directory
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/TRMM_LBA/")
+    except:
+        print('TRMM_LBA folder exists')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.TRMM_LBA.newtracers/stats/Stats.TRMM_LBA.nc', 'r')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "TRMM_LBA")
-    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            "TRMM_LBA_quicklook.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "TRMM_LBA_closures.pdf")
-    pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "TRMM_LBA_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "TRMM_LBA_velocities.pdf")
-    pls.plot_main(data_to_plot, les_data_to_plot,5,6,           "TRMM_LBA_main.pdf")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot,5,6,              "TRMM_LBA_var_covar_components.pdf")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/TRMM_LBA/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/TRMM_LBA/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "TRMM_LBA_closures.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_var_covar_mean.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_var_covar_components(data_to_plot,5,6,              "TRMM_LBA_var_covar_components.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_tke_components.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "TRMM_LBA_tke_breakdown.pdf", folder="plots/output/TRMM_LBA/")
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA 1D timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc', 'r')
+    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.TRMM_LBA.newtracers/stats/Stats.TRMM_LBA.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/TRMM_LBA/")
+    except:
+        print('TRMM_LBA folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot, les_data_to_plot, "TRMM_LBA_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/TRMM_LBA/")

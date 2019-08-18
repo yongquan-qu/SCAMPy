@@ -40,7 +40,10 @@ def test_plot_timeseries_DYCOMS(sim_data):
     """
     plot timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/DYCOMS_RF01/")
+    except:
+        print('DYCOMS_RF01 folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
@@ -48,26 +51,27 @@ def test_plot_timeseries_DYCOMS(sim_data):
     # pls.plot_timeseries(data_to_plot, les_data_to_plot, "DYCOMS")
     # pls.plot_tapio(data_to_plot, les_data_to_plot,3,4, "DYCOMS_main.pdf")
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          "DYCOMS_RF01")
-    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            "DYCOMS_RF01_quicklook.pdf")
-    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "DYCOMS_RF01_closures.pdf")
-    pls.plot_drafts(data_to_plot, les_data_to_plot,3,4,          "DYCOMS_RF01_quicklook_drafts.pdf")
-    pls.plot_velocities(data_to_plot, les_data_to_plot,3,4,      "DYCOMS_RF01_velocities.pdf")
-    pls.plot_main(data_to_plot, les_data_to_plot,3,4,           "DYCOMS_RF01_main.pdf")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot,3,4,              "DYCOMS_RF01_var_covar_components.pdf")
-
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/DYCOMS_RF01/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            folder="plots/output/DYCOMS_RF01/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "DYCOMS_RF01_closures.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_var_covar_mean.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_var_covar_components(data_to_plot,3,4,              "DYCOMS_RF01_var_covar_components.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_tke_components.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 3,4,  "DYCOMS_RF01_tke_breakdown.pdf", folder="plots/output/DYCOMS_RF01/")
 
 def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/clima_master/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc', 'r')
+    try:
+        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/DYCOMS_RF01/")
+    except:
+        print('DYCOMS_RF01 folder exists')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot, les_data_to_plot, "DYCOMS_RF01_timeseries_1D.pdf")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/DyCOMS_RF01/")
 
 @pytest.mark.skip(reason="for now not included in reduced netCDF files")
 def test_DYCOMS_RF01_radiation(sim_data):
@@ -108,6 +112,6 @@ def test_DYCOMS_RF01_radiation(sim_data):
     plots[2].set_xlim([1, 10])
     plots[3].set_xlim([-0.1, 0.5])
 
-    plt.savefig("plots/output/DYCOMS_RF01_radiation.pdf")
+    plt.savefig("plots/output/DYCOMS_RF01/DYCOMS_RF01_radiation.pdf")
     plt.clf()
 
