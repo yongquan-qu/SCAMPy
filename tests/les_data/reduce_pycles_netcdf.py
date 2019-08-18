@@ -5,7 +5,7 @@ import argparse
 
 # command line:              input                                 output
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/stats/Stats.Bomex.nc              /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/TRMM_LBA/stats/Stats.TRMM_LBA.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
+# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc                 /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GATE_III/stats/Stats.GATE_III.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Rico/stats/Stats.Rico.nc                /Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc
 # python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc
@@ -128,7 +128,7 @@ def main():
     t_ = data.groups['profiles'].variables['t']
 
 
-    # ----------------------------------------
+    # flux diagnosis
     a_1_a = np.multiply(updraft_fraction_, np.subtract(1.0,updraft_fraction_))
     rho_temp = np.tile(rho_,(np.shape(updraft_fraction_)[0],1))
     updraft_buoyancy_ -=buoyancy_mean_
@@ -150,8 +150,6 @@ def main():
     total_flux_qt_     = np.multiply(rho_temp, total_flux_qt_)
     diffusive_flux_h_  = np.multiply(rho_temp, diffusive_flux_h_)
     diffusive_flux_qt_ = np.multiply(rho_temp, diffusive_flux_qt_)
-
-    # ----------------------------------------
 
     output = nc.Dataset(fname, "w", format="NETCDF4")
     output.createDimension('z', len(z_))

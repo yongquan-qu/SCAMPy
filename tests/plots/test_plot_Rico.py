@@ -36,7 +36,7 @@ def sim_data(request):
 
     return sim_data
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
+@pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_Rico(sim_data):
     """
     plot Rico timeseries
@@ -59,9 +59,7 @@ def test_plot_timeseries_Rico(sim_data):
     pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Rico_tke_components.pdf", folder="plots/output/Rico/")
     pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Rico_tke_breakdown.pdf", folder="plots/output/Rico/")
 
-    # pls.plot_drafts(data_to_plot, les_data_to_plot,5,6,          "Rico_quicklook_drafts.pdf")
-    # pls.plot_velocities(data_to_plot, les_data_to_plot,5,6,      "Rico_velocities.pdf")
-    # pls.plot_main(data_to_plot, les_data_to_plot,5,6,            "Rico_main.pdf")
+@pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_1D_Rico(sim_data):
     """
     plot Rico 1D timeseries

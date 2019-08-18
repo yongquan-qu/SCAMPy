@@ -36,7 +36,7 @@ def sim_data(request):
 
     return sim_data
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
+
 def test_plot_timeseries_Soares(sim_data):
     """
     plot Soares timeseries
@@ -58,6 +58,7 @@ def test_plot_timeseries_Soares(sim_data):
     pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf", folder="plots/output/Soares/")
     pls.plot_tke_components(data_to_plot, les_data_to_plot, 7,8, "Soares_tke_components.pdf", folder="plots/output/Soares/")
     pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 7,8,  "Soares_tke_breakdown.pdf", folder="plots/output/Soares/")
+
 
 def test_plot_timeseries_1D_Soares(sim_data):
     """

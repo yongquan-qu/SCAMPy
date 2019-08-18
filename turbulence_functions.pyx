@@ -39,11 +39,31 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
         _ret.detr_sc = 0.0
     return _ret
 
+cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
+    cdef:
+        entr_struct _ret
+        double chi_c, RH_env, RH_upd
+
+    c_eps = sqrt(entr_in.af*(1.0-entr_in.af)) # Bomex
+    RH_upd = entr_in.RH_upd
+    RH_env = entr_in.RH_env
+
+    eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
+
+    _ret.entr_sc = eps_bw2
+    if entr_in.ql_up>0.0:
+        _ret.detr_sc = del_bw2*(1.0+fmax((RH_upd - RH_env),0.0)/RH_upd)**entr_in.c_del
+    else:
+        _ret.detr_sc =  del_bw2
+
+    return _ret
+
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
         entr_struct _ret
-        double eps_bw2, del_bw2, D_, buoyant_frac, eta, pressure
+        double eps_bw2, del_bw2, D_, buoyant_frac, eta, pressure,a1 ,a2 ,c ,d
 
     ret_b = buoyancy_sorting_mean(entr_in)
     b_mix = ret_b.b_mix
@@ -83,25 +103,36 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
     #     _ret.detr_sc = 0.0
 
     # # 6
-    eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-    _ret.buoyant_frac = buoyant_frac
-    _ret.b_mix = b_mix
-    _ret.entr_sc = eps_bw2
-    if entr_in.ql_up>0.0:
-        D_ = 0.5*(1.0+erf(entr_in.erf_const*(buoyant_frac)))
-        _ret.detr_sc = del_bw2*(1.0+entr_in.c_del*D_)
-    else:
-        _ret.detr_sc = 0.0
+    # eps_bw2 = entr_in.c_eps*fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    # del_bw2 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
+    # _ret.buoyant_frac = buoyant_frac
+    # _ret.b_mix = b_mix
+    # _ret.entr_sc = eps_bw2
+    # if entr_in.ql_up>0.0:
+    #     D_ = 0.5*(1.0+erf(entr_in.erf_const*(buoyant_frac)))
+    #     _ret.detr_sc = del_bw2*(1.0+entr_in.c_del*D_)
+    # else:
+    #     _ret.detr_sc = 0.0
 
     # SAVRE
-    # RH = relative_humidity_c(entr_in.p0, entr_in.qt_env, entr_in.ql_env, 0.0, entr_in.T_env)
-    # eta = 0.47 - 0.0079*(1.0-RH/100.0)**2.0*entr_in.b**(-1.7)
-    # _ret.buoyant_frac = eta
-    # eps_bw2 = fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # del_bw2 = fmax(-entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # _ret.entr_sc = eps_bw2*fmax(eta,0.0)
-    # _ret.detr_sc = del_bw2*fmax(-eta,0.0)
+    RH = entr_in.RH_upd
+    eta = 0.47 - 0.0079*(1.0-RH/100.0)**2.0*entr_in.b**(-1.7)
+    _ret.buoyant_frac = eta
+    eps_bw2 = fmax(entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    del_bw2 = fmax(-entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    _ret.entr_sc = 0.1/(entr_in.rd*sqrt(entr_in.af)) + eps_bw2*fmax(eta,0.0)
+    _ret.detr_sc = 0.1/(entr_in.rd*sqrt(entr_in.af)) + del_bw2*fmax(-eta,0.0)
+
+    # Hourdin et al 2019
+    # eps_bw2 = entr_in.b/ fmax(entr_in.w * entr_in.w, 1e-2)
+    # eps_qtw2 = ((entr_in.qt_up-entr_in.qt_env) / entr_in.qt_up )/ fmax(entr_in.w * entr_in.w, 1e-2)
+    # a1 = 2/3
+    # a2 = 0.002
+    # beta = 0.9
+    # c = 0.012
+    # d = 0.5
+    # _ret.entr_sc = a2*fmax(0.0, beta/(1+beta)*(a1*eps_bw2-a2))
+    # _ret.detr_sc = a2*fmax(0.0, -beta/(1+beta)*(a1*eps_bw2) + c*eps_qtw2**d)
 
     return _ret
     #relative_humidity_c(double p0, double qt, double ql, double qi, double T) nogil:

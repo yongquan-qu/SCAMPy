@@ -2,7 +2,6 @@ import os
 import subprocess
 import json
 import warnings
-
 from netCDF4 import Dataset
 import numpy as np
 
@@ -26,8 +25,45 @@ def simulation_setup(case):
     namelist  = json.loads(file_case)
     paramlist = json.loads(file_params)
 
+    # changes to namelist file
+    namelist['turbulence'] = {}
+    namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
+    namelist['turbulence']['EDMF_PrognosticTKE'] = {}
+    namelist['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
+    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'moisture_deficit'
+    namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
+    namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
+    namelist['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
+    namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
+    namelist['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
+    namelist['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
+    namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
+    namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
+
     namelist['output']['output_root'] = "./Tests."
     namelist['meta']['uuid'] = case
+
+    # changes to paramlist file
+    paramlist['turbulence']['EDMF_PrognosticTKE'] = {}
+    paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
+    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
+    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
+    paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
+    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
+    paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 6.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
+    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
+    paramlist['turbulence']['updraft_microphysics'] = {}
+    if case=='TRMM_LBA':
+        paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
+    else:
+        paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
+    print(namelist)
+    print(paramlist)
+
     # TODO - copied from NetCDFIO
     # ugly way to know the name of the folder where the data is saved
     uuid = str(namelist['meta']['uuid'])
