@@ -358,7 +358,7 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
-        plots[plot_it].plot(np.nanmean(les[plot_var_env[plot_it]][:,t_start_les:t_end_les],axis=1),   les["z_half"],  "-", label= '_les',              c="gray",linewidth = 4)
+        plots[plot_it].plot(np.nanmean(les[plot_var_env[plot_it]][:,t_start_les:t_end_les],axis=1),   les["z_half"],  "-", label= 'les',              c="gray",linewidth = 4)
         plots[plot_it].plot(np.nanmean(data[plot_var_mean[plot_it]][:,t_start:t_end],axis=1), data["z_half"], "-", label= plot_var_mean[plot_it], c="crimson", linewidth = 2)
         plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"], "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
