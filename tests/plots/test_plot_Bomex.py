@@ -46,7 +46,6 @@ def test_plot_timeseries_Bomex(sim_data):
         os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Bomex/")
     except:
         print('Bomex folder exists')
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
     les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
@@ -63,7 +62,6 @@ def test_plot_timeseries_1D_Bomex(sim_data):
     """
     plot Bomex 1D timeseries
     """
-    # les_data = Dataset('/Users/yaircohen/Documents/PyCLES_out/newTracers/Output.Bomex.newtracers/stats/Stats.Bomex.nc', 'r')
     try:
         os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Bomex/")
     except:

@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 import warnings
+import pprint as pp
 from netCDF4 import Dataset
 import numpy as np
 
@@ -39,7 +40,6 @@ def simulation_setup(case):
     namelist['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
-
     namelist['output']['output_root'] = "./Tests."
     namelist['meta']['uuid'] = case
 
@@ -49,8 +49,8 @@ def simulation_setup(case):
     paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
     paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
     paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
-    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.04
-    paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 6.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
+    paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 3.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
@@ -61,8 +61,8 @@ def simulation_setup(case):
         paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
     else:
         paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
-    print(namelist)
-    print(paramlist)
+    pp.pprint(namelist)
+    pp.pprint(paramlist)
 
     # TODO - copied from NetCDFIO
     # ugly way to know the name of the folder where the data is saved
@@ -147,7 +147,7 @@ def read_les_data_srs(les_data):
     Input:
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """
-    variables = ["rho","temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
+    variables = ["temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali", "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\
@@ -155,32 +155,12 @@ def read_les_data_srs(les_data):
                  "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S", "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov",\
                  "massflux_h" ,"massflux_qt" ,"total_flux_h" ,"total_flux_qt" ,"diffusive_flux_h" ,"diffusive_flux_qt"]
 
-    les = {"z_half" : np.array(les_data["z"][:]), "t" : np.array(les_data["t"][:])}
-    # les = {"z_half" : np.array(les_data["profiles/z_half"][:]), "t" : np.array(les_data["profiles/t"][:])}
+    les = {"z_half" : np.array(les_data["z_half"][:]), "t" : np.array(les_data["t"][:])}
+    les["rho"] = np.array(les_data["profiles/rho"][:])
+    les["p0"] = np.array(les_data["profiles/p0"][:])
     for var in variables:
         les[var] = []
-        if ("qt" in var or "ql" in var):
-            try:
-                les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
-            except:
-                les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
-        elif ("qr" in var):
-            try:
-                les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
-            except:
-                les[var] = np.transpose(np.array(les_data["profiles/w_mean"][:, :])) * 0  #g/kg
-        elif ("p0" in var):
-            les[var] = np.transpose(np.array(les_data["reference/" + var][:, :])) * 100   #hPa
-        # elif ("thetali" in var):
-        #     try:
-        #         les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
-        #     except:
-        #         les[var] = np.transpose(np.array(les_data["profiles/theta_mean" ][:, :]))
-        elif ("rho" in var):
-            les[var] = np.array(les_data["profiles/"  + var][ :])
-        else:
-            les[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
-
+        les[var] = np.transpose(np.array(les_data["profiles/"+var][:, :]))
     return les
 
 
@@ -222,36 +202,20 @@ def read_les_data_timeseries(les_data):
                  "friction_velocity_mean", "shf_surface_mean", "lhf_surface_mean", "lwp", "thetali_srf_int"] #TODO add rwp
 
     # read the data
-    les = {"z_half_les" : np.array(les_data["z"][:]), "t" : np.array(les_data["t"][:])}
+    les = {"z_half_les" : np.array(les_data["z_half"][:]), "t" : np.array(les_data["t"][:])}
     maxz = np.max(les['z_half_les'])
-    try:
-        CF = np.array(les_data["timeseries/cloud_fraction"][:])
-        CF[np.where(CF<=0.0)] = np.nan
-    except:
-        CF = np.array(les_data["timeseries/shf_surface_mean"][:])
-        CF *= 0.0
+    CF = np.array(les_data["timeseries/cloud_fraction"][:])
+    CF[np.where(CF<=0.0)] = np.nan
     les["updraft_cloud_cover"] = CF
-    try:
-        CT = np.array(les_data["timeseries/cloud_top"][:])
-        CT[np.where(CT<=0.0)] = np.nan
-    except:
-        CT = np.array(les_data["timeseries/shf_surface_mean"][:])
-        CT *= 0.0
+    CT = np.array(les_data["timeseries/cloud_top"][:])
+    CT[np.where(CT<=0.0)] = np.nan
     les["updraft_cloud_top"] = CT
-    try:
-        CB = np.array(les_data["timeseries/cloud_base"][:])
-        CB[np.where(CB>maxz)] = np.nan
-    except:
-        CB = np.array(les_data["timeseries/shf_surface_mean"][:])
-        CB *= 0.0
+    CB = np.array(les_data["timeseries/cloud_base"][:])
+    CB[np.where(CB>maxz)] = np.nan
     les["updraft_cloud_base"] = CB
 
     les["ustar"] = np.array(les_data["timeseries/friction_velocity_mean"][:])
     les["shf"] = np.array(les_data["timeseries/shf_surface_mean"][:])
     les["lhf"] = np.array(les_data["timeseries/lhf_surface_mean"][:])
-    try:
-        les["lwp"] = np.array(les_data["timeseries/lwp"][:])
-    except:
-        les["lwp"] = np.array(les_data["timeseries/shf_surface_mean"][:])
-        les["lwp"] *= 0.0
+    les["lwp"] = np.array(les_data["timeseries/lwp"][:])
     return les

@@ -48,9 +48,6 @@ def test_plot_timeseries_DYCOMS(sim_data):
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    # pls.plot_timeseries(data_to_plot, les_data_to_plot, "DYCOMS")
-    # pls.plot_tapio(data_to_plot, les_data_to_plot,3,4, "DYCOMS_main.pdf")
-
     pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/DYCOMS_RF01/")
     pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            folder="plots/output/DYCOMS_RF01/")
     pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "DYCOMS_RF01_closures.pdf", folder="plots/output/DYCOMS_RF01/")

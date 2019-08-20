@@ -34,16 +34,12 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
     folder - folder where to save the created plot
     """
     if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = len(data["t"])-1
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = len(les["t"])-1
+        tmax = np.max(data["t"])/3600.0
+
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
 
     qv_mean = np.array(data["qt_mean"]) - np.array(data["ql_mean"])
     qv_mean_les = np.array(les["qt_mean"]) - np.array(les["ql_mean"])
@@ -64,53 +60,14 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
                   r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
                   r'$\bar{q}_{r,env} [\mathrm{g/kg}]$']
 
-    fig_name  =  ["qt_mean",
-                   "ql_mean",
-                   "qr_mean",
-                   "qr_mean",
-                   "thetal_mean",
-                   "TKE",
-                   "u_mean",
-                   "v_mean",
-                   "updraft_w",
-                   "updraft_buoyancy",
-                   "updraft_ql",
-                   "updraft_qr",
-                   "updraft_area",
-                   "env_ql",
-                   "env_qr"]
+    fig_name  =  ["qt_mean", "ql_mean", "qr_mean", "qr_mean", "thetal_mean", "TKE", "u_mean", "v_mean", "updraft_w", "updraft_buoyancy", "updraft_ql",
+                  "updraft_qr", "updraft_area", "env_ql", "env_qr"]
 
-    plot_x =     [data["qt_mean"],
-                  data["ql_mean"],
-                  data["qr_mean"],
-                  qv_mean,
-                  data["thetal_mean"],
-                  data["tke_mean"],
-                  data["u_mean"],
-                  data["v_mean"],
-                  data["updraft_w"],
-                  data["updraft_buoyancy"],
-                  data["updraft_ql"],
-                  data["updraft_qr"],
-                  data["updraft_area"],
-                  data["env_ql"],
-                  data["env_qr"]]
+    plot_x =     [data["qt_mean"], data["ql_mean"], data["qr_mean"], qv_mean, data["thetal_mean"], data["tke_mean"], data["u_mean"], data["v_mean"],
+                  data["updraft_w"], data["updraft_buoyancy"], data["updraft_ql"], data["updraft_qr"], data["updraft_area"], data["env_ql"], data["env_qr"]]
 
-    plot_x_les = [les["qt_mean"],
-                  les["ql_mean"],
-                  les["qr_mean"],
-                  qv_mean_les,
-                  les["thetali_mean"],
-                  les["tke_mean"],
-                  les["u_translational_mean"],
-                  les["v_translational_mean"],
-                  les["updraft_w"],
-                  les["updraft_buoyancy"],
-                  les["updraft_ql"],
-                  les["updraft_qr"],
-                  les["updraft_fraction"],
-                  les["env_ql"],
-                  les["env_qr"] ]
+    plot_x_les = [les["qt_mean"], les["ql_mean"], les["qr_mean"], qv_mean_les, les["thetali_mean"], les["tke_mean"], les["u_translational_mean"],
+                  les["v_translational_mean"], les["updraft_w"], les["updraft_buoyancy"], les["updraft_ql"], les["updraft_qr"], les["updraft_fraction"], les["env_ql"], les["env_qr"] ]
 
     color  = ["navy", "darkorange"]
     label  = ["ini", "end"]
@@ -120,16 +77,11 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
     for plot_it in range(len(x_labels)):
         # customize defaults
         fig = plt.figure(fig_name[plot_it])
-        fig.set_figheight(12)
-        fig.set_figwidth(14)
-        mpl.rcParams.update({'font.size': 18})
-        mpl.rc('lines', linewidth=4, markersize=10)
-                               #(rows, columns, number)
         plt.xlabel(x_labels[plot_it])
         plt.ylabel('height [km]')
         plt.ylim([0, data["z_half"][-1]/1000.0 + (data["z_half"][1]/1000.0 - data["z_half"][0]/1000.0) * 0.5])
         plt.grid(True)
-        plt.plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, '-', color='k', label='les', linewidth = 2)
+        plt.plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='k', label='les', linewidth = 2)
         plt.plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
@@ -149,23 +101,15 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])
     else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+        tmax = tmax
+    tmin = tmin
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
     # customize defaults
 
     fig = plt.figure(1)
-    fig.set_figheight(12)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
-    mpl.rc('lines', linewidth=4, markersize=10)
     nh_pressure = -np.multiply(les["updraft_fraction"],les["updraft_ddz_p_alpha"])
 
     # data to plot
@@ -185,7 +129,7 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
         #plot updrafts
         if (plot_it < 5):
             if x_lab[plot_it] =="nonhydro_pressure":
-                plots[plot_it].plot(np.multiply(les["rho"],np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1)), les["z_half"]/1000.0, "-", color="gray", linewidth = 4)
+                plots[plot_it].plot(np.multiply(les["rho"],np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1)), les["z_half"], "-", color="gray", linewidth = 4)
             plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", linewidth = 2)
             plots[plot_it].set_xlabel(x_lab[plot_it])
         if (plot_it == 5):
@@ -211,22 +155,14 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])
     else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+        tmax = tmax
+    tmin = tmin
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
 
     fig = plt.figure(1)
-    fig.set_figheight(12)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
-    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     x_lab    =  ["tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"]
@@ -243,7 +179,7 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
         plots[plot_it].set_ylabel('z [m]')
         plots[plot_it].grid(True)
         if plot_it<6:
-            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, '-', color='gray', label='les', linewidth = 4)
+            plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
             plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
             plots[plot_it].set_xlabel(x_lab[plot_it])
             plots[plot_it].set_ylim([0, np.max(data["z_half"]/1000.0)])
@@ -273,22 +209,16 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])
     else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+        tmax = tmax
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
 
     ig = plt.figure(1)
     plt.subplot(121)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
-    # plt.plot(np.nanmean(data["tke_mean"][:,t_start:t_end],axis=1),        data["z_half"], "-", color="gray",       label="tke_mean",        linewidth = 4)
     plt.plot(np.nanmean(data["tke_advection"][:,t_start:t_end],axis=1),   data["z_half"]/1000.0, "-", color="royalblue",  label="tke_advection",   linewidth = 2)
     plt.plot(np.nanmean(data["tke_buoy"][:,t_start:t_end],axis=1),        data["z_half"]/1000.0, "-", color="darkorange", label="tke_buoy",        linewidth = 2)
     plt.plot(np.nanmean(data["tke_dissipation"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="k",          label="tke_dissipation", linewidth = 2)
@@ -302,15 +232,14 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.subplot(122)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
-    # plt.plot(np.nanmean(les["tke_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-", color="gray",       label="tke_mean", linewidth = 4)
-    plt.plot(np.nanmean(les["tke_prod_A"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="royalblue",  label="tke_A",    linewidth = 2)
-    plt.plot(np.nanmean(les["tke_prod_B"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="darkorange", label="tke_B",    linewidth = 2)
-    plt.plot(np.nanmean(les["tke_prod_D"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="k",          label="tke_D",    linewidth = 2)
-    plt.plot(np.nanmean(les["tke_prod_P"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="darkgreen",  label="tke_P",    linewidth = 2)
-    plt.plot(np.nanmean(les["tke_prod_T"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="red",        label="tke_T",    linewidth = 2)
-    plt.plot(np.nanmean(les["tke_prod_S"][:,t_start_les:t_end_les],axis=1), les["z_half"]/1000.0, "-",    color="purple",     label="tke_S",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_A"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="royalblue",  label="tke_A",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_B"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="darkorange", label="tke_B",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_D"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="k",          label="tke_D",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_P"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="darkgreen",  label="tke_P",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_T"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="red",        label="tke_T",    linewidth = 2)
+    plt.plot(np.nanmean(les["tke_prod_S"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="purple",     label="tke_S",    linewidth = 2)
     plt.xlabel('tke componenets les')
-    plt.ylim([0, np.max(les["z_half"]/1000.0)])
+    plt.ylim([0, np.max(les["z_half"])])
     plt.savefig(folder + title)
     plt.clf()
 
@@ -326,22 +255,15 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])
     else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
-    t_start_les = int(np.where(les["t"] > tmin)[0][0])
-    t_start_les = 0
-    t_end_les   = int(np.where(les["t"] <= tmax)[0][0])
-    t_end_les   = int(np.where(les["t"] == les["t"][-1] )[0][0])
+        tmax = tmax
+    tmin = tmin
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin)[0][0])
+    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+
     # customize defaults
     fig = plt.figure(1)
-    fig.set_figheight(8)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 16})
-    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     x_lab         = ["Hvar",       "QTvar",       "HQTcov"]
@@ -359,7 +281,7 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
-        plots[plot_it].plot(np.nanmean(les[plot_var_env[plot_it]][:,t_start_les:t_end_les],axis=1),   les["z_half"]/1000.0,  "-", label= 'les',              c="gray",linewidth = 4)
+        plots[plot_it].plot(np.nanmean(les[plot_var_env[plot_it]][:,t_start_les:t_end_les],axis=1),   les["z_half"],  "-", label= 'les',              c="gray",linewidth = 4)
         plots[plot_it].plot(np.nanmean(data[plot_var_mean[plot_it]][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", label= plot_var_mean[plot_it], c="crimson", linewidth = 2)
         plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"]/1000.0, "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
@@ -380,18 +302,12 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])
     else:
-        tmax = tmax*3600.0
-    tmin = tmin*3600.0
-    t_start = int(np.where(data["t"] > tmin)[0][0])
-    t_start = 0
-    t_end   = int(np.where(data["t"] <= tmax)[0][0])
-    t_end   = int(np.where(data["t"]  == data["t"][-1] )[0][0])
+        tmax = tmax
+    # tmin = tmin
+    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
+    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
     # customize defaults
     fig = plt.figure(1)
-    fig.set_figheight(8)
-    fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 16})
-    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
@@ -442,18 +358,12 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
     plots = []
     for plot_it in range(6):
         fig = plt.figure(1)
-        fig.set_figheight(8)
-        fig.set_figwidth(14)
-        mpl.rcParams.update({'font.size': 12})
-        mpl.rc('lines', linewidth=2, markersize=6)
-        # plots.append(plt.subplot(2,3,plot_it+1))
-                               #(rows, columns, number)
         if plot_it < 4:
             plt.xlabel('time [h]')
             plt.ylabel(y_lab[plot_it])
             plt.xlim([0, data["t"][-1]/3600.0])
             plt.grid(True)
-            plt.plot(les["t"][1:]/3600.0 , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
+            plt.plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
             plt.plot(data["t"][1:]/3600.0, plot_y[plot_it][1:], '-', color="b")
             plt.legend()
         elif plot_it == 4:
@@ -468,8 +378,8 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.ylabel(y_lab[5])
             plt.xlim([0, data["t"][-1]/3600.0])
             plt.grid(True)
-            plt.plot(les["t"][1:]/3600.0, les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
-            plt.plot(les["t"][1:]/3600.0, les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
+            plt.plot(les["t"][1:], les["updraft_cloud_base"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
+            plt.plot(les["t"][1:], les["updraft_cloud_top"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
@@ -493,8 +403,8 @@ def plot_timeseries(data,  les, folder="plots/output/"):
     data["updr_qv"] = data["updraft_qt"] - data["updraft_ql"]
     data["env_qv"]  = data["env_qt"]     - data["env_ql"]
 
-    les_z_half     = les["z_half"]/1000.0
-    les_time       = les["t"] /3600.0
+    les_z_half     = les["z_half"]
+    les_time       = les["t"]
     les["qv_mean"] = les["qt_mean"]     - les["ql_mean"]
     les["upd_qv"]  = les["updraft_qt"]  - les["updraft_ql"]
     les["env_qv"]  = les["env_qt"]      - les["env_ql"]

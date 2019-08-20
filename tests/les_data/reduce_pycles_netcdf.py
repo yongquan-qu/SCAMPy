@@ -40,10 +40,14 @@ def main():
     except:
         resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_theta']
         resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
+        # resolved_z_flux_thetali_ = data.groups['profiles'].variables['w_mean']
+        # resolved_z_flux_qt_ = data.groups['profiles'].variables['w_mean']
 
 
+    # updraft_ddz_p_alpha_ = data.groups['profiles'].variables['w_mean']
     updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
     rho_ = data.groups['reference'].variables['rho0_half']
+    p0_ = np.multiply(data.groups['reference'].variables['rho0_half'],100.0)
 
     # try the TKE diagnostics outputs
     tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
@@ -54,27 +58,27 @@ def main():
     tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
     tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
     try:
-        qr_mean_ = data.groups['profiles'].variables['qr_mean']
-        env_qr_ = data.groups['profiles'].variables['env_qr']
-        updraft_qr_ = data.groups['profiles'].variables['updraft_qr']
+        qr_mean_ = np.multiply(data.groups['profiles'].variables['qr_mean'],1000.0)
+        env_qr_ = np.multiply(data.groups['profiles'].variables['env_qr'],1000.0)
+        updraft_qr_ = np.multiply(data.groups['profiles'].variables['updraft_qr'],1000.0)
     except:
         qr_mean_ = np.zeros_like(env_w_)
         env_qr_ = np.zeros_like(env_w_)
         updraft_qr_ = np.zeros_like(env_w_)
     try:
-        qi_mean_ = data.groups['profiles'].variables['qi_mean']
-        env_qi_ = data.groups['profiles'].variables['env_qi']
-        updraft_qi_ = data.groups['profiles'].variables['updraft_qi']
+        qi_mean_ = np.multiply(data.groups['profiles'].variables['qi_mean'],1000.0)
+        env_qi_ = np.multiply(data.groups['profiles'].variables['env_qi'],1000.0)
+        updraft_qi_ = np.multiply(data.groups['profiles'].variables['updraft_qi'],1000.0)
     except:
-        qi_mean_ = np.zeros_like(env_w_)
-        env_qi_ = np.zeros_like(env_w_)
-        updraft_qi_ = np.zeros_like(env_w_)
+        qi_mean_ = np.multiply(np.zeros_like(env_w_),1000.0)
+        env_qi_ = np.multiply(np.zeros_like(env_w_),1000.0)
+        updraft_qi_ = np.multiply(np.zeros_like(env_w_),1000.0)
     try:
-        qt_mean_ = data.groups['profiles'].variables['qt_mean']
-        qt_mean2_ = data.groups['profiles'].variables['qt_mean2']
-        env_qt_ = data.groups['profiles'].variables['env_qt']
-        env_qt2_ = data.groups['profiles'].variables['env_qt2']
-        updraft_qt_ = data.groups['profiles'].variables['updraft_qt']
+        qt_mean_ = np.multiply(data.groups['profiles'].variables['qt_mean'],1000.0)
+        qt_mean2_ = np.multiply(data.groups['profiles'].variables['qt_mean2'],1e6)
+        env_qt_ = np.multiply(data.groups['profiles'].variables['env_qt'],1000.0)
+        env_qt2_ = np.multiply(data.groups['profiles'].variables['env_qt2'],1e6)
+        updraft_qt_ = np.multiply(data.groups['profiles'].variables['updraft_qt'],1000.0)
     except:
         qt_mean_ = np.zeros_like(env_w_)
         qt_mean2_ = np.zeros_like(env_w_)
@@ -82,15 +86,15 @@ def main():
         env_qt2_ = np.zeros_like(env_w_)
         updraft_qt_ = np.zeros_like(env_w_)
     try:
-        ql_mean_ = data.groups['profiles'].variables['ql_mean']
-        env_ql_ = data.groups['profiles'].variables['env_ql']
-        updraft_ql_ = data.groups['profiles'].variables['updraft_ql']
+        ql_mean_ = np.multiply(data.groups['profiles'].variables['ql_mean'],1000.0)
+        env_ql_ = np.multiply(data.groups['profiles'].variables['env_ql'],1000.0)
+        updraft_ql_ = np.multiply(data.groups['profiles'].variables['updraft_ql'],1000.0)
     except:
         ql_mean_ = np.zeros_like(env_w_)
         env_ql_ = np.zeros_like(env_w_)
         updraft_ql_ = np.zeros_like(env_w_)
     try:
-        env_qt_thetali_ = data.groups['profiles'].variables['env_qt_thetali']
+        env_qt_thetali_ = np.multiply(data.groups['profiles'].variables['env_qt_thetali'],1000.0)
     except:
         env_qt_thetali_ = np.zeros_like(env_w_)
 
@@ -124,8 +128,8 @@ def main():
     	lwp_ = np.zeros_like(lhf_surface_mean_)
     # thetali_srf_int_ = data.groups['timeseries'].variables['thetali_srf_int']
 
-    z_ = data.groups['profiles'].variables['z']
-    t_ = data.groups['profiles'].variables['t']
+    z_half_ = np.divide(data.groups['profiles'].variables['z_half'],1000.0)
+    t_ = np.divide(data.groups['profiles'].variables['t'],3600.0)
 
 
     # flux diagnosis
@@ -152,18 +156,19 @@ def main():
     diffusive_flux_qt_ = np.multiply(rho_temp, diffusive_flux_qt_)
 
     output = nc.Dataset(fname, "w", format="NETCDF4")
-    output.createDimension('z', len(z_))
+    output.createDimension('z', len(z_half_))
     output.createDimension('t', len(t_))
     output.createDimension('dim', None)
     output.createGroup("profiles")
     output.createGroup("timeseries")
 
     t = output.createVariable('t', 'f4', 't')
-    z = output.createVariable('z', 'f4', 'z')
+    z_half = output.createVariable('z_half', 'f4', 'z')
 
     profiles_grp = output.groups["profiles"]
 
     rho = profiles_grp.createVariable('rho','f4',('z'))
+    p0 = profiles_grp.createVariable('p0','f4',('z'))
     Hvar_mean = profiles_grp.createVariable('Hvar_mean','f4',('t','z'))
     QTvar_mean = profiles_grp.createVariable('QTvar_mean','f4',('t','z'))
     env_Hvar = profiles_grp.createVariable('env_Hvar','f4',('t','z'))
@@ -226,6 +231,7 @@ def main():
     # thetali_srf_int = timeseries_grp.createVariable('thetali_srf_int','f4','t')
 
     rho[:] = rho_[:]
+    p0[:] = p0_[:]
     Hvar_mean[:,:] = Hvar_mean_[:,:]
     QTvar_mean[:,:] = QTvar_mean_[:,:]
     env_Hvar[:,:] = env_Hvar_[:,:]
@@ -285,7 +291,7 @@ def main():
     lhf_surface_mean[:] = lhf_surface_mean_[:]
     lwp[:] = lwp_[:]
 
-    z[:] = z_[:]
+    z_half[:] = z_half_[:]
     t[:] = t_[:]
     output.close()
 
