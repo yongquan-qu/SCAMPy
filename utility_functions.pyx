@@ -146,8 +146,3 @@ cdef double hardmin(double [:] x):
       i += 1
 
     return min(x)
-
-
-
-
-
