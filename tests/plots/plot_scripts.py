@@ -9,19 +9,19 @@ mpl.use('Agg')  # To allow plotting when display is off
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
-def discrete_cmap(N, base_cmap=None):
-    """Create an N-bin discrete colormap from the specified input map"""
+# def discrete_cmap(N, base_cmap=None):
+#     """Create an N-bin discrete colormap from the specified input map"""
 
-    # Taken from https://gist.github.com/jakevdp/91077b0cae40f8f8244a
+#     # Taken from https://gist.github.com/jakevdp/91077b0cae40f8f8244a
 
-    # Note that if base_cmap is a string or None, you can simply do
-    #    return plt.cm.get_cmap(base_cmap, N)
-    # The following works for string, None, or a colormap instance:
+#     # Note that if base_cmap is a string or None, you can simply do
+#     #    return plt.cm.get_cmap(base_cmap, N)
+#     # The following works for string, None, or a colormap instance:
 
-    base = plt.cm.get_cmap(base_cmap)
-    color_list = base(np.linspace(0, 1, N))
-    cmap_name = base.name + str(N)
-    return base.from_list(cmap_name, color_list, N)
+#     base = plt.cm.get_cmap(base_cmap)
+#     color_list = base(np.linspace(0, 1, N))
+#     cmap_name = base.name + str(N)
+#     return base.from_list(cmap_name, color_list, N)
 
 
 def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
@@ -29,8 +29,10 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
     Plots mean profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
-    title  - name for the created plot
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     folder - folder where to save the created plot
     """
     if tmax==-1:
@@ -85,6 +87,8 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/Bomex/"):
         plt.plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
+        plt.autoscale()
+        plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
@@ -93,7 +97,10 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     Plots updraft and environment profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
@@ -110,6 +117,10 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     # customize defaults
 
     fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
     nh_pressure = -np.multiply(les["updraft_fraction"],les["updraft_ddz_p_alpha"])
 
     # data to plot
@@ -139,6 +150,8 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
             plots[5].set_xlim([-0.1*xmax, xmax])
             plots[5].legend()
 
+    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -147,7 +160,10 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     Plots updraft and environment profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
@@ -163,6 +179,10 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
 
     fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     x_lab    =  ["tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"]
@@ -193,6 +213,8 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
             plots[plot_it].set_ylim([0, np.max(data["z_half"]/1000.0)])
             plots[plot_it].legend()
 
+    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -201,7 +223,10 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     Plots updraft and environment profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
@@ -215,7 +240,11 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
     t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
 
-    ig = plt.figure(1)
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
     plt.subplot(121)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
@@ -240,6 +269,8 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.plot(np.nanmean(les["tke_prod_S"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="purple",     label="tke_S",    linewidth = 2)
     plt.xlabel('tke componenets les')
     plt.ylim([0, np.max(les["z_half"])])
+    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -248,7 +279,10 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     Plots variance and covariance profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
@@ -264,6 +298,10 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
 
     # customize defaults
     fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     x_lab         = ["Hvar",       "QTvar",       "HQTcov"]
@@ -286,6 +324,8 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"]/1000.0, "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
     plots[0].legend()
+    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -295,7 +335,10 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     Plots variance and covariance components profiles from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
@@ -308,6 +351,10 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
     # customize defaults
     fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
 
     # data to plot
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
@@ -333,6 +380,8 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
             plots[plot_it].plot(np.nanmean(data[plot_var_data[plot_it][var]][:,t_start:t_end],axis=1),   data["z_half"]/1000.0, "-", label=plot_Hvar_c[var],  c=color_c[var])
 
     plots[0].legend()
+    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -342,8 +391,10 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
     Plots timeseries from Scampy
 
     Input:
-    data   - dictionary with previousely read it data
-    title  - name for the created plot
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     folder - folder where to save the created plot
     """
     # customize defaults
@@ -383,6 +434,8 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
+        plt.autoscale()
+        plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
@@ -391,8 +444,10 @@ def plot_timeseries(data,  les, folder="plots/output/"):
     Plots the time series of Scampy simulations
 
     Input:
-    data   - dictionary with previousely read it data
-    case   - name for the tested simulation (to be used in the plot name)
+    data   - scm stats file
+    les    - les stats file
+    tmin   - lower bound for time mean
+    tmin   - upper bound for time mean
     folder - folder where to save the created plot
     """
     # customize figure parameters
@@ -412,21 +467,21 @@ def plot_timeseries(data,  les, folder="plots/output/"):
     # data to plot "qt_mean",
     les_vars  = ["thetali_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean", "qt_mean", "env_thetali", "env_w", "env_qt", "env_ql","env_qr",
                  "updraft_thetali", "updraft_fraction", "updraft_buoyancy", "updraft_w", "updraft_qt", "updraft_ql","updraft_qr",
-                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt"]
+                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt", "u_translational_mean", "v_translational_mean"]
 
     scm_vars  = ["thetal_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean", "qt_mean", "env_thetal", "env_w", "env_qt", "env_ql", "env_qr",
                  "updraft_thetal", "updraft_area", "updraft_buoyancy", "updraft_w", "updraft_qt", "updraft_ql", "updraft_qr",
-                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt"]
+                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt", "u_mean", "v_mean"]
 
     labels    = ["mean thl [K]", "mean TKE [m2/s2]", "mean qv [g/kg]", "mean ql [g/kg]", "mean qr [g/kg]", "mean qt [g/kg]", "env thl [K]", "env w [m/s]",
                  "env qt [g/kg]", "env ql [g/kg]", "env qr [g/kg]", "updr thl [K]", "updr area [%]", "updr buoyancy [m/s^2]", "updr w [m/s]",
                  "updr qt [g/kg]", "updr ql [g/kg]", "updr qr [g/kg", "massflux_h [kg*K/ms^2]", "diffusive_flux_h [kg*K/ms^2]", "total_flux_h [kg*K/ms^2]",
-                 "massflux_qt [g*/ms^2]", "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]"]
+                 "massflux_qt [g*/ms^2]", "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]",  "u [m/s]", "v [m/s]"]
 
     fig_name =  ["contour_thl_mean", "contour_TKE_mean", "contour_qv_mean", "contour_ql_mean", "contour_qr_mean", "contour_qt_mean", "contour_env_thl", "contour_env_w",
                  "contour_env_qt", "contour_env_ql", "contour_env_qr", "contour_upd_thl", "contour_upd_area", "contour_upd_buoyancy", "contour_upd_w", "contour_upd_qt",
                  "contour_upd_ql", "contour_upd_qr", "contour_massflux_h", "contour_diffusive_flux_h", "contour_total_flux_h", "contour_massflux_qt", "contour_diffusive_flux_qt",
-                 "contour_total_flux_qt"]
+                 "contour_total_flux_qt","contour_u_mean", "contour_v_mean"]
 
     # iteration over plots
     plots = []
@@ -457,6 +512,8 @@ def plot_timeseries(data,  les, folder="plots/output/"):
         plt.contourf(time, z_half, scm_field, cmap='RdBu_r')
         plt.colorbar()
         plt.ylim([0,np.max(data["z_half"]/1000.0)])
+        plt.autoscale()
+        plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
         plt.close()
