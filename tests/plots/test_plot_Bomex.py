@@ -23,7 +23,7 @@ def sim_data(request):
     cmn.removing_files
     setup = cmn.simulation_setup('Bomex')
     # change the defaults
-    setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
+    #setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')

@@ -21,8 +21,6 @@ def sim_data(request):
 
     # generate namelists and paramlists
     setup = cmn.simulation_setup('life_cycle_Tan2018')
-    # change the defaults
-    setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')

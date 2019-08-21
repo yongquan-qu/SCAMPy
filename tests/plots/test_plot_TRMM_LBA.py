@@ -21,8 +21,6 @@ def sim_data(request):
 
     # generate namelists and paramlists
     setup = cmn.simulation_setup('TRMM_LBA')
-    # chenge the defaults
-    setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
@@ -35,7 +33,6 @@ def sim_data(request):
     request.addfinalizer(cmn.removing_files)
 
     return sim_data
-
 
 # @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_TRMM_LBA(sim_data):

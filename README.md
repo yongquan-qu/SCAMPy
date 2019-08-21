@@ -13,38 +13,33 @@ subgrid-scale turbulence and convection. Journal of Advances in Modeling Earth S
 The code is written in Python and Cython.
 
 Code Contributors:
-	Colleen Kaul (Caltech)--initial/primary developer.
-	Yair Cohen (Caltech);
-	Anna Jaruga (JPL/Caltech);
-        Ignacio Lopez-Gomez (Caltech);
-	Kyle Pressel (Caltech);
-	Zhihong Tan (U. Chicago)
+	Colleen Kaul (PNNL) --initial/primary developer,
+	Yair Cohen (Caltech),
+        Jia He (Caltech),
+	Anna Jaruga (JPL/Caltech),
+        Ignacio Lopez-Gomez (Caltech),
+	Kyle Pressel (PNNL),
+	Zhihong Tan (U. Chicago).
 
 Additional Acknowledgements:
-	Tapio Schneider (Caltech);
-	Joao Teixeira (JPL)
+	Tapio Schneider (Caltech),
+	Joao Teixeira (JPL).
 
 # installation #
 
-SCAMPy is written in Python and is compatible with both Python 2.7 and 3.6.
-It requires [Cython](http://cython.org/), [netcdf4](http://unidata.github.io/netcdf4-python/)
- and [scipy](https://www.scipy.org/).
-For testing and plotting it additionally requires [pytest](https://docs.pytest.org/en/latest/)
- and [matplotlib](https://matplotlib.org/).
-All the dependancies can be installed using [pip](https://pypi.org/project/pip/).
-See also the travis.yml file for a complete list of instructions needed to compile and run SCAMPy on a clean Linux machine.
+SCAMPy requires Cython, netcdf4, matplotlib, scipy and numpy.
 
 # building and running #
 ```
 $ cd scampy
 ```
 
-Generate the simulation specific parameters (accepted keywords: Soares, DYCOMS_RF01, DYCOMS_RF02, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III)
+Generate the simulation specific parameters (accepted keywords:  Bomex, life_cycle_Tan2018, Soares, Rico, TRMM_LBA, ARM_SGP, GATE_III, DYCOMS_RF01, GABLS, SP)
 ```
 $ python generate_namelist.py Soares
 ```
 
-Generate the turbulence parameters (accepted keywords: defaults, Soares, DYCOMS_RF01, DYCOMS_RF02, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III)
+Generate the turbulence parameters (accepted keywords: defaults, Soares, Bomex, life_cycle_Tan2018, Rico, TRMM_LBA, ARM_SGP, GATE_III, DYCOMS_RF01, GABLS, SP)
 ```
 $ python generate_paramlist.py Soares
 ```
@@ -59,21 +54,27 @@ Serial execution of scampy (both turbulence and case specific parameters need to
 $ python main.py Soares.in paramlist_Soares.in
 ```
 
-# testing  #
+# automated plotting  #
 
-Tests for SCAMPy are located in the tests folder.
+All automated plots are located in the tests folder and are generated using [pytest](https://pytest.org/en/latest/).
 
-To run automatic plots please try:
+To run all automatic plots please try:
 
 ```
 $ cd tests/
 
-$ py.test -v plots/
+$ py.test -s -v plots/
 
 $ cd ../
 
 ```
+To run an individual plot please try:
 
-TODO: regression tests
+```
+$ cd tests/
 
-TODO: unit tests
+$ py.test -s -v plots/test_plot_Soares.py
+
+$ cd ../
+
+```
