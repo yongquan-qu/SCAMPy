@@ -40,11 +40,12 @@ def test_plot_timeseries_Soares(sim_data):
     plot Soares timeseries
     """
     # make directory
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Soares/")
+        os.mkdir(localpath + "/plots/output/Soares/")
     except:
         print('Soares folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -61,11 +62,12 @@ def test_plot_timeseries_1D_Soares(sim_data):
     """
     plot Soares 1D timeseries
     """
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Soares/")
+        os.mkdir(localpath + "/plots/output/Soares/")
     except:
         print('Soares folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 

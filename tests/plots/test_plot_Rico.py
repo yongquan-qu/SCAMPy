@@ -40,11 +40,12 @@ def test_plot_timeseries_Rico(sim_data):
     plot Rico timeseries
     """
     # make directory
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Rico/")
+        os.mkdir(localpath + "/plots/output/Rico/")
     except:
         print('Rico folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/Rico.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -61,11 +62,12 @@ def test_plot_timeseries_1D_Rico(sim_data):
     """
     plot Rico 1D timeseries
     """
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/Rico/")
+        os.mkdir(localpath + "/plots/output/Rico/")
     except:
         print('Rico folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/Rico.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 

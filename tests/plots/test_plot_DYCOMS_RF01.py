@@ -38,11 +38,12 @@ def test_plot_timeseries_DYCOMS(sim_data):
     """
     plot timeseries
     """
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/DYCOMS_RF01/")
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01/")
     except:
         print('DYCOMS_RF01 folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
+    les_data = Dataset(localpath +  '/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -58,11 +59,12 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
     """
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/DYCOMS_RF01/")
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01/")
     except:
         print('DYCOMS_RF01 folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 

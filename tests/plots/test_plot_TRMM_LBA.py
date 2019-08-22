@@ -1,17 +1,13 @@
 import sys
 sys.path.insert(0, "./")
 sys.path.insert(0, "../")
-
 import os
 import subprocess
 import json
 import warnings
-
 from netCDF4 import Dataset
-
 import pytest
 import numpy as np
-
 import main as scampy
 import common as cmn
 import plot_scripts as pls
@@ -40,11 +36,12 @@ def test_plot_timeseries_TRMM_LBA(sim_data):
     plot TRMM_LBA timeseries
     """
     # make directory
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/TRMM_LBA/")
+        os.mkdir(localpath + "/plots/output/TRMM_LBA/")
     except:
         print('TRMM_LBA folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -60,11 +57,12 @@ def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA 1D timeseries
     """
+    localpath = os.getcwd()
     try:
-        os.mkdir("/Users/yaircohen/Documents/codes/scampy/tests/plots/output/TRMM_LBA/")
+        os.mkdir(localpath + "/plots/output/TRMM_LBA/")
     except:
         print('TRMM_LBA folder exists')
-    les_data = Dataset('/Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc', 'r')
+    les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
