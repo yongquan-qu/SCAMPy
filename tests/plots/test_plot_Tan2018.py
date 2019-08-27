@@ -64,7 +64,7 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
     """
     plot Tan2018 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/Tan2018/")
     # except:

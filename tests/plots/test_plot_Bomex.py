@@ -63,7 +63,7 @@ def test_plot_timeseries_1D_Bomex(sim_data):
     """
     plot Bomex 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/Bomex/")
     #     print()

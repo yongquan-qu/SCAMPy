@@ -57,7 +57,7 @@ def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/TRMM_LBA/")
     # except:

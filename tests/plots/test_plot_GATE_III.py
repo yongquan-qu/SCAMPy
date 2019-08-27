@@ -62,7 +62,7 @@ def test_plot_timeseries_1D_GATE_III(sim_data):
     """
     plot GATE_III 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/GATE_III/")
     # except:

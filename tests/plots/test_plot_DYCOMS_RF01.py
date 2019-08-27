@@ -59,7 +59,7 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/DYCOMS_RF01/")
     # except:

@@ -62,7 +62,7 @@ def test_plot_timeseries_1D_Rico(sim_data):
     """
     plot Rico 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/Rico/")
     # except:

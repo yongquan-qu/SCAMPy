@@ -63,7 +63,7 @@ def test_plot_timeseries_1D_Gabls(sim_data):
     """
     plot Gabls 1D timeseries
     """
-    # localpath = os.getcwd()
+    localpath = os.getcwd()
     # try:
     #     os.mkdir(localpath + "/plots/output/Gabls/")
     # except:
