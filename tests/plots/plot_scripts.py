@@ -436,9 +436,9 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
 
         plt.autoscale()
         plt.tight_layout()
-        print(plot_it)
-        print(fig_name[plot_it])
-        plt.savefig(folder + fig_name[plot_it]+".pdf")
+        # print(plot_it)
+        # print(fig_name[plot_it])
+        # plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
 def plot_timeseries(data,  les, folder="plots/output/"):
