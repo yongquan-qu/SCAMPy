@@ -57,11 +57,11 @@ def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA 1D timeseries
     """
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/TRMM_LBA/")
-    except:
-        print('TRMM_LBA folder exists')
+    # localpath = os.getcwd()
+    # try:
+    #     os.mkdir(localpath + "/plots/output/TRMM_LBA/")
+    # except:
+    #     print('TRMM_LBA folder exists')
     les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)

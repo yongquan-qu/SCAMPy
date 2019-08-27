@@ -64,11 +64,11 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
     """
     plot Tan2018 1D timeseries
     """
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Tan2018/")
-    except:
-        print('Tan2018 folder exists')
+    # localpath = os.getcwd()
+    # try:
+    #     os.mkdir(localpath + "/plots/output/Tan2018/")
+    # except:
+    #     print('Tan2018 folder exists')
     les_data = Dataset(localpath + '/les_data/Tan2018.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)

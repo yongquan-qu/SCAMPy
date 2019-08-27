@@ -62,11 +62,11 @@ def test_plot_timeseries_1D_GATE_III(sim_data):
     """
     plot GATE_III 1D timeseries
     """
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/GATE_III/")
-    except:
-        print('GATE_III folder exists')
+    # localpath = os.getcwd()
+    # try:
+    #     os.mkdir(localpath + "/plots/output/GATE_III/")
+    # except:
+    #     print('GATE_III folder exists')
     les_data = Dataset(localpath + '/les_data/GATE_III.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
