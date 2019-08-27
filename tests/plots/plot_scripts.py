@@ -401,7 +401,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
 
     # data to plot
     plot_y     = [data["updraft_cloud_cover"],  data["lwp"], data["lhf"], data["shf"], data["rd"],             data["updraft_cloud_top"], data["updraft_cloud_base"]]
-    plot_les_y = [les["updraft_cloud_cover"],   les["lwp"],  les["lhf"],  les["shf"],  les["shf"]*np.nan,      les["updraft_cloud_top"],  les["updraft_cloud_base"]]
+    plot_les_y = [les["updraft_cloud_cover"],   les["lwp"],  les["lhf"],  les["shf"],  les["shf"],             les["updraft_cloud_top"],  les["updraft_cloud_base"]]
     y_lab  =     ['updr cl. cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'updr CB, CT [km]']
     fig_name  =  ['updraft_cloud_cover', 'liquid_water_path',  'latent_heat_flux',  'sensible_heat_flux',       'plume_separation_radius',   'updraft_cloud_base_top']
 
@@ -436,6 +436,8 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
 
         plt.autoscale()
         plt.tight_layout()
+        print(plot_it)
+        print(fig_name[plot_it])
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
