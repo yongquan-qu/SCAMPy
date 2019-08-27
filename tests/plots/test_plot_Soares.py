@@ -63,10 +63,10 @@ def test_plot_timeseries_1D_Soares(sim_data):
     plot Soares 1D timeseries
     """
     localpath = os.getcwd()
-    # try:
-    #     os.mkdir(localpath + "/plots/output/Soares/")
-    # except:
-    #     print('Soares folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Soares/")
+    except:
+        print('Soares folder exists')
     les_data = Dataset(localpath + '/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)

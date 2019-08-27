@@ -64,11 +64,11 @@ def test_plot_timeseries_1D_Bomex(sim_data):
     plot Bomex 1D timeseries
     """
     localpath = os.getcwd()
-    # try:
-    #     os.mkdir(localpath + "/plots/output/Bomex/")
-    #     print()
-    # except:
-    #     print('Bomex folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Bomex/")
+        print()
+    except:
+        print('Bomex folder exists')
     les_data = Dataset(localpath + '/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)

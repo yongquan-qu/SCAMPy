@@ -63,10 +63,10 @@ def test_plot_timeseries_1D_ARM_SGP(sim_data):
     plot ARM_SGP 1D timeseries
     """
     localpath = os.getcwd()
-    # try:
-    #     os.mkdir(localpath + "/plots/output/ARM_SGP/")
-    # except:
-    #     print('ARM_SGP folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/ARM_SGP/")
+    except:
+        print('ARM_SGP folder exists')
     les_data = Dataset(localpath + '/les_data/ARM_SGP.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
