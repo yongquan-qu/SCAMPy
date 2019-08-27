@@ -55,6 +55,7 @@ def test_plot_timeseries_DYCOMS(sim_data):
     pls.plot_tke_components(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_tke_components.pdf", folder="plots/output/DYCOMS_RF01/")
     pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 3,4,  "DYCOMS_RF01_tke_breakdown.pdf", folder="plots/output/DYCOMS_RF01/")
 
+@pytest.mark.skip(reason="for now not included in reduced netCDF files")
 def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
