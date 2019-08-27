@@ -421,7 +421,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.tight_layout()
             print(plot_it)
             print(fig_name[plot_it])
-            plt.savefig(folder + fig_name[plot_it]+".pdf")
+            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
             plt.clf()
         elif plot_it == 4:
             plt.xlabel('time [h]')
@@ -434,7 +434,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.tight_layout()
             print(plot_it)
             print(fig_name[plot_it])
-            plt.savefig(folder + fig_name[plot_it]+".pdf")
+            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
             plt.clf()
         else:
             plt.xlabel('time [h]')
@@ -450,7 +450,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.tight_layout()
             print(plot_it)
             print(fig_name[plot_it])
-            plt.savefig(folder + fig_name[plot_it]+".pdf")
+            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
             plt.clf()
 
 def plot_timeseries(data,  les, folder="plots/output/"):
