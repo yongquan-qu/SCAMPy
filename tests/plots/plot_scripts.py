@@ -417,12 +417,6 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
             plt.plot(data["t"][1:]/3600.0, plot_y[plot_it][1:], '-', color="b")
             plt.legend()
-            plt.autoscale()
-            plt.tight_layout()
-            print(plot_it)
-            print(fig_name[plot_it])
-            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
-            plt.clf()
         elif plot_it == 4:
             plt.xlabel('time [h]')
             plt.ylabel(y_lab[plot_it])
@@ -432,10 +426,6 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.legend()
             plt.autoscale()
             plt.tight_layout()
-            print(plot_it)
-            print(fig_name[plot_it])
-            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
-            plt.clf()
         else:
             plt.xlabel('time [h]')
             plt.ylabel(y_lab[5])
@@ -446,12 +436,10 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
-            plt.autoscale()
-            plt.tight_layout()
-            print(plot_it)
-            print(fig_name[plot_it])
-            plt.savefig(fig_name[plot_it]+".pdf") # folder + 
-            plt.clf()
+        plt.autoscale()
+        plt.tight_layout()
+        plt.savefig(folder + fig_name[plot_it]+".pdf")
+        plt.clf()
 
 def plot_timeseries(data,  les, folder="plots/output/"):
     """

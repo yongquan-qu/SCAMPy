@@ -69,7 +69,7 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/DyCOMS_RF01/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/DYCOMS_RF01/")
 
 @pytest.mark.skip(reason="for now not included in reduced netCDF files")
 def test_DYCOMS_RF01_radiation(sim_data):
