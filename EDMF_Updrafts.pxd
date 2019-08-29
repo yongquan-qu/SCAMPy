@@ -77,10 +77,3 @@ cdef class UpdraftThermodynamics:
     cpdef update_total_precip_sources(self)
 
     cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain)
-
-    # update variables level by level (for diagnostic updrafts - not tested)
-    cdef void update_UpdVar(
-        self, double *qt, double *ql, double *h, double *T, double *area,
-        double qr_src, double th_src, double qt_new, double ql_new,
-        double T_new, double thl_new, Py_ssize_t i, Py_ssize_t k
-    ) nogil

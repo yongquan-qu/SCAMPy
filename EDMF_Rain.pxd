@@ -1,6 +1,8 @@
 cimport Grid
 cimport ReferenceState
 from Variables cimport GridMeanVariables
+from EDMF_Environment cimport EnvironmentThermodynamics
+from EDMF_Updrafts cimport UpdraftThermodynamics
 from NetCDFIO cimport NetCDFIO_Stats
 from TimeStepping cimport TimeStepping
 
@@ -38,8 +40,7 @@ cdef class RainVariables:
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats, ReferenceState.ReferenceState Ref)
-    cpdef set_updraft_rain_values_with_new(self)
-    cpdef sum_subdomains_rain(self)
+    cpdef sum_subdomains_rain(self, UpdraftThermodynamics UpdThermo, EnvironmentThermodynamics EnvThermo)
     cpdef rain_diagnostics(self, ReferenceState.ReferenceState Ref)
 
 cdef class RainPhysics:

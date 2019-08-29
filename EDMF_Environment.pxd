@@ -83,8 +83,11 @@ cdef class EnvironmentThermodynamics:
         double [:] QTvar_rain_dt
         double [:] HQTcov_rain_dt
 
-        void update_EnvVar(self,    Py_ssize_t k, EnvironmentVariables EnvVar, double T, double H, double qt, double ql, double alpha) nogil
-        void update_EnvRain(self,   Py_ssize_t k, EnvironmentVariables EnvVar, RainVariables Rain, double qr) nogil
+        double [:] prec_source_qt
+        double [:] prec_source_h
+
+        void update_EnvVar(self, Py_ssize_t k, EnvironmentVariables EnvVar, double T, double H, double qt, double ql, double alpha) nogil
+        void update_EnvRain_sources(self, Py_ssize_t k, EnvironmentVariables EnvVar, double qr, double thl_rain_src) nogil
         void update_cloud_dry(self, Py_ssize_t k, EnvironmentVariables EnvVar, double T, double H, double qt, double ql, double qv) nogil
 
         void saturation_adjustment(self, EnvironmentVariables EnvVar)
