@@ -202,7 +202,7 @@ def Rico():
 
     namelist['microphysics'] = {}
     namelist['microphysics']['max_supersaturation'] = 0.01
-    namelist['microphysics']['rain_model'] = False
+    namelist['microphysics']['rain_model'] = True
 
     namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 20.0
@@ -249,8 +249,8 @@ def TRMM_LBA():
     namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['microphysics'] = {}
-    namelist['microphysics']['max_supersaturation'] = 0.1
-    namelist['microphysics']['rain_model'] = False
+    namelist['microphysics']['max_supersaturation'] = 0.01
+    namelist['microphysics']['rain_model'] = True
 
     namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 30.0
