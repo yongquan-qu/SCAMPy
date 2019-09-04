@@ -286,12 +286,22 @@ cdef class EnvironmentThermodynamics:
             Py_ssize_t gw = self.Gr.gw
             eos_struct sa
             mph_struct mph
+            double alpha
 
         with nogil:
             for k in xrange(gw, self.Gr.nzg-gw):
-                sa  = eos(self.t_to_prog_fp, self.prog_to_t_fp, self.Ref.p0_half[k], EnvVar.QT.values[k], EnvVar.H.values[k])
+                sa  = eos(self.t_to_prog_fp, self.prog_to_t_fp,
+                          self.Ref.p0_half[k], EnvVar.QT.values[k],
+                          EnvVar.H.values[k]
+                         )
+
                 EnvVar.T.values[k]   = sa.T
                 EnvVar.QL.values[k]  = sa.ql
+                alpha = alpha_c(self.Ref.p0_half[k], EnvVar.T.values[k],
+                                EnvVar.QT.values[k],
+                                EnvVar.QT.values[k] - EnvVar.QL.values[k]
+                               )
+                EnvVar.B.values[k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
 
                 self.update_cloud_dry(k, EnvVar,
                                       EnvVar.T.values[k], EnvVar.THL.values[k],

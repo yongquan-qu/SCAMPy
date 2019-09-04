@@ -1698,15 +1698,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.QL.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.QL.bulkvalues[k] \
                                     + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QL.values[k])
 
-                #GMV.QR.values[k] = self.UpdRain.RainArea.values[k] * self.UpdRain.QR.values[k] \
-                #                 + self.EnvRain.RainArea.values[k] * self.EnvRain.QR.values[k]
                 GMV.QR.values[k]  = self.Rain.QR.values[k] * self.Rain.RainArea.values[k]
 
                 GMV.T.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.T.bulkvalues[k] \
                                     + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.T.values[k])
 
-                GMV.T.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.T.bulkvalues[k] \
-                                    + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.T.values[k])
                 qv = GMV.QT.values[k] - GMV.QL.values[k]
 
                 GMV.THL.values[k] = t_to_thetali_c(self.Ref.p0_half[k], GMV.T.values[k], GMV.QT.values[k],
@@ -2098,4 +2094,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             else:
                 Covar.values[k] = fmax(x[kk],0.0)
         Covar.set_bcs(self.Gr)
+
+        self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
+
+        return
+
 
