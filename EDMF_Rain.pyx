@@ -204,7 +204,7 @@ cdef class RainPhysics:
 
             term_vel[:] = term_vel_new[:]
 
-            if max(term_vel[:]) != 0.:
+            if np.max(np.abs(term_vel[:])) > np.finfo(float).eps:
                 dt_rain = np.minimum(dt_model - t_elapsed, CFL_limit * self.Gr.dz / max(term_vel[:]))
             else:
                 dt_rain = dt_model - t_elapsed
