@@ -1610,16 +1610,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.QT.values[k] += self.RainPhysics.rain_evap_source_qt[k]
         return
 
-    cpdef apply_env_rain_sinks_to_GMV_H_QT(self, GridMeanVariables GMV):
-        cdef:
-            Py_ssize_t k
-
-        with nogil:
-            for k in xrange(self.Gr.gw, self.Gr.nzg):
-                GMV.H.values[k] += self.EnvThermo.prec_source_h[k]
-                GMV.QT.values[k] += self.EnvThermo.prec_source_qt[k]
-        return
-
     cpdef compute_tke_buoy(self, GridMeanVariables GMV):
         cdef:
             Py_ssize_t k
