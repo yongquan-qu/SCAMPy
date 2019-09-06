@@ -1235,7 +1235,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
                 if a_k>0.0:
                     press_buoy =  -1.0 * self.Ref.rho0[k] * a_k * B_k * self.pressure_buoy_coeff
-                    press_drag = -1.0 * self.Ref.rho0[k] * sqrt(a_k) * (self.pressure_drag_coeff/self.pressure_plume_spacing[i]
+                    press_drag = -1.0 * self.Ref.rho0[k] * sqrt(a_k) * (1.0/self.pressure_plume_spacing[i]
                                     * (self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k])*fabs(self.UpdVar.W.values[i,k] -self.EnvVar.W.values[k]))
                     self.nh_pressure[i,k] = press_buoy + press_drag
                 else:
