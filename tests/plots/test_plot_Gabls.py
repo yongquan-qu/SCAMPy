@@ -47,17 +47,24 @@ def test_plot_timeseries_Gabls(sim_data):
         os.mkdir(localpath + "/plots/output/Gabls/")
     except:
         print('Gabls folder exists')
-    les_data = Dataset(localpath +'/les_data/Gabls.nc', 'r')
+    try:
+        os.mkdir(localpath + "/plots/output/Gabls/all_variables/")
+    except:
+        print('Gabls/all_variables folder exists')
+    les_data = Dataset(localpath + '/les_data/Gabls.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Gabls/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,10,12,             folder="plots/output/Gabls/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,10,12,         "Gabls_closures.pdf", folder="plots/output/Gabls/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 10,12,  "Gabls_var_covar_mean.pdf", folder="plots/output/Gabls/")
-    pls.plot_var_covar_components(data_to_plot,10,12,               "Gabls_var_covar_components.pdf", folder="plots/output/Gabls/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 10,12,  "Gabls_tke_components.pdf", folder="plots/output/Gabls/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 10,12,   "Gabls_tke_breakdown.pdf", folder="plots/output/Gabls/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,10,12,           "Gabls_closures.pdf",           folder="plots/output/Gabls/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,10,12,         "Gabls_humidities.pdf",         folder="plots/output/Gabls/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,10,12, "Gabls_updraft_properties.pdf", folder="plots/output/Gabls/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 10,12,    "Gabls_tke_components.pdf",     folder="plots/output/Gabls/")
+
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Gabls/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,10,12,            folder="plots/output/Gabls/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 10,12, "Gabls_var_covar_mean.pdf", folder="plots/output/Gabls/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,10,12,              "Gabls_var_covar_components.pdf", folder="plots/output/Gabls/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 10,12,  "Gabls_tke_breakdown.pdf", folder="plots/output/Gabls/all_variables/")
 
 def test_plot_timeseries_1D_Gabls(sim_data):
     """
@@ -66,10 +73,18 @@ def test_plot_timeseries_1D_Gabls(sim_data):
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/Gabls/")
+        print()
     except:
         print('Gabls folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Gabls/all_variables/")
+    except:
+        print('Gabls/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/Gabls.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Gabls/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/Gabls/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/Gabls/all_variables/")

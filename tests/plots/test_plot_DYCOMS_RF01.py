@@ -34,28 +34,35 @@ def sim_data(request):
 
     return sim_data
 
-def test_plot_timeseries_DYCOMS(sim_data):
+def test_plot_timeseries_DYCOMS_RF01(sim_data):
     """
-    plot timeseries
+    plot DYCOMS_RF01 timeseries
     """
+    # make directory
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/DYCOMS_RF01/")
     except:
         print('DYCOMS_RF01 folder exists')
-    les_data = Dataset(localpath +  '/les_data/DYCOMS_RF01.nc', 'r')
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01/all_variables/")
+    except:
+        print('DYCOMS_RF01/all_variables folder exists')
+    les_data = Dataset(localpath + '/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/DYCOMS_RF01/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            folder="plots/output/DYCOMS_RF01/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,        "DYCOMS_RF01_closures.pdf", folder="plots/output/DYCOMS_RF01/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_var_covar_mean.pdf", folder="plots/output/DYCOMS_RF01/")
-    pls.plot_var_covar_components(data_to_plot,3,4,              "DYCOMS_RF01_var_covar_components.pdf", folder="plots/output/DYCOMS_RF01/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_tke_components.pdf", folder="plots/output/DYCOMS_RF01/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 3,4,  "DYCOMS_RF01_tke_breakdown.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,           "DYCOMS_RF01_closures.pdf",           folder="plots/output/DYCOMS_RF01/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,3,4,         "DYCOMS_RF01_humidities.pdf",         folder="plots/output/DYCOMS_RF01/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,3,4, "DYCOMS_RF01_updraft_properties.pdf", folder="plots/output/DYCOMS_RF01/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 3,4,    "DYCOMS_RF01_tke_components.pdf",     folder="plots/output/DYCOMS_RF01/")
 
-# @pytest.mark.skip(reason="for now not included in reduced netCDF files")
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/DYCOMS_RF01/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            folder="plots/output/DYCOMS_RF01/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "DYCOMS_RF01_var_covar_mean.pdf", folder="plots/output/DYCOMS_RF01/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,3,4,              "DYCOMS_RF01_var_covar_components.pdf", folder="plots/output/DYCOMS_RF01/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 3,4,  "DYCOMS_RF01_tke_breakdown.pdf", folder="plots/output/DYCOMS_RF01/all_variables/")
+
 def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
@@ -63,13 +70,21 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/DYCOMS_RF01/")
+        print()
     except:
         print('DYCOMS_RF01 folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01/all_variables/")
+    except:
+        print('DYCOMS_RF01/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/DYCOMS_RF01.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/DYCOMS_RF01/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/DYCOMS_RF01/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/DYCOMS_RF01/all_variables/")
 
 @pytest.mark.skip(reason="for now not included in reduced netCDF files")
 def test_DYCOMS_RF01_radiation(sim_data):

@@ -47,17 +47,24 @@ def test_plot_timeseries_Bomex(sim_data):
         os.mkdir(localpath + "/plots/output/Bomex/")
     except:
         print('Bomex folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Bomex/all_variables/")
+    except:
+        print('Bomex/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Bomex/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/Bomex/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "Bomex_closures.pdf", folder="plots/output/Bomex/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf", folder="plots/output/Bomex/")
-    pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf", folder="plots/output/Bomex/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "Bomex_tke_components.pdf", folder="plots/output/Bomex/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Bomex_tke_breakdown.pdf", folder="plots/output/Bomex/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,           "Bomex_closures.pdf",           folder="plots/output/Bomex/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,5,6,         "Bomex_humidities.pdf",         folder="plots/output/Bomex/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,5,6, "Bomex_updraft_properties.pdf", folder="plots/output/Bomex/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6,    "Bomex_tke_components.pdf",     folder="plots/output/Bomex/")
+
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Bomex/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/Bomex/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "Bomex_var_covar_mean.pdf", folder="plots/output/Bomex/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,5,6,              "Bomex_var_covar_components.pdf", folder="plots/output/Bomex/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "Bomex_tke_breakdown.pdf", folder="plots/output/Bomex/all_variables/")
 
 def test_plot_timeseries_1D_Bomex(sim_data):
     """
@@ -69,8 +76,15 @@ def test_plot_timeseries_1D_Bomex(sim_data):
         print()
     except:
         print('Bomex folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Bomex/all_variables/")
+    except:
+        print('Bomex/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/Bomex.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Bomex/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/Bomex/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/Bomex/all_variables/")

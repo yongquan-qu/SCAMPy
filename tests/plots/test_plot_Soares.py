@@ -45,18 +45,24 @@ def test_plot_timeseries_Soares(sim_data):
         os.mkdir(localpath + "/plots/output/Soares/")
     except:
         print('Soares folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Soares/all_variables/")
+    except:
+        print('Soares/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Soares/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,7,8,            folder="plots/output/Soares/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,7,8,        "Soares_closures.pdf", folder="plots/output/Soares/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf", folder="plots/output/Soares/")
-    pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf", folder="plots/output/Soares/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 7,8, "Soares_tke_components.pdf", folder="plots/output/Soares/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 7,8,  "Soares_tke_breakdown.pdf", folder="plots/output/Soares/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,7,8,           "Soares_closures.pdf",           folder="plots/output/Soares/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,7,8,         "Soares_humidities.pdf",         folder="plots/output/Soares/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,7,8, "Soares_updraft_properties.pdf", folder="plots/output/Soares/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 7,8,    "Soares_tke_components.pdf",     folder="plots/output/Soares/")
 
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/Soares/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,7,8,            folder="plots/output/Soares/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 7,8, "Soares_var_covar_mean.pdf", folder="plots/output/Soares/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,7,8,              "Soares_var_covar_components.pdf", folder="plots/output/Soares/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 7,8,  "Soares_tke_breakdown.pdf", folder="plots/output/Soares/all_variables/")
 
 def test_plot_timeseries_1D_Soares(sim_data):
     """
@@ -65,10 +71,18 @@ def test_plot_timeseries_1D_Soares(sim_data):
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/Soares/")
+        print()
     except:
         print('Soares folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/Soares/all_variables/")
+    except:
+        print('Soares/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/Soares.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/Soares/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/Soares/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/Soares/all_variables/")

@@ -41,22 +41,30 @@ def test_plot_timeseries_ARM_SGP(sim_data):
     """
     plot ARM_SGP timeseries
     """
+    # make directory
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/ARM_SGP/")
     except:
         print('ARM_SGP folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/ARM_SGP/all_variables/")
+    except:
+        print('ARM_SGP/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/ARM_SGP.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/ARM_SGP/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,8,11,            folder="plots/output/ARM_SGP/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,8,11,        "ARM_SGP_closures.pdf", folder="plots/output/ARM_SGP/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 8,11, "ARM_SGP_var_covar_mean.pdf", folder="plots/output/ARM_SGP/")
-    pls.plot_var_covar_components(data_to_plot,8,11,              "ARM_SGP_var_covar_components.pdf", folder="plots/output/ARM_SGP/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 8,11, "ARM_SGP_tke_components.pdf", folder="plots/output/ARM_SGP/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 8,11,  "ARM_SGP_tke_breakdown.pdf", folder="plots/output/ARM_SGP/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,8,11,           "ARM_SGP_closures.pdf",           folder="plots/output/ARM_SGP/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,8,11,         "ARM_SGP_humidities.pdf",         folder="plots/output/ARM_SGP/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,8,11, "ARM_SGP_updraft_properties.pdf", folder="plots/output/ARM_SGP/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 8,11,    "ARM_SGP_tke_components.pdf",     folder="plots/output/ARM_SGP/")
+
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/ARM_SGP/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,8,11,            folder="plots/output/ARM_SGP/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 8,11, "ARM_SGP_var_covar_mean.pdf", folder="plots/output/ARM_SGP/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,8,11,              "ARM_SGP_var_covar_components.pdf", folder="plots/output/ARM_SGP/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 8,11,  "ARM_SGP_tke_breakdown.pdf", folder="plots/output/ARM_SGP/all_variables/")
 
 def test_plot_timeseries_1D_ARM_SGP(sim_data):
     """
@@ -65,10 +73,18 @@ def test_plot_timeseries_1D_ARM_SGP(sim_data):
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/ARM_SGP/")
+        print()
     except:
         print('ARM_SGP folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/ARM_SGP/all_variables/")
+    except:
+        print('ARM_SGP/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/ARM_SGP.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/ARM_SGP/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/ARM_SGP/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/ARM_SGP/all_variables/")

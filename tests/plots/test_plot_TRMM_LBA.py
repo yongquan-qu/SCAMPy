@@ -30,7 +30,6 @@ def sim_data(request):
 
     return sim_data
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_TRMM_LBA(sim_data):
     """
     plot TRMM_LBA timeseries
@@ -41,17 +40,24 @@ def test_plot_timeseries_TRMM_LBA(sim_data):
         os.mkdir(localpath + "/plots/output/TRMM_LBA/")
     except:
         print('TRMM_LBA folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/TRMM_LBA/all_variables/")
+    except:
+        print('TRMM_LBA/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/TRMM_LBA/")
-    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/TRMM_LBA/")
-    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,        "TRMM_LBA_closures.pdf", folder="plots/output/TRMM_LBA/")
-    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_var_covar_mean.pdf", folder="plots/output/TRMM_LBA/")
-    pls.plot_var_covar_components(data_to_plot,5,6,              "TRMM_LBA_var_covar_components.pdf", folder="plots/output/TRMM_LBA/")
-    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_tke_components.pdf", folder="plots/output/TRMM_LBA/")
-    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "TRMM_LBA_tke_breakdown.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_closures(data_to_plot, les_data_to_plot,5,6,           "TRMM_LBA_closures.pdf",           folder="plots/output/TRMM_LBA/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,5,6,         "TRMM_LBA_humidities.pdf",         folder="plots/output/TRMM_LBA/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,5,6, "TRMM_LBA_updraft_properties.pdf", folder="plots/output/TRMM_LBA/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 5,6,    "TRMM_LBA_tke_components.pdf",     folder="plots/output/TRMM_LBA/")
+
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/TRMM_LBA/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,5,6,            folder="plots/output/TRMM_LBA/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 5,6, "TRMM_LBA_var_covar_mean.pdf", folder="plots/output/TRMM_LBA/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,5,6,              "TRMM_LBA_var_covar_components.pdf", folder="plots/output/TRMM_LBA/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 5,6,  "TRMM_LBA_tke_breakdown.pdf", folder="plots/output/TRMM_LBA/all_variables/")
 
 def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     """
@@ -60,10 +66,18 @@ def test_plot_timeseries_1D_TRMM_LBA(sim_data):
     localpath = os.getcwd()
     try:
         os.mkdir(localpath + "/plots/output/TRMM_LBA/")
+        print()
     except:
         print('TRMM_LBA folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/TRMM_LBA/all_variables/")
+    except:
+        print('TRMM_LBA/all_variables folder exists')
     les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot, folder="plots/output/TRMM_LBA/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/TRMM_LBA/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/TRMM_LBA/all_variables/")
