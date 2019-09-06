@@ -105,7 +105,7 @@ def read_data_srs(sim_data):
     sim_data  - netcdf Dataset with simulation results
     """
     variables = ["temperature_mean", "thetal_mean", "qt_mean", "ql_mean", "qr_mean",\
-                 "buoyancy_mean", "u_mean", "v_mean", "tke_mean",\
+                 "buoyancy_mean", "b_mix","u_mean", "v_mean", "tke_mean",\
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql", "updraft_thetal",\
                  "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
                  "massflux_h", "diffusive_flux_h", "total_flux_h",\

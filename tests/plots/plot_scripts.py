@@ -124,9 +124,9 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     nh_pressure = -np.multiply(les["updraft_fraction"],les["updraft_ddz_p_alpha"])
 
     # data to plot
-    x_lab    =  ["eddy_diffusivity",         "mixing_length",         "updraft buoyancy",         "nonhydro_pressure",      "turbulent_entrainment",         "entrainment",             "detrainment"        ]
-    plot_vars = [data["eddy_diffusivity"],   data["mixing_length"],   data["updraft_buoyancy"],   data["nh_pressure"],       data["turbulent_entrainment"],  data["entrainment_sc"],    data["detrainment_sc"]]
-    xmax = np.max(data["detrainment_sc"])
+    x_lab    =  ["eddy_diffusivity",         "mixing_length",         "nonhydro_pressure",      "turbulent_entrainment",         "updraft buoyancy",       "mixture buoyancy",  "entrainment",             "detrainment"        ]
+    plot_vars = [data["eddy_diffusivity"],   data["mixing_length"],   data["nh_pressure"],       data["turbulent_entrainment"],  data["updraft_buoyancy"], data["b_mix"],       data["entrainment_sc"],    data["detrainment_sc"]]
+    xmax = np.min([np.max(data["detrainment_sc"]),0.05])
     if xmax == 0.0:
         xmax = np.max(data["entrainment_sc"])
     # iteration over plots
@@ -138,18 +138,22 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
         plots[plot_it].set_ylim([0, data["z_half"][-1]/1000.0 + (data["z_half"][1]/1000.0 - data["z_half"][0]/1000.0) * 0.5])
         plots[plot_it].grid(True)
         #plot updrafts
-        if (plot_it < 5):
+        if (plot_it < 4):
             if x_lab[plot_it] =="nonhydro_pressure":
                 plots[plot_it].plot(np.multiply(les["rho"],np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1)), les["z_half"], "-", color="gray", linewidth = 4)
             if x_lab[plot_it] =="updraft_buoyancy":
                 plots[plot_it].plot(np.nanmean(les["updraft_buoyancy"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-", color="gray", linewidth = 4)
             plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", linewidth = 2)
             plots[plot_it].set_xlabel(x_lab[plot_it])
+        if (plot_it == 4):
+            plots[plot_it].plot(np.nanmean(plot_vars[4][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue",  label="b_upd", linewidth = 2)
+            plots[plot_it].plot(np.nanmean(plot_vars[5][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="b_mix", linewidth = 2)
+            plots[plot_it].set_xlabel("buoyancy")
+            plots[4].legend()
         if (plot_it == 5):
-            plots[plot_it].plot(np.nanmean(plot_vars[5][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label="entr", linewidth = 2)
-            plots[plot_it].plot(np.nanmean(plot_vars[6][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="detr", linewidth = 2)
-            plots[plot_it].set_xlabel("entr/detr")
-            plots[5].set_xlim([-0.1*xmax, xmax])
+            plots[5].plot(np.nanmean(plot_vars[6][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label="entr", linewidth = 2)
+            plots[5].plot(np.nanmean(plot_vars[7][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="detr", linewidth = 2)
+            plots[5].set_xlabel("entr and detr")
             plots[5].legend()
 
     plt.autoscale()
