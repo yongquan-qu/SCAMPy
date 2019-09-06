@@ -54,8 +54,8 @@ def simulation_setup(case):
     paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
     paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_drag_coeff'] = 1.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
+    paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
+    # paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
     paramlist['turbulence']['updraft_microphysics'] = {}
     if case=='TRMM_LBA' or case=='Rico':
         paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
