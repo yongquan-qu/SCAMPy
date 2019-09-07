@@ -83,7 +83,7 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     data_to_plot_ = cmn.read_data_srs(sim_data)
     les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/DYCOMS_RF01/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, "DYCOMS_RF01_main_timeseries.pdf",folder="plots/output/DYCOMS_RF01/")
     pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/DYCOMS_RF01/all_variables/")
 
 @pytest.mark.skip(reason="for now not included in reduced netCDF files")

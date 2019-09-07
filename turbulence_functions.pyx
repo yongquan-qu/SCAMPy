@@ -78,7 +78,6 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
         _ret.detr_sc = del_bw2*(1.0+entr_in.c_del*D_)
     else:
         _ret.detr_sc = 0.0
-        print()
 
     return _ret
 

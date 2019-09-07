@@ -83,5 +83,5 @@ def test_plot_timeseries_1D_Rico(sim_data):
     data_to_plot_ = cmn.read_data_srs(sim_data)
     les_data_to_plot_ = cmn.read_les_data_srs(les_data)
 
-    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, folder="plots/output/Rico/")
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, "Rico_main_timeseries.pdf",folder="plots/output/Rico/")
     pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/Rico/all_variables/")

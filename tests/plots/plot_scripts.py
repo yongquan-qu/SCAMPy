@@ -584,7 +584,7 @@ def plot_main_timeseries(data, les, data_, les_, folder="plots/output/"):
 
     plt.autoscale()
     plt.tight_layout()
-    plt.savefig(folder + "main_timeseries.pdf")
+    plt.savefig(folder + title)
     plt.clf()
     plt.close()
 
