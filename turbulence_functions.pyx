@@ -78,6 +78,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
         _ret.detr_sc = del_bw2*(1.0+entr_in.c_del*D_)
     else:
         _ret.detr_sc = 0.0
+        print()
 
     return _ret
 
@@ -110,9 +111,9 @@ cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil:
         sa  = eos(t_to_thetali_c, eos_first_guess_thetal, entr_in.p0, qt_mix, H_mix)
         qv_ = (entr_in.qt_up+entr_in.qt_env)/2.0 - sa.ql
         alpha_mix = alpha_c(entr_in.p0, sa.T, qt_mix, qv_)
-        b_mix = buoyancy_c(entr_in.alpha0, alpha_mix)
-        buoyant_frac = -(b_mix-b_mean)/fmax(fabs(b_up-b_env),0.0000001)
-        ret_b.b_mix = b_mix - b_mean
+        b_mix = buoyancy_c(entr_in.alpha0, alpha_mix)-b_mean
+        buoyant_frac = -(b_mix)/fmax(fabs(b_up-b_env),0.0000001)
+        ret_b.b_mix = b_mix
         ret_b.buoyant_frac = buoyant_frac
 
         return ret_b

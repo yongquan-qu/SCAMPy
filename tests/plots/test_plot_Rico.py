@@ -34,7 +34,6 @@ def sim_data(request):
 
     return sim_data
 
-# @pytest.mark.skip(reason="deep convection not working with current defaults")
 def test_plot_timeseries_Rico(sim_data):
     """
     plot Rico timeseries

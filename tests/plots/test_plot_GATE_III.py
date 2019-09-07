@@ -34,7 +34,7 @@ def sim_data(request):
 
     return sim_data
 
-@pytest.mark.skip(reason="deep convection not working with current defaults")
+@pytest.mark.skip(reason="GATE not working yet")
 def test_plot_timeseries_GATE_III(sim_data):
     """
     plot GATE_III timeseries
@@ -64,7 +64,7 @@ def test_plot_timeseries_GATE_III(sim_data):
     pls.plot_var_covar_components(data_to_plot,22,24,              "GATE_III_var_covar_components.pdf", folder="plots/output/GATE_III/all_variables/")
     pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 22,24,  "GATE_III_tke_breakdown.pdf", folder="plots/output/GATE_III/all_variables/")
 
-@pytest.mark.skip(reason="deep convection not working with current defaults")
+@pytest.mark.skip(reason="GATE not working yet")
 def test_plot_timeseries_1D_GATE_III(sim_data):
     """
     plot GATE_III 1D timeseries

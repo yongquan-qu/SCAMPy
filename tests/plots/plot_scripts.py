@@ -32,12 +32,9 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
-    if tmax==-1:
-        tmax = np.max(data["t"])/3600.0
-
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -100,17 +97,10 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
-
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
-    tmin = tmin
-
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -123,42 +113,49 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
     nh_pressure = -np.multiply(les["updraft_fraction"],les["updraft_ddz_p_alpha"])
-
-    # data to plot
-    x_lab    =  ["eddy_diffusivity",         "mixing_length",         "nonhydro_pressure",      "turbulent_entrainment",         "updraft buoyancy",       "mixture buoyancy",  "entrainment",             "detrainment"        ]
-    plot_vars = [data["eddy_diffusivity"],   data["mixing_length"],   data["nh_pressure"],       data["turbulent_entrainment"],  data["updraft_buoyancy"], data["b_mix"],       data["entrainment_sc"],    data["detrainment_sc"]]
     xmax = np.min([np.max(data["detrainment_sc"]),0.05])
     if xmax == 0.0:
-        xmax = np.max(data["entrainment_sc"])
-    # iteration over plots
-    plots = []
-    for plot_it in range(6):
-        plots.append(plt.subplot(2,3,plot_it+1))
-                               #(rows, columns, number)
-        plots[plot_it].set_ylabel('z [m]')
-        plots[plot_it].set_ylim([0, data["z_half"][-1]/1000.0 + (data["z_half"][1]/1000.0 - data["z_half"][0]/1000.0) * 0.5])
-        plots[plot_it].grid(True)
-        #plot updrafts
-        if (plot_it < 4):
-            if x_lab[plot_it] =="nonhydro_pressure":
-                plots[plot_it].plot(np.multiply(les["rho"],np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1)), les["z_half"], "-", color="gray", linewidth = 4)
-            if x_lab[plot_it] =="updraft_buoyancy":
-                plots[plot_it].plot(np.nanmean(les["updraft_buoyancy"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-", color="gray", linewidth = 4)
-            plots[plot_it].plot(np.nanmean(plot_vars[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", linewidth = 2)
-            plots[plot_it].set_xlabel(x_lab[plot_it])
-        if (plot_it == 4):
-            plots[plot_it].plot(np.nanmean(plot_vars[4][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue",  label="b_upd", linewidth = 2)
-            plots[plot_it].plot(np.nanmean(plot_vars[5][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="b_mix", linewidth = 2)
-            plots[plot_it].set_xlabel("buoyancy")
-            plots[4].legend()
-        if (plot_it == 5):
-            plots[5].plot(np.nanmean(plot_vars[6][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label="entr", linewidth = 2)
-            plots[5].plot(np.nanmean(plot_vars[7][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="detr", linewidth = 2)
-            plots[5].set_xlabel("entr and detr")
-            plots[5].legend()
+        xmax = np.max(data["detrainment_sc"])
+
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+    plt.subplot(2,3,1)
+    plt.plot(np.nanmean(data["eddy_diffusivity"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", linewidth = 2)
+    plt.xlabel("eddy_diffusivity")
+    plt.grid(True)
+    plt.subplot(2,3,2)
+    plt.plot(np.nanmean(data["mixing_length"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
+    plt.xlabel("mixing_length [m]")
+    plt.grid(True)
+    plt.subplot(2,3,3)
+    plt.plot(np.nanmean(nh_pressure[:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
+    plt.plot(np.nanmean(data["nh_pressure"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='scm', linewidth = 2)
+    plt.xlabel("non hydro pressure")
+    plt.grid(True)
+
+    plt.subplot(2,3,4)
+    plt.plot(np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
+    plt.xlabel("turbulent_entrainment")
+    plt.grid(True)
+    plt.subplot(2,3,5)
+    plt.plot(np.nanmean(data["updraft_buoyancy"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue",  label="b_upd", linewidth = 2)
+    plt.plot(np.nanmean(data["b_mix"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-",            color="darkorange", label="b_mix", linewidth = 2)
+    plt.xlabel("buoyancy [m/s^2]")
+    plt.grid(True)
+    plt.legend()
+    plt.subplot(2,3,6)
+    plt.plot(np.nanmean(data["entrainment_sc"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label="entr", linewidth = 2)
+    plt.plot(np.nanmean(data["detrainment_sc"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="darkorange", label="detr", linewidth = 2)
+    plt.xlabel("entr and detr [1/m]")
+    plt.grid(True)
+    plt.legend()
+    plt.xlim([-0.0001,xmax])
 
     plt.autoscale()
-    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -170,16 +167,11 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
     # customize defaults
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
-    tmin = tmin
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -234,16 +226,11 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
     # customize defaults
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
-    tmin = tmin
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -323,16 +310,11 @@ def plot_updraft_properties(data, les,tmin, tmax, title,  folder="plots/output/"
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
     # customize defaults
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
-    tmin = tmin
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -391,15 +373,11 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
     # customize defaults
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -446,15 +424,10 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
-    tmin = tmin
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
@@ -502,14 +475,10 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     title  - name for the created plot
     folder - folder where to save the created plot
     """
-    if tmax==-1:
-        tmax = np.max(data["t"])
-    else:
-        tmax = tmax
     t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
     t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
 
@@ -557,7 +526,7 @@ def plot_main_timeseries(data, les, data_, les_, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
     # customize figure parameters
@@ -628,7 +597,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
     # customize defaults
@@ -683,7 +652,7 @@ def plot_timeseries(data,  les, folder="plots/output/"):
     data   - scm stats file
     les    - les stats file
     tmin   - lower bound for time mean
-    tmin   - upper bound for time mean
+    tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
     # customize figure parameters

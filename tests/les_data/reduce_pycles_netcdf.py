@@ -3,15 +3,8 @@ import netCDF4 as nc
 import pylab as plt
 import argparse
 
-# command line:              input                                 output
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Bomex/stats/Stats.Bomex.nc              /Users/yaircohen/Documents/codes/scampy/tests/les_data/Bomex.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/TRMM_LBA_TL/standard2/Stats.TRMM_LBA.nc                 /Users/yaircohen/Documents/codes/scampy/tests/les_data/TRMM_LBA.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GATE_III/stats/Stats.GATE_III.nc        /Users/yaircohen/Documents/codes/scampy/tests/les_data/GATE_III.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Rico/stats/Stats.Rico.nc                /Users/yaircohen/Documents/codes/scampy/tests/les_data/Rico.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/DyCOMS_RF01/stats/Stats.DYCOMS_RF01.nc  /Users/yaircohen/Documents/codes/scampy/tests/les_data/DYCOMS_RF01.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/Soares/stats/Stats.Soares.nc            /Users/yaircohen/Documents/codes/scampy/tests/les_data/Soares.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/GABLS/stats/Stats.Gabls.nc              /Users/yaircohen/Documents/codes/scampy/tests/les_data/Gabls.nc
-# python reduce_pycles_netcdf.py /Users/yaircohen/Documents/PyCLES_out/clima_master/stats_for_tests/ARM_SGP/stats/Stats.ARM_SGP.nc          /Users/yaircohen/Documents/codes/scampy/tests/les_data/ARM_SGP.nc
+# command line:
+# python reduce_pycles_netcdf.py input   output
 def main():
     parser = argparse.ArgumentParser(prog='PyCLES')
     parser.add_argument("fullfilename")
@@ -32,19 +25,9 @@ def main():
     updraft_buoyancy_ = data.groups['profiles'].variables['updraft_b']
     updraft_fraction_ = data.groups['profiles'].variables['updraft_fraction']
 
-    # resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
-    # resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
-    try:
-        resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
-        resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
-    except:
-        resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_theta']
-        resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
-        # resolved_z_flux_thetali_ = data.groups['profiles'].variables['w_mean']
-        # resolved_z_flux_qt_ = data.groups['profiles'].variables['w_mean']
+    resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
+    resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
 
-
-    # updraft_ddz_p_alpha_ = data.groups['profiles'].variables['w_mean']
     updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
     rho_ = data.groups['reference'].variables['rho0_half']
     p0_ = np.multiply(data.groups['reference'].variables['rho0_half'],100.0)
