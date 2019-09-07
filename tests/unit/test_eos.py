@@ -73,7 +73,7 @@ def test_eos_saturated(z, rnd, ql):
     # c) p and T are close to conditions possible in the atmosphere
 
     # scampy constants
-    const = wrp.const()
+    const = wrp.scampy_constants()
 
     # "standard atmosphere" profile around which we will test
     dTdz = -0.0065

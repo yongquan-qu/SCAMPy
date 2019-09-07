@@ -4,7 +4,7 @@
 cimport thermodynamic_functions as fun
 include "parameters.pxi"
 
-cdef class const:
+cdef class scampy_constants:
     def __init__(self):
         self.g  = g
         self.Rd = Rd
