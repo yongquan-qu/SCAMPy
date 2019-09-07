@@ -518,7 +518,7 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_main_timeseries(data, les, data_, les_, folder="plots/output/"):
+def plot_main_timeseries(data, les, data_, les_, title , folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
 
