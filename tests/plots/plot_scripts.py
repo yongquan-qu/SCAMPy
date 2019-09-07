@@ -38,10 +38,10 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/"):
     if tmax==-1:
         tmax = np.max(data["t"])/3600.0
 
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
 
     qv_mean = np.array(data["qt_mean"]) - np.array(data["ql_mean"])
     qv_mean_les = np.array(les["qt_mean"]) - np.array(les["ql_mean"])
@@ -110,12 +110,13 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     else:
         tmax = tmax
     tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
-    # customize defaults
 
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
+
+    # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(12)
     fig.set_figwidth(14)
@@ -179,10 +180,10 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     else:
         tmax = tmax
     tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
 
     fig = plt.figure(1)
     fig.set_figheight(12)
@@ -243,10 +244,10 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     else:
         tmax = tmax
     tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
 
     data["qv_mean"]  = data["qt_mean"]    - data["ql_mean"]
     data["upd_qv"] = data["updraft_qt"] - data["updraft_ql"]
@@ -332,10 +333,11 @@ def plot_updraft_properties(data, les,tmin, tmax, title,  folder="plots/output/"
     else:
         tmax = tmax
     tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
+
     les["massflux"]  = np.multiply(les["updraft_fraction"],les["updraft_w"])
     # data to plot
     fig = plt.figure(1)
@@ -398,10 +400,10 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
         tmax = np.max(data["t"])
     else:
         tmax = tmax
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
 
     fig = plt.figure(1)
     fig.set_figheight(12)
@@ -453,10 +455,10 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
     else:
         tmax = tmax
     tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin)[0][0])
-    t_start_les = int(np.where(np.multiply(les["t"],1.0) > tmin)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
-    t_end_les   = int(np.where(tmax<= np.multiply(les["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_start_les = int(np.where(np.array(les["t"]) > tmin)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+    t_end_les = int(np.where(np.array(tmax<= les["t"]))[0][0])
 
     # customize defaults
     fig = plt.figure(1)
@@ -508,9 +510,9 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
         tmax = np.max(data["t"])
     else:
         tmax = tmax
-    # tmin = tmin
-    t_start = int(np.where(np.multiply(data["t"],1.0) > tmin*3600.0)[0][0])
-    t_end   = int(np.where(tmax*3600.0<= np.multiply(data["t"],1.0))[0][0])
+    t_start = int(np.where(np.array(data["t"]) > tmin*3600.0)[0][0])
+    t_end = int(np.where(np.array(tmax*3600.0<= data["t"]))[0][0])
+
     # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(12)
