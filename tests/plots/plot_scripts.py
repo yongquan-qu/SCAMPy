@@ -53,13 +53,13 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/"):
                   'v [m/s]',
                   r'$\bar{w}_{upd} [\mathrm{m/s}]$',
                   r'$\bar{b}_{upd} [\mathrm{m/s^2}]$',
-                  r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
-                  r'$\bar{q}_{r,env} [\mathrm{g/kg}]$',
+                  r'$\bar{q}_{l,upd} [\mathrm{g/kg}]$',
+                  r'$\bar{q}_{r,upd} [\mathrm{g/kg}]$',
                   "updraft area [%]",
                   r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
                   r'$\bar{q}_{r,env} [\mathrm{g/kg}]$']
 
-    fig_name  =  ["qt_mean", "ql_mean", "qr_mean", "qr_mean", "thetal_mean", "TKE", "u_mean", "v_mean", "updraft_w", "updraft_buoyancy", "updraft_ql",
+    fig_name  =  ["qt_mean", "ql_mean", "qr_mean", "qv_mean", "thetal_mean", "TKE", "u_mean", "v_mean", "updraft_w", "updraft_buoyancy", "updraft_ql",
                   "updraft_qr", "updraft_area", "env_ql", "env_qr"]
 
     plot_x =     [data["qt_mean"], data["ql_mean"], data["qr_mean"], qv_mean, data["thetal_mean"], data["tke_mean"], data["u_mean"], data["v_mean"],
