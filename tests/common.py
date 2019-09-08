@@ -142,6 +142,7 @@ def read_data_timeseries(sim_data):
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
     maxz = np.max(data['z_half'])
+    # maxz = 1400.0
     for var in variables:
         data[var] = []
         data[var] = np.array(sim_data["timeseries/" + var][:])

@@ -14,7 +14,7 @@ def main():
     fname = args.fname
 
     data = nc.Dataset(fullfilename, 'r')
-    buoyancy_mean_  = np.multiply(data.groups['profiles'].variables['buoyancy_mean'],1.0)
+    buoyancy_mean_  = np.array(data.groups['profiles'].variables['buoyancy_mean'])
     env_w_ = data.groups['profiles'].variables['env_w']
     temperature_mean_ = data.groups['profiles'].variables['temperature_mean']
     u_mean_ = data.groups['profiles'].variables['u_mean']
@@ -109,7 +109,7 @@ def main():
         lwp_ = data.groups['timeseries'].variables['lwp']
     except:
     	lwp_ = np.zeros_like(lhf_surface_mean_)
-    # thetali_srf_int_ = data.groups['timeseries'].variables['thetali_srf_int']
+    # thetali_srf_int_ = data.groups['timeseries'].variables['thetali_srf_int'] # this is here since
 
     z_half_ = np.divide(data.groups['profiles'].variables['z_half'],1000.0)
     t_ = np.divide(data.groups['profiles'].variables['t'],3600.0)
