@@ -84,7 +84,6 @@ def plot_mean(data, les, tmin, tmax, folder="plots/output/"):
         plt.plot(np.nanmean(plot_x[plot_it][:,t_start:t_end],axis=1), data["z_half"]/1000.0, '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
-        plt.autoscale()
         plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
@@ -126,6 +125,7 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     plt.subplot(2,3,1)
     plt.plot(np.nanmean(data["eddy_diffusivity"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", linewidth = 2)
     plt.xlabel("eddy_diffusivity")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(2,3,2)
     plt.plot(np.nanmean(data["mixing_length"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
@@ -140,6 +140,7 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     plt.subplot(2,3,4)
     plt.plot(np.nanmean(data["turbulent_entrainment"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
     plt.xlabel("turbulent_entrainment")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(2,3,5)
     plt.plot(np.nanmean(data["updraft_buoyancy"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue",  label="b_upd", linewidth = 2)
@@ -155,7 +156,7 @@ def plot_closures(data, les,tmin, tmax,  title, folder="plots/output/"):
     plt.legend()
     plt.xlim([-0.0001,xmax])
 
-    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -195,7 +196,7 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
     for plot_it in range(6):
         plots.append(plt.subplot(2,3,plot_it+1))
                                #(rows, columns, number)
-        plots[plot_it].set_ylabel('z [m]')
+        plots[plot_it].set_ylabel('z [km]')
         plots[plot_it].grid(True)
         if plot_it<6:
             # plots[plot_it].plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
@@ -212,7 +213,6 @@ def plot_tke_components(data, les,tmin, tmax, title,  folder="plots/output/"):
             plots[plot_it].set_ylim([0, np.max(data["z_half"]/1000.0)])
             plots[plot_it].legend()
 
-    plt.autoscale()
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
@@ -253,6 +253,7 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.plot(np.nanmean(les["qv_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
     plt.plot(np.nanmean(data["qv_mean"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
     plt.xlabel("mean qv [g/kg]")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(3,3,2)
     plt.plot(np.nanmean(les["upd_qv"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
@@ -269,6 +270,7 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.plot(np.nanmean(les["ql_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
     plt.plot(np.nanmean(data["ql_mean"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
     plt.xlabel("mean ql [g/kg]")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(3,3,5)
     plt.plot(np.nanmean(les["updraft_ql"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
@@ -285,6 +287,7 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.plot(np.nanmean(les["qr_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
     plt.plot(np.nanmean(data["qr_mean"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='les', linewidth = 2)
     plt.xlabel("mean qr [g/kg]")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(3,3,8)
     plt.plot(np.nanmean(les["updraft_qr"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-', color='gray', label='les', linewidth = 4)
@@ -297,7 +300,7 @@ def plot_humidities(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.xlabel("env qr [g/kg]")
     plt.grid(True)
 
-    plt.autoscale()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -331,6 +334,7 @@ def plot_updraft_properties(data, les,tmin, tmax, title,  folder="plots/output/"
     plt.plot(np.nanmean(les["updraft_fraction"][:,t_start_les:t_end_les],axis=1), les["z_half"], '-',      color='gray',      label='les', linewidth = 4)
     plt.plot(np.nanmean(data["updraft_area"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='scm', linewidth = 2)
     plt.xlabel("updraft fraction")
+    plt.ylabel("z [km]")
     plt.grid(True)
     plt.subplot(2,3,2)
     plt.plot(np.nanmean(les["updraft_w"][:,t_start_les:t_end_les],axis=1),  les["z_half"], '-',          color='gray',      label='les', linewidth = 4)
@@ -348,6 +352,7 @@ def plot_updraft_properties(data, les,tmin, tmax, title,  folder="plots/output/"
     plt.plot(np.nanmean(les["v_translational_mean"][:,t_start_les:t_end_les],axis=1), les["z_half"], '--', color='gray', label='v-les', linewidth = 4)
     plt.plot(np.nanmean(data["v_mean"][:,t_start:t_end],axis=1),                      data["z_half"]/1000.0, "-", color="darkorange", label='v-scm', linewidth = 2)
     plt.xlabel("horizontal velocities [m/s]")
+    plt.ylabel("z [km]")
     plt.legend()
     plt.grid(True)
     plt.subplot(2,3,5)
@@ -360,7 +365,6 @@ def plot_updraft_properties(data, les,tmin, tmax, title,  folder="plots/output/"
     plt.plot(np.nanmean(data["qt_mean"][:,t_start:t_end],axis=1), data["z_half"]/1000.0, "-", color="royalblue", label='scm', linewidth = 2)
     plt.xlabel("qt mean [g/kg]")
     plt.grid(True)
-    plt.autoscale()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -412,7 +416,6 @@ def plot_tke_breakdown(data, les,tmin, tmax, title,  folder="plots/output/"):
     plt.plot(np.nanmean(les["tke_prod_S"][:,t_start_les:t_end_les],axis=1), les["z_half"], "-",    color="purple",     label="tke_S",    linewidth = 2)
     plt.xlabel('tke componenets les')
     plt.ylim([0, np.max(les["z_half"])])
-    plt.autoscale()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -461,8 +464,7 @@ def plot_var_covar_mean(data, les, tmin, tmax, title, folder="plots/output/"):
         plots[plot_it].plot(np.nanmean(data[plot_var_env[plot_it]][:,t_start:t_end],axis=1),  data["z_half"]/1000.0, "-", label= plot_var_env[plot_it],  c="forestgreen", linewidth = 2)
 
     plots[0].legend()
-    plt.autoscale()
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -513,8 +515,7 @@ def plot_var_covar_components(data, tmin, tmax, title, folder="plots/output/"):
             plots[plot_it].plot(np.nanmean(data[plot_var_data[plot_it][var]][:,t_start:t_end],axis=1),   data["z_half"]/1000.0, "-", label=plot_Hvar_c[var],  c=color_c[var])
 
     plots[0].legend()
-    plt.autoscale()
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
@@ -582,7 +583,6 @@ def plot_main_timeseries(data, les, data_, les_, title , folder="plots/output/")
     plt.xlim([0, data["t"][-1]/3600.0])
     plt.grid(True)
 
-    plt.autoscale()
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
@@ -627,7 +627,6 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.grid(True)
             plt.plot(data["t"][1:]/3600.0, plot_y[plot_it][1:], '-', color="b")
             plt.legend()
-            plt.autoscale()
             plt.tight_layout()
         else:
             plt.xlabel('time [h]')
@@ -639,8 +638,6 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_base"][1:], '-', color="crimson", label="CB",  linewidth = 2)
             plt.plot(data["t"][1:]/3600.0, data["updraft_cloud_top"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
 
-        plt.autoscale()
-        # plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
@@ -717,7 +714,6 @@ def plot_timeseries(data,  les, folder="plots/output/"):
         plt.contourf(time, z_half, scm_field, cmap='RdBu_r')
         plt.colorbar()
         plt.ylim([0,np.max(data["z_half"]/1000.0)])
-        plt.autoscale()
         plt.tight_layout()
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
