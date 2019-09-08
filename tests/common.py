@@ -27,40 +27,9 @@ def simulation_setup(case):
     paramlist = json.loads(file_params)
 
     # changes to namelist file
-    namelist['turbulence'] = {}
-    namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
-    namelist['turbulence']['EDMF_PrognosticTKE'] = {}
-    namelist['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
-    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
-    namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
     namelist['output']['output_root'] = "./Tests."
     namelist['meta']['uuid'] = case
 
-    # changes to paramlist file
-    paramlist['turbulence']['EDMF_PrognosticTKE'] = {}
-    paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
-    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
-    paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
-    paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
-    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
-    paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
-    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
-    # paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
-    paramlist['turbulence']['updraft_microphysics'] = {}
-    if case=='TRMM_LBA' or case=='Rico':
-        paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
-    else:
-        paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
     pp.pprint(namelist)
     pp.pprint(paramlist)
 
@@ -93,8 +62,6 @@ def removing_files():
     subprocess.call(cmd , shell=True)
     cmd = "rm *.in"
     subprocess.call(cmd , shell=True)
-
-
 
 
 def read_data_srs(sim_data):
@@ -175,7 +142,6 @@ def read_data_timeseries(sim_data):
     # read the data
     data = {"z_half" : np.array(sim_data["profiles/z_half"][:]), "t" : np.array(sim_data["profiles/t"][:])}
     maxz = np.max(data['z_half'])
-    maxz = 1400.0
     for var in variables:
         data[var] = []
         data[var] = np.array(sim_data["timeseries/" + var][:])

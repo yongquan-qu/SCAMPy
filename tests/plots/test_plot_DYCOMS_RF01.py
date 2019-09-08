@@ -20,6 +20,7 @@ import plot_scripts as pls
 def sim_data(request):
 
     # generate namelists and paramlists
+    cmn.removing_files
     setup = cmn.simulation_setup('DYCOMS_RF01')
 
     # run scampy
