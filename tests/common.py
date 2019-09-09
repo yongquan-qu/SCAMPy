@@ -49,10 +49,10 @@ def simulation_setup(case):
     paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
     paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
     paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
-    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
+    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.05
     paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 3.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
-    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
+    paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 3.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
     paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
     # paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_plume_spacing'] = 500.0
