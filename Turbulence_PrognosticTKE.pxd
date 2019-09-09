@@ -29,16 +29,27 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double minimum_area
         double entrainment_factor
         double detrainment_factor
+        double turbulent_entrainment_factor
+        double entrainment_erf_const
         double vel_pressure_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double vel_buoy_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
         double pressure_drag_coeff # Tan et al. 2018: coefficient alpha_d in Eq. 30
-        double pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
+        double [:] pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
         double dt_upd
+        double aspect_ratio
         double [:,:] entr_sc
         double [:,:] detr_sc
-        double [:,:] updraft_pressure_sink
-        double [:,:] nh_pressure_term
+        double [:,:] nh_pressure
+        double [:,:] buoyant_frac
+        double [:,:] b_mix
+        double [:,:] frac_turb_entr
+        double [:,:] frac_turb_entr_full
+        double [:,:] turb_entr_W
+        double [:,:] turb_entr_H
+        double [:,:] turb_entr_QT
+        double [:,:] horizontal_KM
+        double [:,:] horizontal_KH
         double [:] area_surface_bc
         double [:] h_surface_bc
         double [:] qt_surface_bc
@@ -60,6 +71,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] tke_detr_loss
         double [:] tke_shear
         double [:] tke_pressure
+        double [:] tke_transport
+        double [:] tke_advection
         double max_area_factor
         double tke_ed_coeff
         double tke_diss_coeff
@@ -87,6 +100,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         double [:] mls
         double [:] ml_ratio
+        double [:] l_entdet
+        double [:] b
+        double [:] prandtl_nvec
         str mixing_scheme
 
     cpdef initialize(self, GridMeanVariables GMV)
@@ -96,12 +112,18 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_prognostic_updrafts(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_diagnostic_updrafts(self, GridMeanVariables GMV, CasesBase Case)
     cpdef update_inversion(self, GridMeanVariables GMV, option)
-    cpdef compute_mixing_length(self, double obukhov_length)
+    cpdef compute_mixing_length(self, double obukhov_length, GridMeanVariables GMV)
     cpdef compute_eddy_diffusivities_tke(self, GridMeanVariables GMV, CasesBase Case)
+    cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
+    cpdef compute_nh_pressure(self)
+    cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV,  CasesBase Case)
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
     cpdef decompose_environment(self, GridMeanVariables GMV, whichvals)
+    cpdef compute_turbulent_entrainment(self, GridMeanVariables GMV, CasesBase Case)
     cpdef compute_entrainment_detrainment(self, GridMeanVariables GMV, CasesBase Case)
+    cpdef zero_area_fraction_cleanup(self, GridMeanVariables GMV)
+    cpdef set_subdomain_bcs(self)
     cpdef solve_updraft_velocity_area(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef solve_updraft_scalars(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef update_GMV_MF(self, GridMeanVariables GMV, TimeStepping TS)
@@ -124,7 +146,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cdef void update_covariance_ED(self, GridMeanVariables GMV, CasesBase Case,TimeStepping TS, VariablePrognostic GmvVar1, VariablePrognostic GmvVar2,
             VariableDiagnostic GmvCovar, EDMF_Environment.EnvironmentVariable_2m Covar, EDMF_Environment.EnvironmentVariable  EnvVar1, EDMF_Environment.EnvironmentVariable  EnvVar2,
             EDMF_Updrafts.UpdraftVariable UpdVar1, EDMF_Updrafts.UpdraftVariable UpdVar2)
-
+    cpdef compute_tke_transport(self)
+    cpdef compute_tke_advection(self)
     cpdef update_GMV_diagnostics(self, GridMeanVariables GMV)
     cpdef double compute_zbl_qt_grad(self, GridMeanVariables GMV)
     cdef get_GMV_CoVar(self, EDMF_Updrafts.UpdraftVariable au,

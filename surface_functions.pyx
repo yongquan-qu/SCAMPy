@@ -11,7 +11,6 @@ cdef double buoyancy_flux(double shf, double lhf, double T_b, double qt_b, doubl
         double lv = latent_heat(T_b)
     return (g * alpha0_0 / cp_ / T_b * (shf + (eps_vi-1.0) * cp_ * T_b * lhf /lv))
 
-
 cdef inline double psi_m_unstable(double zeta, double zeta0):
     cdef double x = (1.0 - gamma_m * zeta)**0.25
     cdef double x0 = (1.0 - gamma_m * zeta0)**0.25
@@ -97,7 +96,7 @@ cpdef double compute_ustar(double windspeed, double buoyancy_flux, double z0, do
                 zeta = z1 / lmo
                 zeta0 = z0 / lmo
                 f1 = windspeed - ustar1 / vkb * (logz - psi_m_unstable(zeta, zeta0))
-                delta_ustar = ustar1 - ustar
+                delta_ustar = ustar1 - ustar0
 
 
     return ustar
