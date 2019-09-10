@@ -27,6 +27,7 @@ def simulation_setup(case):
     paramlist = json.loads(file_params)
 
     # changes to namelist file
+<<<<<<< HEAD
     namelist['turbulence'] = {}
     namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
     namelist['turbulence']['EDMF_PrognosticTKE'] = {}
@@ -61,6 +62,11 @@ def simulation_setup(case):
         paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
     else:
         paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
+=======
+    namelist['output']['output_root'] = "./Tests."
+    namelist['meta']['uuid'] = case
+
+>>>>>>> e5482128554d49357e5e2764048d3d4de6d77345
     pp.pprint(namelist)
     pp.pprint(paramlist)
 
@@ -93,8 +99,6 @@ def removing_files():
     subprocess.call(cmd , shell=True)
     cmd = "rm *.in"
     subprocess.call(cmd , shell=True)
-
-
 
 
 def read_data_srs(sim_data):

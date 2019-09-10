@@ -20,6 +20,7 @@ import plot_scripts as pls
 def sim_data(request):
 
     # generate namelists and paramlists
+    cmn.removing_files
     setup = cmn.simulation_setup('DYCOMS_RF01')
 
     # run scampy
@@ -88,8 +89,6 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
         les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
     else:
-        print("============================= trying to download")
-        print(localpath)
         url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
         os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
         les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
