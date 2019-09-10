@@ -14,30 +14,6 @@ def main():
     fullfilename = args.fullfilename
     fname = args.fname
 
-    if casename = "ARM_SGP":
-        url_ = "https://www.dropbox.com/s/j7s0jmmkwn7av62/ARM_SGP.nc?dl=0"
-    elif casename = "Bomex":
-        url_ = "https://www.dropbox.com/s/zrhxou8i80bfdk2/Bomex.nc?dl=0"
-    elif casename = "TRMM_LBA":
-        url_ = "https://www.dropbox.com/s/snhxbzxt4btgiis/TRMM_LBA.nc?dl=0"
-    elif casename = "Rico":
-        url_ = "https://www.dropbox.com/s/c2bvey47y8xryuc/Rico.nc?dl=0"
-    elif casename = "DYCOMS_RF01":
-        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
-    elif casename = "Gabls":
-        url_ = "https://www.dropbox.com/s/241bj5yucslpb53/Gabls.nc?dl=0"
-    elif casename = "GATE_III":
-        url_ = "https://www.dropbox.com/s/j7s0jmmkwn7av62/ARM_SGP.nc?dl=0"
-    elif casename = "Tan2018":
-        url_ = "https://www.dropbox.com/s/j7s0jmmkwn7av62/ARM_SGP.nc?dl=0"
-    elif casename = "Soares":
-        url_ = "https://www.dropbox.com/s/wkfy1mcbbo9iyx7/Soares.nc?dl=0"
-    else:
-        print(casename, " not recognized")
-        break
-
-    os.system("wget -O les_temp.nc "+url_)
-
     data = nc.Dataset(fullfilename, 'r')
     buoyancy_mean_  = np.array(data.groups['profiles'].variables['buoyancy_mean'])
     env_w_ = data.groups['profiles'].variables['env_w']
