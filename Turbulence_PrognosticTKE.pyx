@@ -72,6 +72,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.entr_detr_fp = entr_detr_suselj
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'buoyancy_sorting':
                 self.entr_detr_fp = entr_detr_buoyancy_sorting
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'moisture_deficit':
+                self.entr_detr_fp = entr_detr_env_moisture_deficit
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['entrainment']) == 'none':
                 self.entr_detr_fp = entr_detr_none
             else:

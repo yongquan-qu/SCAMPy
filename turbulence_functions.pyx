@@ -39,6 +39,19 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
         _ret.detr_sc = 0.0
     return _ret
 
+
+cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
+    cdef:
+        entr_struct _ret
+        double chi_c, RH_env, RH_upd, f, eps0, eps, delt
+
+    f = (1.0+erf( entr_in.erf_const*(entr_in.RH_upd-entr_in.RH_env)/100.0) )*0.5
+    eps0 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
+    _ret.entr_sc = eps0*pow(1.0-f,entr_in.c_del)
+    _ret.detr_sc = eps0*pow(f,entr_in.c_del)
+
+    return _ret
+
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
     cdef:
