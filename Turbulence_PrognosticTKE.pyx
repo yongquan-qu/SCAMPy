@@ -1261,6 +1261,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.UpdVar.QT.values[i,k] = GMV.QT.values[k]
                     self.UpdVar.T.values[i,k] = GMV.T.values[k]
                     self.UpdVar.QL.values[i,k] = GMV.QL.values[k]
+                    self.UpdVar.QR.values[i,k] = GMV.QR.values[k]
                     self.UpdVar.THL.values[i,k] = GMV.THL.values[k]
 
             if np.sum(self.UpdVar.Area.values[:,k])==0.0:
@@ -1270,6 +1271,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.EnvVar.QT.values[k] = GMV.QT.values[k]
                 self.EnvVar.T.values[k] = GMV.T.values[k]
                 self.EnvVar.QL.values[k] = GMV.QL.values[k]
+                self.EnvVar.QR.values[k] = GMV.QR.values[k]
                 self.EnvVar.THL.values[k] = GMV.THL.values[k]
 
         return
@@ -1281,6 +1283,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.UpdVar.Area.set_bcs(self.Gr)
         self.UpdVar.H.set_bcs(self.Gr)
         self.UpdVar.QT.set_bcs(self.Gr)
+        self.UpdVar.QR.set_bcs(self.Gr)
         self.UpdVar.T.set_bcs(self.Gr)
         self.UpdVar.B.set_bcs(self.Gr)
 
