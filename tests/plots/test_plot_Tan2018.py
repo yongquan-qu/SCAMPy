@@ -50,7 +50,14 @@ def test_plot_timeseries_Tan2018(sim_data):
         os.mkdir(localpath + "/plots/output/Tan2018/all_variables/")
     except:
         print('Tan2018/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/Tan2018.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/Bomex.nc")):
+        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/zrhxou8i80bfdk2/Bomex.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/Bomex.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
+
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -80,7 +87,14 @@ def test_plot_timeseries_1D_Tan2018(sim_data):
         os.mkdir(localpath + "/plots/output/Tan2018/all_variables/")
     except:
         print('Tan2018/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/Tan2018.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/Bomex.nc")):
+        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/zrhxou8i80bfdk2/Bomex.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/Bomex.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
+
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
     data_to_plot_ = cmn.read_data_srs(sim_data)

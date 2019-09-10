@@ -51,7 +51,14 @@ def test_plot_timeseries_Gabls(sim_data):
         os.mkdir(localpath + "/plots/output/Gabls/all_variables/")
     except:
         print('Gabls/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/Gabls.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/Gabls.nc")):
+        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/241bj5yucslpb53/Gabls.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/Gabls.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
+
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -80,7 +87,14 @@ def test_plot_timeseries_1D_Gabls(sim_data):
         os.mkdir(localpath + "/plots/output/Gabls/all_variables/")
     except:
         print('Gabls/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/Gabls.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/Gabls.nc")):
+        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/241bj5yucslpb53/Gabls.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/Gabls.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
+
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
     data_to_plot_ = cmn.read_data_srs(sim_data)

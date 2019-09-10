@@ -44,7 +44,14 @@ def test_plot_timeseries_TRMM_LBA(sim_data):
         os.mkdir(localpath + "/plots/output/TRMM_LBA/all_variables/")
     except:
         print('TRMM_LBA/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/TRMM_LBA.nc")):
+        les_data = Dataset(localpath + "/les_data/TRMM_LBA.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/snhxbzxt4btgiis/TRMM_LBA.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/TRMM_LBA.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/TRMM_LBA.nc", 'r')
+
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -73,7 +80,14 @@ def test_plot_timeseries_1D_TRMM_LBA(sim_data):
         os.mkdir(localpath + "/plots/output/TRMM_LBA/all_variables/")
     except:
         print('TRMM_LBA/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/TRMM_LBA.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/TRMM_LBA.nc")):
+        les_data = Dataset(localpath + "/les_data/TRMM_LBA.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/snhxbzxt4btgiis/TRMM_LBA.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/TRMM_LBA.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/TRMM_LBA.nc", 'r')
+
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
     data_to_plot_ = cmn.read_data_srs(sim_data)

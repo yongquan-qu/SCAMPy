@@ -48,7 +48,14 @@ def test_plot_timeseries_DYCOMS_RF01(sim_data):
         os.mkdir(localpath + "/plots/output/DYCOMS_RF01/all_variables/")
     except:
         print('DYCOMS_RF01/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/DYCOMS_RF01.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+
     data_to_plot = cmn.read_data_srs(sim_data)
     les_data_to_plot = cmn.read_les_data_srs(les_data)
 
@@ -77,7 +84,16 @@ def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
         os.mkdir(localpath + "/plots/output/DYCOMS_RF01/all_variables/")
     except:
         print('DYCOMS_RF01/all_variables folder exists')
-    les_data = Dataset(localpath + '/les_data/DYCOMS_RF01.nc', 'r')
+
+    if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+    else:
+        print("============================= trying to download")
+        print(localpath)
+        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+
     data_to_plot = cmn.read_data_timeseries(sim_data)
     les_data_to_plot = cmn.read_les_data_timeseries(les_data)
     data_to_plot_ = cmn.read_data_srs(sim_data)
