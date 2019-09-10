@@ -95,7 +95,7 @@ cdef class EnvironmentVariables:
         self.THL = EnvironmentVariable(nz, 'half', 'scalar', 'thetal', 'K')
         self.T = EnvironmentVariable( nz, 'half', 'scalar', 'temperature','K' )
         self.B = EnvironmentVariable( nz, 'half', 'scalar', 'buoyancy','m^2/s^3' )
-        self.EnvArea = EnvironmentVariable(nz, 'half', 'scalar', 'env_area', '-')
+        self.Area = EnvironmentVariable(nz, 'half', 'scalar', 'env_area', '-')
         self.cloud_fraction = EnvironmentVariable(nz, 'half', 'scalar', 'env_cloud_fraction', '-')
 
         # TKE   TODO   repeated from Variables.pyx logic
@@ -204,9 +204,9 @@ cdef class EnvironmentVariables:
         self.lwp         = 0.
 
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            self.lwp += Ref.rho0_half[k] * self.QL.values[k] * self.EnvArea.values[k] * self.Gr.dz
+            self.lwp += Ref.rho0_half[k] * self.QL.values[k] * self.Area.values[k] * self.Gr.dz
 
-            if self.QL.values[k] > 1e-8 and self.EnvArea.values[k] > 1e-3:
+            if self.QL.values[k] > 1e-8 and self.Area.values[k] > 1e-3:
                 self.cloud_base  = fmin(self.cloud_base,  self.Gr.z_half[k])
                 self.cloud_top   = fmax(self.cloud_top,   self.Gr.z_half[k])
                 self.cloud_cover = fmax(self.cloud_cover, self.cloud_fraction.values[k])
