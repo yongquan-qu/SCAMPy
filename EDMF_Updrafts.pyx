@@ -68,8 +68,9 @@ cdef class UpdraftVariables:
         self.W    = UpdraftVariable(nu, nzg, 'full', 'velocity', 'w','m/s' )
 
         self.Area = UpdraftVariable(nu, nzg, 'half', 'scalar', 'area_fraction','[-]' )
-        self.QT   = UpdraftVariable(nu, nzg, 'half', 'scalar', 'qt','kg/kg' )
-        self.QL   = UpdraftVariable(nu, nzg, 'half', 'scalar', 'ql','kg/kg' )
+        self.QT = UpdraftVariable(nu, nzg, 'half', 'scalar', 'qt','kg/kg' )
+        self.QL = UpdraftVariable(nu, nzg, 'half', 'scalar', 'ql','kg/kg' )
+        self.RH = UpdraftVariable(nu, nzg, 'half', 'scalar', 'RH','%' )
 
         if namelist['thermodynamics']['thermal_variable'] == 'entropy':
             self.H = UpdraftVariable(nu, nzg, 'half', 'scalar', 's','J/kg/K' )
@@ -140,6 +141,7 @@ cdef class UpdraftVariables:
         Stats.add_profile('updraft_w')
         Stats.add_profile('updraft_qt')
         Stats.add_profile('updraft_ql')
+        Stats.add_profile('updraft_RH')
 
         if self.H.name == 'thetal':
             Stats.add_profile('updraft_thetal')
@@ -170,6 +172,7 @@ cdef class UpdraftVariables:
         self.H.bulkvalues[:] = 0.0
         self.T.bulkvalues[:] = 0.0
         self.B.bulkvalues[:] = 0.0
+        self.RH.bulkvalues[:] = 0.0
 
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
@@ -179,6 +182,7 @@ cdef class UpdraftVariables:
                         self.QL.bulkvalues[k] += self.Area.values[i,k] * self.QL.values[i,k]/self.Area.bulkvalues[k]
                         self.H.bulkvalues[k] += self.Area.values[i,k] * self.H.values[i,k]/self.Area.bulkvalues[k]
                         self.T.bulkvalues[k] += self.Area.values[i,k] * self.T.values[i,k]/self.Area.bulkvalues[k]
+                        self.RH.bulkvalues[k] += self.Area.values[i,k] * self.RH.values[i,k]/self.Area.bulkvalues[k]
                         self.B.bulkvalues[k] += self.Area.values[i,k] * self.B.values[i,k]/self.Area.bulkvalues[k]
                         self.W.bulkvalues[k] += ((self.Area.values[i,k] + self.Area.values[i,k+1]) * self.W.values[i,k]
                                             /(self.Area.bulkvalues[k] + self.Area.bulkvalues[k+1]))
@@ -187,6 +191,7 @@ cdef class UpdraftVariables:
                     self.QT.bulkvalues[k] = GMV.QT.values[k]
                     self.QL.bulkvalues[k] = 0.0
                     self.H.bulkvalues[k] = GMV.H.values[k]
+                    self.RH.bulkvalues[k] = GMV.RH.values[k]
                     self.T.bulkvalues[k] = GMV.T.values[k]
                     self.B.bulkvalues[k] = 0.0
                     self.W.bulkvalues[k] = 0.0
@@ -248,6 +253,7 @@ cdef class UpdraftVariables:
         Stats.write_profile('updraft_w', self.W.bulkvalues[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('updraft_qt', self.QT.bulkvalues[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('updraft_ql', self.QL.bulkvalues[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('updraft_RH', self.RH.bulkvalues[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
         if self.H.name == 'thetal':
             Stats.write_profile('updraft_thetal', self.H.bulkvalues[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -355,6 +361,8 @@ cdef class UpdraftThermodynamics:
                             UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) #- GMV.B.values[k]
                         else:
                             UpdVar.B.values[i,k] = EnvVar.B.values[k]
+                        UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], UpdVar.QT.values[i,k],
+                                                    UpdVar.QL.values[i,k], 0.0, UpdVar.T.values[i,k])
         else:
             with nogil:
                 for i in xrange(self.n_updraft):
@@ -366,6 +374,7 @@ cdef class UpdraftThermodynamics:
                             t = UpdVar.T.values[i,k]
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
                             UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                            UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, t)
 
                         elif UpdVar.Area.values[i,k-1] > 0.0 and k>self.Gr.gw:
                             sa = eos(self.t_to_prog_fp, self.prog_to_t_fp, self.Ref.p0_half[k],
@@ -375,9 +384,11 @@ cdef class UpdraftThermodynamics:
                             t = sa.T
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
                             UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
-
+                            UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, t)
                         else:
                             UpdVar.B.values[i,k] = EnvVar.B.values[k]
+                            UpdVar.RH.values[i,k] = EnvVar.RH.values[k]
+
 
         with nogil:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):

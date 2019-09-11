@@ -40,6 +40,7 @@ cdef class EnvironmentVariables:
         EnvironmentVariable QL
         EnvironmentVariable H
         EnvironmentVariable THL
+        EnvironmentVariable RH
         EnvironmentVariable T
         EnvironmentVariable B
         EnvironmentVariable cloud_fraction

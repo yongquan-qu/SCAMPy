@@ -28,6 +28,7 @@ cdef class UpdraftVariables:
         UpdraftVariable QT
         UpdraftVariable QL
         UpdraftVariable H
+        UpdraftVariable RH
         UpdraftVariable THL
         UpdraftVariable T
         UpdraftVariable B
