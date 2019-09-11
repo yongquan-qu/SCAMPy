@@ -173,7 +173,7 @@ cdef class EnvironmentVariables:
         Stats.write_profile('env_w', self.W.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_qt', self.QT.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_ql', self.QL.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('env_area', self.EnvArea.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('env_area', self.Area.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_temperature', self.T.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('env_RH', self.RH.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
@@ -262,8 +262,8 @@ cdef class EnvironmentThermodynamics:
     cdef void update_EnvRain_sources(self, Py_ssize_t k, EnvironmentVariables EnvVar,
                                      double qr_src, double thl_rain_src) nogil:
 
-        self.prec_source_qt[k] = -qr_src * EnvVar.EnvArea.values[k]
-        self.prec_source_h[k]  = thl_rain_src * EnvVar.EnvArea.values[k]
+        self.prec_source_qt[k] = -qr_src * EnvVar.Area.values[k]
+        self.prec_source_h[k]  = thl_rain_src * EnvVar.Area.values[k]
 
         return
 
@@ -335,7 +335,7 @@ cdef class EnvironmentThermodynamics:
                 # autoconversion, TODO - add accretion
                 mph = microphysics_rain_src(
                     sa.T, sa.ql, self.Ref.p0_half[k], EnvVar.QT.values[k],
-                    EnvVar.EnvArea.values[k], Rain.max_supersaturation
+                    EnvVar.Area.values[k], Rain.max_supersaturation
                 )
 
                 self.update_EnvVar(k, EnvVar, sa.T, mph.thl, mph.qt, mph.ql, mph.alpha)
@@ -425,7 +425,7 @@ cdef class EnvironmentThermodynamics:
                             # autoconversion, TODO - add accretiom
                             mph = microphysics_rain_src(
                                 sa.T, sa.ql, self.Ref.p0_half[k], qt_hat,
-                                EnvVar.EnvArea.values[k],
+                                EnvVar.Area.values[k],
                                 Rain.max_supersaturation
                             )
                             # environmental variables
@@ -487,7 +487,7 @@ cdef class EnvironmentThermodynamics:
                     )
                     mph = microphysics_rain_src(
                         sa.T, sa.ql, self.Ref.p0_half[k], EnvVar.QT.values[k],
-                        EnvVar.EnvArea.values[k], Rain.max_supersaturation
+                        EnvVar.Area.values[k], Rain.max_supersaturation
                     )
 
                     self.update_EnvVar(k, EnvVar, sa.T, mph.thl, mph.qt, mph.ql, mph.alpha)

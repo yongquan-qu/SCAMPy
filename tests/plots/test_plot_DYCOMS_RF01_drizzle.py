@@ -20,6 +20,7 @@ import plot_scripts as pls
 def sim_data(request):
 
     # generate namelists and paramlists
+    cmn.removing_files
     setup = cmn.simulation_setup('DYCOMS_RF01')
 
     #setup['namelist']['thermodynamics']['sgs'] = 'mean'
@@ -28,6 +29,7 @@ def sim_data(request):
     setup['namelist']['microphysics']['max_supersaturation'] = 0.05
 
     # run scampy
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
     scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
@@ -38,36 +40,68 @@ def sim_data(request):
 
     return sim_data
 
-def test_plot_DYCOMS_RF01_drizzle(sim_data):
+def test_plot_timeseries_DYCOMS_RF01(sim_data):
     """
-    plot DYCOMS_RF01 quicklook profiles
+    plot DYCOMS_RF01 timeseries
     """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100)
+    # make directory
+    localpath = os.getcwd()
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/")
+    except:
+        print('DYCOMS_RF01_drizzle folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    except:
+        print('DYCOMS_RF01_drizzle/all_variables folder exists')
 
-    pls.plot_mean(data_to_plot,   "drizzle_DYCOMS_RF01_quicklook.pdf")
-    pls.plot_drafts(data_to_plot, "drizzle_DYCOMS_RF01_quicklook_drafts.pdf")
+    if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
 
-def test_plot_var_covar_DYCOMS_RF01_drizzle(sim_data):
-    """
-    plot DYCOMS_RF01 quicklook profiles
-    """
-    data_to_plot = cmn.read_data_avg(sim_data, n_steps=100, var_covar=True)
-
-    pls.plot_var_covar_mean(data_to_plot,       "drizzle_DYCOMS_RF01_var_covar_mean.pdf")
-    pls.plot_var_covar_components(data_to_plot, "drizzle_DYCOMS_RF01_var_covar_components.pdf")
-
-def test_plot_timeseries_DYCOMS_drizzle(sim_data):
-    """
-    plot timeseries
-    """
     data_to_plot = cmn.read_data_srs(sim_data)
+    les_data_to_plot = cmn.read_les_data_srs(les_data)
 
-    pls.plot_timeseries(data_to_plot, "drizzle_DYCOMS")
+    pls.plot_closures(data_to_plot, les_data_to_plot,3,4,           "drizzle_DYCOMS_RF01_closures.pdf",           folder="plots/output/DYCOMS_RF01_drizzle/")
+    pls.plot_humidities(data_to_plot, les_data_to_plot,3,4,         "drizzle_DYCOMS_RF01_humidities.pdf",         folder="plots/output/DYCOMS_RF01_drizzle/")
+    pls.plot_updraft_properties(data_to_plot, les_data_to_plot,3,4, "drizzle_DYCOMS_RF01_updraft_properties.pdf", folder="plots/output/DYCOMS_RF01_drizzle/")
+    pls.plot_tke_components(data_to_plot, les_data_to_plot, 3,4,    "drizzle_DYCOMS_RF01_tke_components.pdf",     folder="plots/output/DYCOMS_RF01_drizzle/")
 
-def test_plot_timeseries_1D_DYCOMS_RF01_drizzle(sim_data):
+    pls.plot_timeseries(data_to_plot, les_data_to_plot,          folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    pls.plot_mean(data_to_plot, les_data_to_plot,3,4,            folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    pls.plot_var_covar_mean(data_to_plot, les_data_to_plot, 3,4, "drizzle_DYCOMS_RF01_var_covar_mean.pdf", folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    pls.plot_var_covar_components(data_to_plot,3,4,              "drizzle_DYCOMS_RF01_var_covar_components.pdf", folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    pls.plot_tke_breakdown(data_to_plot, les_data_to_plot, 3,4,  "drizzle_DYCOMS_RF01_tke_breakdown.pdf", folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
+
+def test_plot_timeseries_1D_DYCOMS_RF01(sim_data):
     """
     plot DYCOMS_RF01 1D timeseries
     """
-    data_to_plot = cmn.read_data_timeseries(sim_data)
+    localpath = os.getcwd()
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/")
+        print()
+    except:
+        print('DYCOMS_RF01_drizzle folder exists')
+    try:
+        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/all_variables/")
+    except:
+        print('DYCOMS_RF01_drizzle/all_variables folder exists')
 
-    pls.plot_timeseries_1D(data_to_plot, "drizzle_DYCOMS_RF01_timeseries_1D.pdf")
+    if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+    else:
+        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+
+    data_to_plot = cmn.read_data_timeseries(sim_data)
+    les_data_to_plot = cmn.read_les_data_timeseries(les_data)
+    data_to_plot_ = cmn.read_data_srs(sim_data)
+    les_data_to_plot_ = cmn.read_les_data_srs(les_data)
+
+    pls.plot_main_timeseries(data_to_plot, les_data_to_plot, data_to_plot_, les_data_to_plot_, "DYCOMS_RF01_drizzle_main_timeseries.pdf",folder="plots/output/DYCOMS_RF01_drizzle/")
+    pls.plot_timeseries_1D(data_to_plot,  les_data_to_plot,  folder="plots/output/DYCOMS_RF01_drizzle/all_variables/")
