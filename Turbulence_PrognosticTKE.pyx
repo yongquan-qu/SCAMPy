@@ -457,6 +457,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.update_GMV_ED(GMV, Case, TS)
         self.compute_covariance(GMV, Case, TS)
 
+        # update grid-mean cloud fraction
+        for k in xrange(self.Gr.nzg):
+            GMV.cloud_fraction.values[k] = \
+            self.EnvVar.cloud_fraction.values[k] + self.UpdVar.cloud_fraction[k]
+
         # Back out the tendencies of the grid mean variables for the whole timestep by differencing GMV.new and
         # GMV.values
         ParameterizationBase.update(self, GMV, Case, TS)
