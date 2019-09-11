@@ -1664,6 +1664,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                                         + (1.0-self.EnvVar.cloud_fraction.values[k]) * d_alpha_thetal_dry)
                 d_alpha_qt_total = (self.EnvVar.cloud_fraction.values[k] * d_alpha_qt_cloudy
                                     + (1.0-self.EnvVar.cloud_fraction.values[k]) * d_alpha_qt_dry)
+
                 # TODO - check
                 self.EnvVar.TKE.buoy[k] = g / self.Ref.alpha0_half[k] * ae[k] * self.Ref.rho0_half[k] \
                                    * ( \
@@ -2098,5 +2099,3 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
 
         return
-
-

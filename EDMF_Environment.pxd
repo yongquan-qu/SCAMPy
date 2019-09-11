@@ -35,7 +35,7 @@ cdef class EnvironmentVariables:
         Grid Gr
 
         EnvironmentVariable W
-        EnvironmentVariable EnvArea
+        EnvironmentVariable Area
         EnvironmentVariable QT
         EnvironmentVariable QL
         EnvironmentVariable H
