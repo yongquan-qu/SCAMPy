@@ -28,7 +28,7 @@ def sim_data(request):
     setup["namelist"]['microphysics']['max_supersaturation'] = 0.1 #0.01
     setup["namelist"]['microphysics']['rain_model'] = True
 
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1 # 0.15
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.06 # 0.15
     setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 2    # 2
     setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 2 # 2
 
