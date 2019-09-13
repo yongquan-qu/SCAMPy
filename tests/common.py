@@ -19,18 +19,20 @@ def simulation_setup(case):
     # simulation related parameters
     os.system("python ../generate_namelist.py " + case)
     file_case = open(case + '.in').read()
-    # turbulence related parameters
-    os.system("python ../generate_paramlist.py " +  case)
-    file_params = open('paramlist_' + case + '.in').read()
-
     namelist  = json.loads(file_case)
-    paramlist = json.loads(file_params)
-
-    # changes to namelist file
+    # fh = open(namelist['meta']['casename']+ ".in", 'w')
+    # add here changes to namelist file:
     namelist['output']['output_root'] = "./Tests."
     namelist['meta']['uuid'] = case
-
+    #write_file(case+".in",namelist)
     #pp.pprint(namelist)
+
+    os.system("python ../generate_paramlist.py " +  case)
+    file_params = open('paramlist_' + case + '.in').read()
+    paramlist = json.loads(file_params)
+    # add here changes to paramlist file such as:
+    #paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.15
+    #write_file("paramlist_"+case+".in",paramlist)
     #pp.pprint(paramlist)
 
     # TODO - copied from NetCDFIO
@@ -186,3 +188,11 @@ def read_les_data_timeseries(les_data):
     les["lhf"] = np.array(les_data["timeseries/lhf_surface_mean"][:])
     les["lwp_mean"] = np.array(les_data["timeseries/lwp_mean"][:])
     return les
+
+
+def write_file(name, list):
+    fh = open(name, 'w')
+    json.dump(list, fh, sort_keys=True, indent=4)
+    fh.close()
+
+    return
