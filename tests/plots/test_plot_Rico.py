@@ -15,6 +15,7 @@ import numpy as np
 import main as scampy
 import common as cmn
 import plot_scripts as pls
+import pprint as pp
 
 @pytest.fixture(scope="module")
 def sim_data(request):
@@ -22,6 +23,17 @@ def sim_data(request):
     # generate namelists and paramlists
     cmn.removing_files
     setup = cmn.simulation_setup('Rico')
+
+    setup["namelist"]["turbulence"]["EDMF_PrognosticTKE"]["entrainment"]="moisture_deficit"
+    setup["namelist"]['microphysics']['max_supersaturation'] = 0.1 #0.01
+    setup["namelist"]['microphysics']['rain_model'] = True
+
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1 # 0.15
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 2    # 2
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 2 # 2
+
+    pp.pprint(setup["namelist"])
+    pp.pprint(setup["paramlist"])
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')

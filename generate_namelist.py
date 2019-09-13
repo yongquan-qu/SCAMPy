@@ -212,7 +212,7 @@ def Rico():
     namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
     namelist['turbulence']['EDMF_PrognosticTKE'] = {}
     namelist['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
-    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
+    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'inverse_w' #'b_w2' #'buoyancy_sorting'
     namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
     namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False

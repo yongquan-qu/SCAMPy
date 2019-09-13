@@ -30,8 +30,8 @@ def simulation_setup(case):
     namelist['output']['output_root'] = "./Tests."
     namelist['meta']['uuid'] = case
 
-    pp.pprint(namelist)
-    pp.pprint(paramlist)
+    #pp.pprint(namelist)
+    #pp.pprint(paramlist)
 
     # TODO - copied from NetCDFIO
     # ugly way to know the name of the folder where the data is saved
