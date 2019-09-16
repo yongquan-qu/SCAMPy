@@ -26,11 +26,12 @@ def sim_data(request):
 
     setup["namelist"]["turbulence"]["EDMF_PrognosticTKE"]["entrainment"]="moisture_deficit"
     setup["namelist"]['microphysics']['max_supersaturation'] = 0.1 #0.01
-    setup["namelist"]['microphysics']['rain_model'] = True
+    setup["namelist"]['microphysics']['rain_model'] = False
+    setup["namelist"]['grid']['nz'] = 150
 
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.06 # 0.02 0.15
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 2    # 2
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 2 # 2
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.075   # 0.15
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.75      # 2
+    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 2   # 2
 
     pp.pprint(setup["namelist"])
     pp.pprint(setup["paramlist"])
