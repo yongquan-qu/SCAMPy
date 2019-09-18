@@ -314,7 +314,7 @@ cdef class EnvironmentThermodynamics:
         return
 
 
-    cdef void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cdef void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt):
 
         cdef:
             Py_ssize_t k
@@ -332,10 +332,16 @@ cdef class EnvironmentThermodynamics:
                     self.t_to_prog_fp, self.prog_to_t_fp, self.Ref.p0_half[k],
                     EnvVar.QT.values[k], EnvVar.H.values[k]
                 )
-                # autoconversion, TODO - add accretion
+                # autoconversion and accretion
                 mph = microphysics_rain_src(
-                    sa.T, sa.ql, self.Ref.p0_half[k], EnvVar.QT.values[k],
-                    EnvVar.Area.values[k], Rain.max_supersaturation
+                    EnvVar.QT.values[k],
+                    sa.ql,
+                    Rain.Env_QR.values[k],
+                    EnvVar.Area.values[k],
+                    sa.T,
+                    self.Ref.p0_half[k],
+                    self.Ref.rho0_half[k],
+                    dt
                 )
 
                 self.update_EnvVar(k, EnvVar, sa.T, mph.thl, mph.qt, mph.ql, mph.alpha)
@@ -343,7 +349,7 @@ cdef class EnvironmentThermodynamics:
                 self.update_EnvRain_sources(k, EnvVar, mph.qr_src, mph.thl_rain_src)
         return
 
-    cdef void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cdef void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt):
         a, w = np.polynomial.hermite.hermgauss(self.quadrature_order)
 
         #TODO - remember you output source terms multipierd by dt (bec. of instanteneous autoconcv)
@@ -424,10 +430,16 @@ cdef class EnvironmentThermodynamics:
                             )
                             # autoconversion, TODO - add accretiom
                             mph = microphysics_rain_src(
-                                sa.T, sa.ql, self.Ref.p0_half[k], qt_hat,
+                                qt_hat,
+                                sa.ql,
+                                Rain.Env_QR.values[k],
                                 EnvVar.Area.values[k],
-                                Rain.max_supersaturation
+                                sa.T,
+                                self.Ref.p0_half[k],
+                                self.Ref.rho0_half[k],
+                                dt
                             )
+
                             # environmental variables
                             inner_env[i_ql]     += mph.ql     * weights[m_h] * sqpi_inv
                             inner_env[i_T]      += sa.T       * weights[m_h] * sqpi_inv
@@ -486,8 +498,14 @@ cdef class EnvironmentThermodynamics:
                         EnvVar.H.values[k]
                     )
                     mph = microphysics_rain_src(
-                        sa.T, sa.ql, self.Ref.p0_half[k], EnvVar.QT.values[k],
-                        EnvVar.Area.values[k], Rain.max_supersaturation
+                        EnvVar.QT.values[k],
+                        sa.ql,
+                        Rain.Env_QR.values[k],
+                        EnvVar.Area.values[k],
+                        sa.T,
+                        self.Ref.p0_half[k],
+                        self.Ref.rho0_half[k],
+                        dt
                     )
 
                     self.update_EnvVar(k, EnvVar, sa.T, mph.thl, mph.qt, mph.ql, mph.alpha)
@@ -500,13 +518,13 @@ cdef class EnvironmentThermodynamics:
 
         return
 
-    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain):
+    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt):
 
         if EnvVar.EnvThermo_scheme == 'mean':
-            self.sgs_mean(EnvVar, Rain)
+            self.sgs_mean(EnvVar, Rain, dt)
 
         elif EnvVar.EnvThermo_scheme == 'quadrature':
-            self.sgs_quadrature(EnvVar, Rain)
+            self.sgs_quadrature(EnvVar, Rain, dt)
 
         else:
             sys.exit('EDMF_Environment: Unrecognized EnvThermo_scheme. Possible options: mean, quadrature')

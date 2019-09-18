@@ -164,10 +164,8 @@ cdef class RainPhysics:
         # TODO: assuming GMV.W = 0
         for k in xrange(nzg - gw - 1, gw - 1, -1):
             term_vel[k] = terminal_velocity(
-                              self.Ref.rho0_half[k],
-                              self.Ref.rho0_half[gw],
                               QR.values[k],
-                              GMV.QT.values[k]
+                              self.Ref.rho0_half[k]
                            )
 
         # calculate the allowed timestep (CFL_limit >= v dt / dz)
@@ -194,8 +192,9 @@ cdef class RainPhysics:
                     RainArea.new[k] = 1.
 
                 term_vel_new[k] = terminal_velocity(
-                                  self.Ref.rho0_half[k], self.Ref.rho0_half[gw],
-                                  QR.new[k], GMV.QT.values[k])
+                                      QR.new[k],
+                                      self.Ref.rho0_half[k]
+                                  )
 
             t_elapsed += dt_rain
 
@@ -205,7 +204,9 @@ cdef class RainPhysics:
             term_vel[:] = term_vel_new[:]
 
             if np.max(np.abs(term_vel[:])) > np.finfo(float).eps:
-                dt_rain = np.minimum(dt_model - t_elapsed, CFL_limit * self.Gr.dz / max(term_vel[:]))
+                dt_rain = np.minimum(dt_model - t_elapsed,
+                                     CFL_limit * self.Gr.dz / max(term_vel[:])
+                                    )
             else:
                 dt_rain = dt_model - t_elapsed
 
@@ -234,14 +235,13 @@ cdef class RainPhysics:
 
             flag_evaporate_all = False
 
-            tmp_evap = max(0, evap_rate(
-                self.Ref.rho0[k],
-                GMV.QT.values[k] - GMV.QL.values[k],
-                QR.values[k],
-                GMV.QT.values[k],
-                GMV.T.values[k],
-                self.Ref.p0_half[k]
-            ) * dt_model)
+            tmp_evap = max(0, conv_q_rai_to_q_vap(QR.values[k],
+                                                  GMV.QT.values[k],
+                                                  GMV.QL.values[k],
+                                                  GMV.T.values[k],
+                                                  self.Ref.p0_half[k],
+                                                  self.Ref.rho0[k]
+                                                ) * dt_model)
 
             if tmp_evap > QR.values[k]:
                 flag_evaporate_all = True

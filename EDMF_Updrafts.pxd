@@ -77,4 +77,4 @@ cdef class UpdraftThermodynamics:
     cpdef clear_precip_sources(self)
     cpdef update_total_precip_sources(self)
 
-    cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain)
+    cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain, double dt)

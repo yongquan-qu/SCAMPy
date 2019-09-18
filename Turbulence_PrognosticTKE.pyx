@@ -417,7 +417,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.wstar = get_wstar(Case.Sur.bflux, self.zi)
         if TS.nstep == 0:
             self.decompose_environment(GMV, 'values')
-            self.EnvThermo.microphysics(self.EnvVar, self.Rain)
+            self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
             self.initialize_covariance(GMV, Case)
 
             with nogil:
@@ -447,7 +447,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
         self.decompose_environment(GMV, 'mf_update')
-        self.EnvThermo.microphysics(self.EnvVar, self.Rain) # saturation adjustment + rain creation
+        self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt) # saturation adjustment + rain creation
         # Sink of environmental QT and H due to rain creation is applied in tridiagonal solver
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
 
@@ -469,9 +469,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.QR,     self.Rain.RainArea)
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.Upd_QR, self.Rain.Upd_RainArea)
             self.RainPhysics.solve_rain_evap(GMV, TS, self.Rain.Env_QR, self.Rain.Env_RainArea)
-
-            # update GMV_new with rain evaporation source terms
-            self.apply_rain_evaporation_sources_to_GMV_H_QT(GMV)
 
         # update mean cloud fraction
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
@@ -503,7 +500,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_nh_pressure()
             self.solve_updraft_velocity_area()
             self.solve_updraft_scalars(GMV)
-            self.UpdThermo.microphysics(self.UpdVar, self.Rain)
+            self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
             self.UpdVar.set_values_with_new()
             self.zero_area_fraction_cleanup(GMV)
             time_elapsed += self.dt_upd
@@ -1546,9 +1543,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.QT.new[k+gw] = fmax(\
                                    GMV.QT.mf_update[k+gw]\
                                    + ae[k+gw] *(x[k] - self.EnvVar.QT.values[k+gw])\
-                                   + self.EnvThermo.prec_source_qt[k+gw]
+                                   + self.EnvThermo.prec_source_qt[k+gw]\
+                                   + self.RainPhysics.rain_evap_source_qt[k+gw]
                                    ,0.0)
-
                 self.diffusive_tendency_qt[k+gw] = (GMV.QT.new[k+gw] - GMV.QT.mf_update[k+gw]) * TS.dti
             # get the diffusive flux
             self.diffusive_flux_qt[gw] = interp2pt(Case.Sur.rho_qtflux, -rho_ae_K[gw] * dzi *(self.EnvVar.QT.values[gw+1]-self.EnvVar.QT.values[gw]) )
@@ -1566,7 +1563,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for k in xrange(nz):
                 GMV.H.new[k+gw] = GMV.H.mf_update[k+gw]\
                                   + ae[k+gw] *(x[k] - self.EnvVar.H.values[k+gw])\
-                                  + self.EnvThermo.prec_source_h[k+gw]
+                                  + self.EnvThermo.prec_source_h[k+gw]\
+                                  + self.RainPhysics.rain_evap_source_h[k+gw]
                 self.diffusive_tendency_h[k+gw] = (GMV.H.new[k+gw] - GMV.H.mf_update[k+gw]) * TS.dti
             # get the diffusive flux
             self.diffusive_flux_h[gw] = interp2pt(Case.Sur.rho_hflux, -rho_ae_K[gw] * dzi *(self.EnvVar.H.values[gw+1]-self.EnvVar.H.values[gw]) )
@@ -1608,16 +1606,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         GMV.U.set_bcs(self.Gr)
         GMV.V.set_bcs(self.Gr)
 
-        return
-
-    cpdef apply_rain_evaporation_sources_to_GMV_H_QT(self, GridMeanVariables GMV):
-        cdef:
-            Py_ssize_t k
-
-        with nogil:
-            for k in xrange(self.Gr.gw, self.Gr.nzg):
-                GMV.H.values[k] += self.RainPhysics.rain_evap_source_h[k]
-                GMV.QT.values[k] += self.RainPhysics.rain_evap_source_qt[k]
         return
 
     cpdef compute_tke_buoy(self, GridMeanVariables GMV):

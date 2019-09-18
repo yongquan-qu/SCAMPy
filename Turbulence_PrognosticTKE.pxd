@@ -132,7 +132,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef solve_updraft_scalars(self, GridMeanVariables GMV)
     cpdef update_GMV_MF(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef update_GMV_ED(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
-    cpdef apply_rain_evaporation_sources_to_GMV_H_QT(self, GridMeanVariables GMV)
     cpdef compute_covariance(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
 
     cpdef initialize_covariance(self, GridMeanVariables GMV, CasesBase Case)

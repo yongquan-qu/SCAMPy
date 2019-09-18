@@ -93,7 +93,7 @@ cdef class EnvironmentThermodynamics:
 
         void saturation_adjustment(self, EnvironmentVariables EnvVar)
 
-        void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain)
-        void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain)
+        void sgs_mean(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt)
+        void sgs_quadrature(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt)
 
-    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain)
+    cpdef microphysics(self, EnvironmentVariables EnvVar, RainVariables Rain, double dt)

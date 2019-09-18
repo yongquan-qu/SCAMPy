@@ -401,7 +401,7 @@ cdef class UpdraftThermodynamics:
 
         return
 
-    cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain):
+    cpdef microphysics(self, UpdraftVariables UpdVar, RainVariables Rain, double dt):
         """
         compute precipitation source terms
         """
@@ -416,11 +416,16 @@ cdef class UpdraftThermodynamics:
             for i in xrange(self.n_updraft):
                 for k in xrange(self.Gr.nzg):
 
-                    # autoconversion, TODO - add accretion
+                    # autoconversion and accretion
                     mph = microphysics_rain_src(
-                        UpdVar.T.new[i,k], UpdVar.QL.new[i,k], self.Ref.p0_half[k],
-                        UpdVar.QT.new[i,k], UpdVar.Area.new[i,k],
-                        Rain.max_supersaturation
+                        UpdVar.QT.new[i,k],
+                        UpdVar.QL.new[i,k],
+                        Rain.Upd_QR.values[k],
+                        UpdVar.Area.new[i,k],
+                        UpdVar.T.new[i,k],
+                        self.Ref.p0_half[k],
+                        self.Ref.rho0_half[k],
+                        dt
                     )
 
                     # update Updraft.new

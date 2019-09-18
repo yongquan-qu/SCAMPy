@@ -1,7 +1,7 @@
 import numpy as np
 cimport numpy as np
 
-from libc.math cimport fmax, exp
+from libc.math cimport fmax, exp, sqrt, fmin
 
 from thermodynamic_functions cimport *
 include "parameters.pxi"
@@ -93,17 +93,99 @@ cdef double evap_rate(double rho, double qv, double qr, double qt, double T, dou
     return (1 - qt) * (1. - rv/rsat) * C * (1e-3 * rho * rr)**0.525 / rho / (540 + 2.55 * 1e5 / (p0 * rsat))
     #      dq/dr     * dr/dt
 
-cdef double terminal_velocity(double rho, double rho0, double qr, double qt) nogil :
+cdef double terminal_velocity_emp(double rho, double rho0, double qr, double qt) nogil :
 
     cdef double rr = q2r(qr, qt)
 
     return 14.34 * rho0**0.5 * rho**-0.3654 * rr**0.1346
 
-cdef mph_struct microphysics_rain_src(double T, double ql, double p0, double qt, double area,\
-                         double max_supersat) nogil:
+
+# CLIMA microphysics rates
+
+cdef double terminal_velocity_single_drop_coeff(double rho) nogil:
+
+    return sqrt(8./3 / C_drag * (rho_cloud_liq / rho - 1.))
+
+
+cdef double terminal_velocity(double q_rai, double rho) nogil:
+
+    cdef double v_c = terminal_velocity_single_drop_coeff(rho)
+    cdef double gamma_9_2 = 11.631728396567448
+
+    cdef double term_vel = 0.
+
+    if q_rai > 0:
+        lambda_param = (8. * pi * rho_cloud_liq * MP_n_0 / rho / q_rai)**0.25
+        term_vel = gamma_9_2 * v_c / 6. * sqrt(g / lambda_param)
+
+    return term_vel
+
+
+cdef double conv_q_vap_to_q_liq(double q_sat_liq, double q_liq) nogil:
+
+  return (q_sat_liq - q_liq) / tau_cond_evap
+
+
+cdef double conv_q_liq_to_q_rai_acnv(double q_liq) nogil:
+
+  return fmax(0., q_liq - q_liq_threshold) / tau_acnv
+
+
+cdef double conv_q_liq_to_q_rai_accr(double q_liq, double q_rai, double rho) nogil:
+
+  cdef double v_c = terminal_velocity_single_drop_coeff(rho)
+  cdef double gamma_7_2 = 3.3233509704478426
+
+  cdef double accr_coeff = gamma_7_2 * 8.**(-7./8) * pi**(1./8) * v_c * E_col *\
+                           (rho / rho_cloud_liq)**(7./8)
+
+  return accr_coeff * MP_n_0**(1./8) * sqrt(g) * q_liq * q_rai**(7./8)
+
+
+cdef double conv_q_rai_to_q_vap(double q_rai, double q_tot, double q_liq,
+                                  double T, double p, double rho) nogil:
+
+  cdef double L = latent_heat(T)
+  cdef double gamma_11_4 = 1.6083594219855457
+  cdef double v_c = terminal_velocity_single_drop_coeff(rho)
+  cdef double N_Sc = nu_air / D_vapor
+
+  cdef double av_param = sqrt(2. * pi) * a_vent * sqrt(rho / rho_cloud_liq)
+  cdef double bv_param = 2.**(7./16) * gamma_11_4 * pi**(5./16) * b_vent *\
+                         N_Sc**(1./3) * sqrt(v_c) * (rho / rho_cloud_liq)**(11./16)
+
+  cdef double p_vs = pv_star(T)
+  cdef double qv_sat = qv_star_c(p, q_tot, p_vs)
+  cdef double q_v = q_tot - q_liq
+  cdef double S = q_v/qv_sat - 1
+
+  cdef double G_param = 1. / (L / K_therm / T * (L / Rv / T - 1.) +\
+                              Rv * T / D_vapor / p_vs\
+                             )
+
+  cdef double F_param = av_param * sqrt(q_rai) +\
+                        bv_param * g**0.25 / MP_n_0**(3./16) /\
+                          sqrt(nu_air) * q_rai**(11./16)
+
+  return S * F_param * G_param * sqrt(MP_n_0) / rho
+
+
+
+cdef mph_struct microphysics_rain_src(
+                  double qt,
+                  double ql,
+                  double qr,
+                  double area,
+                  double T,
+                  double p0,
+                  double rho,
+                  double dt) nogil:
+
     """
-    do autoconversion
-    return updated T, THL, qt, qv, ql, qr, alpha
+    compute the autoconversion and accretion rate
+    return:
+      new values: qt, ql, qv, thl, th, alpha
+      rates: qr_src, thl_rain_src
     """
     # TODO assumes no ice
     cdef mph_struct _ret
@@ -113,26 +195,21 @@ cdef mph_struct microphysics_rain_src(double T, double ql, double p0, double qt,
     _ret.th    = theta_c(p0, T)
     _ret.alpha = alpha_c(p0, T, qt, _ret.qv)
 
-    _ret.qr_src       = acnv_instant(ql, qt, max_supersat, T, p0, area)
+    if area <= 0.:
+        _ret.qr_src = 0.
+        _ret.thl_rain_src = 0.
+    else:
+        _ret.qr_src = fmin(ql,
+                              (conv_q_liq_to_q_rai_acnv(ql) +
+                               conv_q_liq_to_q_rai_accr(ql, qr, rho)) * dt
+                          )
+
     _ret.thl_rain_src = rain_source_to_thetal(p0, T, _ret.qr_src)
 
     _ret.qt  = qt - _ret.qr_src
     _ret.ql  = ql - _ret.qr_src
 
     _ret.thl += _ret.thl_rain_src
-
-    # new values
-    #mph.qt
-    #mph.ql
-    #mph.qv
-    #mph.thl
-    #mph.th
-    #sa.T
-    #mph.alpha
-
-    # rates
-    #mph.qr
-    #mph.thl_rain_src
 
     return _ret
 
