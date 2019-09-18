@@ -23,10 +23,9 @@ def sim_data(request):
     cmn.removing_files
     setup = cmn.simulation_setup('DYCOMS_RF01')
 
-    #setup['namelist']['thermodynamics']['sgs'] = 'mean'
     setup['namelist']['thermodynamics']['sgs'] = 'quadrature'
-    setup['namelist']['microphysics']['rain_model']          = True
-    setup['namelist']['microphysics']['max_supersaturation'] = 0.05
+    setup['namelist']['microphysics']['rain_model'] = True
+    setup["namelist"]["turbulence"]["EDMF_PrognosticTKE"]["entrainment"]="moisture_deficit"
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
