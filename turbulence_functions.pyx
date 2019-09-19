@@ -242,11 +242,11 @@ cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
         pressure_buoy_struct _ret
 
     with gil:
-        if press_in.asp_label.encode('utf-8') == 'z_dependent':
+        if str(press_in.asp_label) == 'z_dependent':
             _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'median':
+        elif str(press_in.asp_label) == 'median':
             _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'const':
+        elif str(press_in.asp_label) == 'const':
             _ret.asp_ratio = 1.72
 
     _ret.b_coeff = press_in.bcoeff_tan18
