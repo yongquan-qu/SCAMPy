@@ -67,6 +67,17 @@ def test_plot_ARM_SGP(sim_data):
     t1 = 11
     cb_min = [0., 0.]
     cb_max = [0.05, 7]
+    fixed_cbar = True
+    cb_min_t = [295, 295, 300, 0, 0, 0, -1, -1, -1, 2.5, 2.5, 9,\
+                -0.32, 0, 9, -0.1,\
+                0, -0.1, 0,\
+                -0.32, -0.12, -0.08,\
+                -0.01, -0.08, -0.045]
+    cb_max_t = [335, 335, 312, 0.05, 0.016, 4, 1, 1, 1, 20, 20, 20,\
+                0, 7, 11, 0.1,\
+                0.28, 0.03, 1.05,\
+                0.12, 0.32, 0.18,\
+                0.19, 0.025, 0.25]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)
@@ -83,7 +94,7 @@ def test_plot_ARM_SGP(sim_data):
     pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
     pls.plot_tke_break(scm_dict, les_dict, t0, t1, cn+"tke_breakdown.pdf",folder=f2)
 
-    pls.plot_contour_t(scm_dict, les_dict, folder=f2)
+    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, folder=f2)
     pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
 
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,

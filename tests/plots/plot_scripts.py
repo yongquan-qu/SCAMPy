@@ -620,70 +620,67 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     plt.savefig(folder + case + "plume_separation_radius.pdf")
     plt.clf()
 
-def plot_contour_t(scm_data, les_data, folder="plots/output/"):
+def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
 
     Input:
     scm_data - scm stats file
     les_data - les stats file
+    fixed_cbar - bool flag, True if you want to plot with specified colorbar range
+    cb_min_t - min values for colorbar
+    cb_max_t - max_values for colorbar
     folder - folder where to save the created plot
     """
 
     scm_z_half = scm_data["z_half"]/1000.0
     scm_time   = scm_data["t"] /3600.0
-    scm_data["qv_mean"] = scm_data["qt_mean"]    - scm_data["ql_mean"]
-    scm_data["upd_qv"]  = scm_data["updraft_qt"] - scm_data["updraft_ql"]
-    scm_data["env_qv"]  = scm_data["env_qt"]     - scm_data["env_ql"]
+    les_z_half = les_data["z_half"]
+    les_time   = les_data["t"]
 
-    les_z_half     = les_data["z_half"]
-    les_time       = les_data["t"]
-    les_data["qv_mean"] = les_data["qt_mean"]     - les_data["ql_mean"]
-    les_data["upd_qv"]  = les_data["updraft_qt"]  - les_data["updraft_ql"]
-    les_data["env_qv"]  = les_data["env_qt"]      - les_data["env_ql"]
+    les_vars  = ["thetali_mean", "env_thetali", "updraft_thetali",\
+                 "ql_mean", "env_ql", "updraft_ql",\
+                 "qr_mean", "env_qr", "updraft_qr",\
+                 "qt_mean", "env_qt", "updraft_qt",\
+                 "env_w", "updraft_w", "u_translational_mean", "v_translational_mean",\
+                 "updraft_fraction", "updraft_buoyancy", "tke_mean",\
+                 "massflux_h", "diffusive_flux_h", "total_flux_h",\
+                 "massflux_qt", "diffusive_flux_qt", "total_flux_qt"]
 
-    les_vars  = ["thetali_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean",\
-                 "qt_mean", "env_thetali", "env_w", "env_qt", "env_ql","env_qr",\
-                 "updraft_thetali", "updraft_fraction", "updraft_buoyancy",\
-                 "updraft_w", "updraft_qt", "updraft_ql","updraft_qr",\
-                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt",\
-                 "diffusive_flux_qt", "total_flux_qt", "u_translational_mean", "v_translational_mean"]
+    scm_vars  = ["thetal_mean", "env_thetal", "updraft_thetal",\
+                 "ql_mean", "env_ql", "updraft_ql",\
+                 "qr_mean", "env_qr", "updraft_qr",\
+                 "qt_mean", "env_qt", "updraft_qt",\
+                 "env_w", "updraft_w", "u_mean", "v_mean",\
+                 "updraft_area", "updraft_buoyancy", "tke_mean",\
+                 "massflux_h", "diffusive_flux_h", "total_flux_h",\
+                 "massflux_qt", "diffusive_flux_qt", "total_flux_qt"]
 
-    scm_vars  = ["thetal_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean",\
-                 "qt_mean", "env_thetal", "env_w", "env_qt", "env_ql", "env_qr",\
-                 "updraft_thetal", "updraft_area", "updraft_buoyancy", "updraft_w",\
-                 "updraft_qt", "updraft_ql", "updraft_qr", "massflux_h",\
-                 "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt",\
-                 "total_flux_qt", "u_mean", "v_mean"]
+    labels    = ["mean thl [K]", "env thl [K]", "updr thl [K]",\
+                 "mean ql [g/kg]", "env ql [g/kg]", "updr ql [g/kg]",\
+                 "mean qr [g/kg]", "env qr [g/kg]", "updr qr [g/kg",\
+                 "mean qt [g/kg]", "env qt [g/kg]", "updr qt [g/kg]",\
+                 "env w [m/s]", "updr w [m/s]", "u [m/s]", "v [m/s]",\
+                 "updr area [%]", "updr buoyancy [m/s^2]", "mean TKE [m2/s2]",\
+                 "massflux_h [kg*K/ms^2]", "diffusive_flux_h [kg*K/ms^2]","total_flux_h [kg*K/ms^2]",\
+                 "massflux_qt [g*/ms^2]", "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]"]
 
-    labels    = ["mean thl [K]", "mean TKE [m2/s2]", "mean qv [g/kg]",\
-                 "mean ql [g/kg]", "mean qr [g/kg]", "mean qt [g/kg]", "env thl [K]",\
-                 "env w [m/s]", "env qt [g/kg]", "env ql [g/kg]", "env qr [g/kg]",\
-                 "updr thl [K]", "updr area [%]", "updr buoyancy [m/s^2]", "updr w [m/s]",\
-                 "updr qt [g/kg]", "updr ql [g/kg]", "updr qr [g/kg",\
-                 "massflux_h [kg*K/ms^2]", "diffusive_flux_h [kg*K/ms^2]",\
-                 "total_flux_h [kg*K/ms^2]", "massflux_qt [g*/ms^2]",\
-                 "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]",\
-                 "u [m/s]", "v [m/s]"]
+    fig_name =  ["mean_thl", "env_thl", "upd_thl",\
+                 "mean_ql", "env_ql", "upd_ql",\
+                 "mean_qr", "env_qr", "upd_qr",\
+                 "mean_qt", "env_qt", "upd_qt",\
+                 "env_w", "upd_w", "mean_u", "mean_v",\
+                 "upd_area", "upd_buoyancy", "mean_TKE",\
+                 "edmf_massflux_h", "edmf_diffusive_flux_h", "edmf_total_flux_h",\
+                 "edmf_massflux_qt", "edmf_diffusive_flux_qt", "edmf_total_flux_qt"]
 
-    fig_name =  ["mean_thl", "mean_TKE", "mean_qv", "mean_ql", "mean_qr",\
-                 "mean_qt", "env_thl", "env_w", "env_qt", "env_ql", "env_qr",\
-                 "upd_thl", "upd_area", "upd_buoyancy", "upd_w", "upd_qt",\
-                 "upd_ql", "upd_qr", "edmf_massflux_h", "edmf_diffusive_flux_h",\
-                 "edmf_total_flux_h", "edmf_massflux_qt", "edmf_diffusive_flux_qt",\
-                 "edmf_total_flux_qt","mean_u", "mean_v"]
-
-    cb_min = [295, 0,   2.5, 0,   -1, 2.5, 295, -0.32 #env_w
-
-    cb_max = [335, 1.05, 20, 0.05, 1,  20, 335, 0
-
-    #TODO - set the same LES based cbar limits
     for plot_it in range(len(labels)):
         fig = plt.figure(fig_name[plot_it])
         fig.set_figheight(12)
         fig.set_figwidth(14)
         mpl.rcParams.update({'font.size': 18})
         mpl.rc('lines', linewidth=4, markersize=10)
+        cmap = "RdBu_r"
 
         # the initial condition for env thetal in scampy starts with zeros
         if scm_vars[plot_it]=="env_thetal":
@@ -691,7 +688,6 @@ def plot_contour_t(scm_data, les_data, folder="plots/output/"):
 
         scm_field = scm_data[scm_vars[plot_it]]
         les_field = les_data[les_vars[plot_it]]
-
         a_scm = scm_data['updraft_area']
         a_les = les_data['updraft_fraction']
 
@@ -703,25 +699,34 @@ def plot_contour_t(scm_data, les_data, folder="plots/output/"):
             les_field[np.where(a_les==0.0)] = np.nan
             les_field[np.where(np.isnan(a_les))] = np.nan
 
-        levels = np.linspace(cb_min[plot_it], cb_max[plot_it], 11)
-        cmap = "RdBu_r"
-
         plt.subplot(211)
-        cntrf = plt.contourf(les_time, les_z_half, les_field, cmap=cmap,\
-                             levels=levels, vmin=cb_min[plot_it], vmax=cb_max[plot_it])
-        cbar = plt.colorbar(cntrf)
-        cbar.set_label(labels[plot_it])
+        if fixed_cbar:
+            levels = np.linspace(cb_min_t[plot_it], cb_max_t[plot_it], 11)
+            cntrf = plt.contourf(les_time, les_z_half, les_field, cmap=cmap,\
+                                 levels=levels, vmin=cb_min_t[plot_it], vmax=cb_max_t[plot_it])
+            cbar = plt.colorbar(cntrf)
+            cbar.set_label(labels[plot_it])
+        else:
+            plt.contourf(les_time, les_z_half, les_field, cmap=cmap)
+            plt.colorbar()
         plt.ylim([0,np.max(scm_data["z_half"]/1000.0)])
         plt.ylabel('height [km]')
+        plt.grid(True)
 
         plt.subplot(212)
-        cntrf = plt.contourf(scm_time, scm_z_half, scm_field, cmap=cmap,\
-                             levels=levels, vmin=cb_min[plot_it], vmax=cb_max[plot_it])
-        cbar = plt.colorbar(cntrf)
-        cbar.set_label(labels[plot_it])
+        if fixed_cbar:
+            levels = np.linspace(cb_min_t[plot_it], cb_max_t[plot_it], 11)
+            cntrf = plt.contourf(scm_time, scm_z_half, scm_field, cmap=cmap,\
+                                 levels=levels, vmin=cb_min_t[plot_it], vmax=cb_max_t[plot_it])
+            cbar = plt.colorbar(cntrf)
+            cbar.set_label(labels[plot_it])
+        else:
+            plt.contourf(scm_time, scm_z_half, scm_field, cmap=cmap)
+            plt.colorbar()
         plt.ylim([0,np.max(scm_data["z_half"]/1000.0)])
         plt.xlabel('time [h]')
         plt.ylabel('height [km]')
+        plt.grid(True)
 
         plt.tight_layout()
         plt.savefig(folder + "contour_" + fig_name[plot_it]+".pdf")

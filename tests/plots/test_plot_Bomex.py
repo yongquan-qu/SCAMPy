@@ -66,6 +66,11 @@ def test_plot_Bomex(sim_data):
     t1 = 6
     cb_min = [0., 0.]
     cb_max = [0.021, 4.8]
+    fixed_cbar = True
+    cb_min_t = [298, 0, 2, 0, -1, 2, 298, -0.175, 2.5, 0, -1, 300, 0,\
+                -0.15, 0, 10, 0, -1, -0.3, -0.1, -0.08, -0.08, -0.5, -0.5, 9, -0.1]
+    cb_max_t = [312, .4, 18, 0.02, 1,  18, 312, 0, 20, 0.016, 1, 312, 0.28,\
+                0.025, 7, 19, 4, 1, 0.1, 0.3, 0.2, 0.5, 0.08, 0.25, 11, 0.1]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)
@@ -82,7 +87,7 @@ def test_plot_Bomex(sim_data):
     pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
     pls.plot_tke_break(scm_dict, les_dict, t0, t1,  cn+"tke_breakdown.pdf", folder=f2)
 
-    pls.plot_contour_t(scm_dict, les_dict, folder=f2)
+    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, folder=f2)
     pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
 
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,
