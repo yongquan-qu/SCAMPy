@@ -38,7 +38,7 @@ def sim_data(request):
 
     return sim_data
 
-def test_plot_timeseries_ARM_SGP(sim_data):
+def test_plot_ARM_SGP(sim_data):
     """
     plot ARM_SGP timeseries
     """
@@ -60,61 +60,33 @@ def test_plot_timeseries_ARM_SGP(sim_data):
         os.system("wget -O "+localpath+"/les_data/ARM_SGP.nc "+url_)
         les_data = Dataset(localpath + "/les_data/ARM_SGP.nc", 'r')
 
-    scm_data_to_plot = cmn.read_scm_data(sim_data)
-    les_data_to_plot = cmn.read_les_data(les_data)
     f1 = "plots/output/ARM_SGP/"
     f2 = f1 + "all_variables/"
     cn = "ARM_SGP_"
     t0 = 8
     t1 = 11
+    cb_min = [0., 0.]
+    cb_max = [0.05, 7]
 
-    pls.plot_closures(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"closures.pdf", folder=f1)
-    pls.plot_humidities(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"humidities.pdf", folder=f1)
-    pls.plot_updraft_properties(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"updraft_properties.pdf", folder=f1)
-    pls.plot_tke_components(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"tke_components.pdf", folder=f1)
+    scm_dict = cmn.read_scm_data(sim_data)
+    les_dict = cmn.read_les_data(les_data)
 
-    pls.plot_var_covar_mean(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"var_covar_mean.pdf", folder=f2)
-    pls.plot_var_covar_components(scm_data_to_plot, t0, t1, cn+"var_covar_components.pdf", folder=f2)
-    pls.plot_tke_breakdown(scm_data_to_plot, les_data_to_plot, t0, t1, cn+"tke_breakdown.pdf", folder=f2)
+    scm_dict_t = cmn.read_scm_data_timeseries(sim_data)
+    les_dict_t = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_contour_timeseries(scm_data_to_plot, les_data_to_plot, folder=f2)
-    pls.plot_mean(scm_data_to_plot, les_data_to_plot, t0, t1, folder=f2)
+    pls.plot_closures(scm_dict, les_dict, t0, t1, cn+"closures.pdf", folder=f1)
+    pls.plot_spec_hum(scm_dict, les_dict, t0, t1, cn+"humidities.pdf", folder=f1)
+    pls.plot_upd_prop(scm_dict, les_dict, t0, t1, cn+"updraft_properties.pdf", folder=f1)
+    pls.plot_tke_comp(scm_dict, les_dict, t0, t1, cn+"tke_components.pdf", folder=f1)
 
-def test_plot_timeseries_1D_ARM_SGP(sim_data):
-    """
-    plot ARM_SGP 1D timeseries
-    """
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/ARM_SGP/")
-        print()
-    except:
-        print('ARM_SGP folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/ARM_SGP/all_variables/")
-    except:
-        print('ARM_SGP/all_variables folder exists')
+    pls.plot_cvar_mean(scm_dict, les_dict, t0, t1, cn+"var_covar_mean.pdf", folder=f2)
+    pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
+    pls.plot_tke_break(scm_dict, les_dict, t0, t1, cn+"tke_breakdown.pdf",folder=f2)
 
-    if (os.path.exists(localpath + "/les_data/ARM_SGP.nc")):
-        les_data = Dataset(localpath + "/les_data/ARM_SGP.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/j7s0jmmkwn7av62/ARM_SGP.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/ARM_SGP.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/ARM_SGP.nc", 'r')
+    pls.plot_contour_t(scm_dict, les_dict, folder=f2)
+    pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
 
-    scm_data_to_plot_timeseries = cmn.read_scm_data_timeseries(sim_data)
-    les_data_to_plot_timeseries = cmn.read_les_data_timeseries(les_data)
+    pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,
+                  cn+"main_timeseries.pdf", cb_min, cb_max, folder=f1)
 
-    scm_data_to_plot = cmn.read_scm_data(sim_data)
-    les_data_to_plot = cmn.read_les_data(les_data)
-
-    pls.plot_main_timeseries(scm_data_to_plot_timeseries,
-                             les_data_to_plot_timeseries,
-                             scm_data_to_plot,
-                             les_data_to_plot,
-                             "ARM_SGP_main_timeseries.pdf",
-                             folder="plots/output/ARM_SGP/")
-
-    pls.plot_timeseries_1D(scm_data_to_plot_timeseries,
-                           les_data_to_plot_timeseries,
-                           folder="plots/output/ARM_SGP/all_variables/")
+    pls.plot_1D(scm_dict_t, les_dict_t, folder=f2)

@@ -9,7 +9,7 @@ mpl.use('Agg')  # To allow plotting when display is off
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
-def plot_mean(scm_data, les_data, tmin, tmax, folder="plots/output/"):
+def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
     """
     Plots mean profiles from Scampy
 
@@ -148,7 +148,7 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_tke_components(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -211,7 +211,7 @@ def plot_tke_components(scm_data, les_data, tmin, tmax, title, folder="plots/out
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_humidities(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -264,7 +264,7 @@ def plot_humidities(scm_data, les_data, tmin, tmax, title, folder="plots/output/
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_updraft_properties(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -318,7 +318,7 @@ def plot_updraft_properties(scm_data, les_data, tmin, tmax, title, folder="plots
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_tke_breakdown(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
 
@@ -372,7 +372,7 @@ def plot_tke_breakdown(scm_data, les_data, tmin, tmax, title, folder="plots/outp
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_var_covar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance profiles from Scampy
 
@@ -427,7 +427,7 @@ def plot_var_covar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/out
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_var_covar_components(scm_data, tmin, tmax, title, folder="plots/output/"):
+def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance components profiles from Scampy
 
@@ -452,7 +452,7 @@ def plot_var_covar_components(scm_data, tmin, tmax, title, folder="plots/output/
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
     plot_QTvar_c  = ["QTvar_dissipation",  "QTvar_entr_gain",  "QTvar_detr_loss",  "QTvar_shear",  "QTvar_rain"]
     plot_HQTcov_c = ["HQTcov_dissipation", "HQTcov_entr_gain", "HQTcov_detr_loss", "HQTcov_shear", "HQTcov_rain"]
-    color_c       = ['darkgreen',              'purple',             'purple',           'darkorange',       'royalblue']
+    color_c       = ['darkgreen',          'purple',           'purple',           'darkorange',    'royalblue']
 
     x_lab         = ["Hvar",      "QTvar",      "HQTcov"]
     plot_var_data = [plot_Hvar_c, plot_QTvar_c, plot_HQTcov_c]
@@ -480,7 +480,8 @@ def plot_var_covar_components(scm_data, tmin, tmax, title, folder="plots/output/
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_main_timeseries(scm_srs, les_srs, scm_data, les_data, title , folder="plots/output/"):
+def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
+              cb_min, cb_max, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
 
@@ -489,12 +490,12 @@ def plot_main_timeseries(scm_srs, les_srs, scm_data, les_data, title , folder="p
     les_srs  - les timeseries file
     scm_data - scm stats file
     les_data - les stats file
-    tmin     - lower bound for time mean
-    tmax     - upper bound for time mean
-    folder   - folder where to save the created plot
+    title    - figure title
+    cb_min   - lower colorbar limit for ql_mean and upd_w contour plots
+    cb_min   - upper colorbar limit for ql_mean and upd_w contour plots
+    folder   - folder where to save the created figure
     """
-    # customize figure parameters
-    # read data
+
     scm_z_half = scm_data["z_half"]/1000.0
     scm_time   = scm_data["t"] /3600.0
     les_z_half = les_data["z_half"]
@@ -503,35 +504,34 @@ def plot_main_timeseries(scm_srs, les_srs, scm_data, les_data, title , folder="p
     fig = plt.figure(1)
     fig.set_figheight(12)
     fig.set_figwidth(14)
-    mpl.rcParams.update({'font.size': 18})
+    mpl.rcParams.update({'font.size': 16})
     mpl.rc('lines', linewidth=4, markersize=10)
 
     cmap = "RdBu_r"
-    cb_min = [ , ]
-    cb_max = [ , ]
 
     les_var = ["ql_mean", "updraft_w"]
-    les_tit = ["les ql mean", "les upd w"]
+    les_tit = ["LES ql mean [g/kg]", "LES upd w [m/s]"]
     for it in range(2):
         plt.subplot(3,2,it+1)
-        levels = np.linspace(cb_min[plot_it], cb_max[plot_it], 11)
+        levels = np.linspace(cb_min[it], cb_max[it], 11)
         cntrf = plt.contourf(les_time, les_z_half, les_data[les_var[it]],\
-                             cmap=cmap, levels=levels, vmin=cb_min[plot_it], vmax=cb_max[plot_it])
+                             cmap=cmap, levels=levels, vmin=cb_min[it], vmax=cb_max[it])
         cbar = plt.colorbar(cntrf)
-        cbar.set_label(labels[plot_it])
         plt.ylim([0, np.max(scm_z_half)])
         plt.ylabel('height [km]')
         plt.title(les_tit[it])
 
     scm_var = ["ql_mean", "updraft_w"]
-    scm_tit = ["scm ql mean", "scm upd w"]
+    scm_tit = ["SCM ql mean [g/kg]", "SCM upd w [m/s]"]
     for it in range(2):
         plt.subplot(3,2,it+3)
-        plt.contourf(scm_time, scm_z_half, scm_data[scm_var[it]], cmap='RdBu_r')
+        levels = np.linspace(cb_min[it], cb_max[it], 11)
+        cntrf = plt.contourf(scm_time, scm_z_half, scm_data[scm_var[it]],\
+                             cmap=cmap, levels=levels, vmin=cb_min[it], vmax=cb_max[it])
+        cbar = plt.colorbar(cntrf)
         plt.ylim([0, np.max(scm_z_half)])
         plt.xlabel('time [h]')
         plt.ylabel('height [km]')
-        plt.colorbar()
         plt.title(scm_tit[it])
 
     # TODO add rwp
@@ -549,7 +549,7 @@ def plot_main_timeseries(scm_srs, les_srs, scm_data, les_data, title , folder="p
     plt.clf()
     plt.close()
 
-def plot_timeseries_1D(data,  les, folder="plots/output/"):
+def plot_1D(data,  les, folder="plots/output/"):
     """
     Plots timeseries from Scampy
 
@@ -560,15 +560,13 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
     tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
-    # customize defaults
+    #TODO - make the same panels as in scampify
 
-    # data to plot
     plot_y     = [data["cloud_cover_mean"],  data["lwp_mean"], data["lhf"], data["shf"], data["rd"],             data["cloud_top_mean"], data["cloud_base_mean"]]
     plot_les_y = [les["cloud_cover_mean"],   les["lwp_mean"],  les["lhf"],  les["shf"],  les["shf"],             les["cloud_top_mean"],  les["cloud_base_mean"]]
     y_lab  =     ['cloud cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'CB, CT [km]']
     fig_name  =  ['cloud_cover', 'liquid_water_path',  'latent_heat_flux',  'sensible_heat_flux',       'plume_separation_radius',   'cloud_base_top']
 
-    # iteration over plots
     plots = []
     for plot_it in range(6):
         fig = plt.figure(1)
@@ -601,7 +599,7 @@ def plot_timeseries_1D(data,  les, folder="plots/output/"):
         plt.savefig(folder + fig_name[plot_it]+".pdf")
         plt.clf()
 
-def plot_contour_timeseries(data,  les, folder="plots/output/"):
+def plot_contour_t(data,  les, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
 
@@ -612,8 +610,10 @@ def plot_contour_timeseries(data,  les, folder="plots/output/"):
     tmax   - upper bound for time mean
     folder - folder where to save the created plot
     """
-    # customize figure parameters
-    # read data
+    #TODO - make the same panels as in scampify
+    #TODO - set the same LES based cbar limits
+    #change sizes and fonts
+
     z_half    = data["z_half"]/1000.0
     time      = data["t"] /3600.0
     data["qv_mean"]  = data["qt_mean"]    - data["ql_mean"]
@@ -626,7 +626,6 @@ def plot_contour_timeseries(data,  les, folder="plots/output/"):
     les["upd_qv"]  = les["updraft_qt"]  - les["updraft_ql"]
     les["env_qv"]  = les["env_qt"]      - les["env_ql"]
 
-    # data to plot "qt_mean",
     les_vars  = ["thetali_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean", "qt_mean", "env_thetali", "env_w", "env_qt", "env_ql","env_qr",
                  "updraft_thetali", "updraft_fraction", "updraft_buoyancy", "updraft_w", "updraft_qt", "updraft_ql","updraft_qr",
                  "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt", "u_translational_mean", "v_translational_mean"]
@@ -645,7 +644,6 @@ def plot_contour_timeseries(data,  les, folder="plots/output/"):
                  "contour_upd_ql", "contour_upd_qr", "contour_massflux_h", "contour_diffusive_flux_h", "contour_total_flux_h", "contour_massflux_qt", "contour_diffusive_flux_qt",
                  "contour_total_flux_qt","contour_u_mean", "contour_v_mean"]
 
-    # iteration over plots
     plots = []
     for plot_it in range(len(labels)):
         fig = plt.figure(fig_name[plot_it])
