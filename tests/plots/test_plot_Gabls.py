@@ -88,4 +88,4 @@ def test_plot_Gabls(sim_data):
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,
                   cn+"main_timeseries.pdf", cb_min, cb_max, folder=f1)
 
-    pls.plot_1D(scm_dict_t, les_dict_t, folder=f2)
+    pls.plot_1D(scm_dict_t, les_dict_t, cn, folder=f2)

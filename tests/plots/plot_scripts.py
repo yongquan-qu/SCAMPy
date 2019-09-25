@@ -20,10 +20,10 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
     tmax     - upper bound for time mean
     folder   - folder where to save the created plot
     """
-    t_start_scm = int(np.where(np.array(scm_data["t"]) > tmin*3600.0)[0][0])
-    t_start_les = int(np.where(np.array(les_data["t"]) > tmin)[0][0])
-    t_end_scm = int(np.where(np.array(tmax*3600.0<= scm_data["t"]))[0][0])
-    t_end_les = int(np.where(np.array(tmax<= les_data["t"]))[0][0])
+    t0_scm = int(np.where(np.array(scm_data["t"]) > tmin*3600.0)[0][0])
+    t0_les = int(np.where(np.array(les_data["t"]) > tmin)[0][0])
+    t1_scm = int(np.where(np.array(tmax*3600.0<= scm_data["t"]))[0][0])
+    t1_les = int(np.where(np.array(tmax<= les_data["t"]))[0][0])
 
     qv_mean_scm = np.array(scm_data["qt_mean"]) - np.array(scm_data["ql_mean"])
     qv_mean_les = np.array(les_data["qt_mean"]) - np.array(les_data["ql_mean"])
@@ -44,8 +44,8 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
                   r'$\bar{q}_{r,env} [\mathrm{g/kg}]$']
 
-    fig_name  =  ["qt_mean", "ql_mean", "qr_mean", "qv_mean", "thetal_mean",\
-                  "TKE", "u_mean", "v_mean", "updraft_w", "updraft_buoyancy",\
+    fig_name  =  ["mean_qt", "mean_ql", "mean_qr", "mean_qv", "mean_thetal",\
+                  "mean_TKE", "mean_u", "mean_v", "updraft_w", "updraft_buoyancy",\
                   "updraft_ql", "updraft_qr", "updraft_area", "env_ql", "env_qr"]
 
     plot_x_scm = [scm_data["qt_mean"], scm_data["ql_mean"], scm_data["qr_mean"],\
@@ -62,22 +62,22 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   les_data["updraft_ql"], les_data["updraft_qr"],\
                   les_data["updraft_fraction"], les_data["env_ql"], les_data["env_qr"]]
 
-    color  = ["navy", "darkorange"]
-    label  = ["ini", "end"]
-
     plots = []
     for plot_it in range(len(x_labels)):
         fig = plt.figure(fig_name[plot_it])
         plt.xlabel(x_labels[plot_it])
         plt.ylabel('height [km]')
-        plt.ylim([0, scm_data["z_half"][-1]/1000.0 + (scm_data["z_half"][1]/1000.0 - scm_data["z_half"][0]/1000.0) * 0.5])
+        plt.ylim([0,\
+                  scm_data["z_half"][-1]/1000.0 +\
+                  (scm_data["z_half"][1]/1000.0 - scm_data["z_half"][0]/1000.0) * 0.5\
+                 ])
         plt.grid(True)
-        plt.plot(np.nanmean(plot_x_les[plot_it][:,t_start_les:t_end_les],axis=1), les_data["z_half"],        '-', color='k', label='les', linewidth = 2)
-        plt.plot(np.nanmean(plot_x_scm[plot_it][:,t_start_scm:t_end_scm],axis=1), scm_data["z_half"]/1000.0, '-', color = '#157CC7', label='scm', linewidth = 2)
+        plt.plot(np.nanmean(plot_x_les[plot_it][:, t0_les:t1_les],axis=1), les_data["z_half"],     '-', color='k', label='les', linewidth = 2)
+        plt.plot(np.nanmean(plot_x_scm[plot_it][:, t0_scm:t1_scm],axis=1), scm_data["z_half"]/1e3, '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
         plt.tight_layout()
-        plt.savefig(folder + fig_name[plot_it]+".pdf")
+        plt.savefig(folder + "profile_" + fig_name[plot_it]+".pdf")
         plt.clf()
 
 def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
@@ -389,19 +389,16 @@ def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
     t1_scm = int(np.where(np.array(tmax*3600.0<= scm_data["t"]))[0][0])
     t1_les = int(np.where(np.array(tmax<= les_data["t"]))[0][0])
 
-    # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(8)
     fig.set_figwidth(14)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
 
-    # data to plot
     x_lab         = ["Hvar",       "QTvar",       "HQTcov"]
     plot_var_mean = ["Hvar_mean",  "QTvar_mean",  "HQTcov_mean"]
     plot_var_env  = ["env_Hvar",   "env_QTvar",   "env_HQTcov"]
 
-    # iteration over plots
     plots = []
     for plot_it in range(3):
         plots.append(plt.subplot(1,3,plot_it+1))
@@ -441,14 +438,12 @@ def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     t0_scm = int(np.where(np.array(scm_data["t"]) > tmin*3600.0)[0][0])
     t1_scm = int(np.where(np.array(tmax*3600.0<= scm_data["t"]))[0][0])
 
-    # customize defaults
     fig = plt.figure(1)
     fig.set_figheight(8)
     fig.set_figwidth(14)
     mpl.rcParams.update({'font.size': 18})
     mpl.rc('lines', linewidth=4, markersize=10)
 
-    # data to plot
     plot_Hvar_c   = ["Hvar_dissipation",   "Hvar_entr_gain",   "Hvar_detr_loss",   "Hvar_shear",   "Hvar_rain"]
     plot_QTvar_c  = ["QTvar_dissipation",  "QTvar_entr_gain",  "QTvar_detr_loss",  "QTvar_shear",  "QTvar_rain"]
     plot_HQTcov_c = ["HQTcov_dissipation", "HQTcov_entr_gain", "HQTcov_detr_loss", "HQTcov_shear", "HQTcov_rain"]
@@ -457,7 +452,6 @@ def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     x_lab         = ["Hvar",      "QTvar",      "HQTcov"]
     plot_var_data = [plot_Hvar_c, plot_QTvar_c, plot_HQTcov_c]
 
-    # iteration over plots
     plots = []
     for plot_it in range(3):
         plots.append(plt.subplot(1,3,plot_it+1))
@@ -549,111 +543,158 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
     plt.clf()
     plt.close()
 
-def plot_1D(data,  les, folder="plots/output/"):
+def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     """
     Plots timeseries from Scampy
 
     Input:
-    data   - scm stats file
-    les    - les stats file
-    tmin   - lower bound for time mean
-    tmax   - upper bound for time mean
-    folder - folder where to save the created plot
+    scm_data - scm stats file
+    les_data - les stats file
+    case     - case name
+    folder   - folder where to save the created plot
     """
-    #TODO - make the same panels as in scampify
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', lw=3, markersize=10)
 
-    plot_y     = [data["cloud_cover_mean"],  data["lwp_mean"], data["lhf"], data["shf"], data["rd"],             data["cloud_top_mean"], data["cloud_base_mean"]]
-    plot_les_y = [les["cloud_cover_mean"],   les["lwp_mean"],  les["lhf"],  les["shf"],  les["shf"],             les["cloud_top_mean"],  les["cloud_base_mean"]]
-    y_lab  =     ['cloud cover',                 'lwp',       'lhf',       'shf',       'rd [m]',                      'CB, CT [km]']
-    fig_name  =  ['cloud_cover', 'liquid_water_path',  'latent_heat_flux',  'sensible_heat_flux',       'plume_separation_radius',   'cloud_base_top']
+    # surface fluxes
+    plot_scm_y = [scm_data["lhf"], scm_data["shf"]]
+    plot_les_y = [les_data["lhf"], les_data["shf"]]
+    y_lab = ["LHF", "SHF"]
 
-    plots = []
-    for plot_it in range(6):
-        fig = plt.figure(1)
-        if plot_it < 4:
-            plt.xlabel('time [h]')
-            plt.ylabel(y_lab[plot_it])
-            plt.xlim([0, data["t"][-1]/3600.0])
-            plt.grid(True)
-            plt.plot(les["t"][1:] , plot_les_y[plot_it][1:], '-', color="gray",linewidth = 4)
-            plt.plot(data["t"][1:]/3600.0, plot_y[plot_it][1:], '-', color="b")
-            plt.legend()
-        elif plot_it == 4:
-            plt.xlabel('time [h]')
-            plt.ylabel(y_lab[plot_it])
-            plt.xlim([0, data["t"][-1]/3600.0])
-            plt.grid(True)
-            plt.plot(data["t"][1:]/3600.0, plot_y[plot_it][1:], '-', color="b")
-            plt.legend()
-            plt.tight_layout()
-        else:
-            plt.xlabel('time [h]')
-            plt.ylabel(y_lab[5])
-            plt.xlim([0, data["t"][-1]/3600.0])
-            plt.grid(True)
-            plt.plot(les["t"][1:], les["cloud_base_mean"][1:], '-', color="gray",   label="CB_les",  linewidth = 4)
-            plt.plot(les["t"][1:], les["cloud_top_mean"][1:],  '-', color="gray",   label="CT_les",  linewidth = 4)
-            plt.plot(data["t"][1:]/3600.0, data["cloud_base_mean"][1:], '-', color="crimson", label="CB",  linewidth = 2)
-            plt.plot(data["t"][1:]/3600.0, data["cloud_top_mean"][1:],  '-', color="royalblue", label="CT",  linewidth = 2)
+    fig = plt.figure(1)
+    for plot_it in range(2):
+        plt.subplot(2,1,plot_it+1)
+        plt.plot(les_data["t"][1:], plot_les_y[plot_it][1:], '-', color="gray", lw=3, label="LES")
+        plt.plot(scm_data["t"][1:]/3600., plot_scm_y[plot_it][1:], '-', color="b", lw=3, label="SCM")
+        plt.ylabel(y_lab[plot_it])
+        plt.xlim([0, scm_data["t"][-1]/3600.])
+        plt.grid(True)
+    plt.xlabel('time [h]')
+    plt.tight_layout()
+    plt.savefig(folder + case + "surface_heat_fluxes.pdf")
+    plt.clf()
 
-        plt.savefig(folder + fig_name[plot_it]+".pdf")
-        plt.clf()
+    # TODO - add rwp
+    scm_data["rwp_mean"] = np.zeros_like(scm_data["lwp_mean"])
+    les_data["rwp_mean"] = np.zeros_like(les_data["lwp_mean"])
 
-def plot_contour_t(data,  les, folder="plots/output/"):
+    # cloud timeseries
+    plot_scm_y = [scm_data["lwp_mean"],\
+                  scm_data["cloud_cover_mean"],\
+                  scm_data["rwp_mean"],\
+                  scm_data["cloud_top_mean"]/1e3, scm_data["cloud_base_mean"]/1e3]
+    plot_les_y = [les_data["lwp_mean"],\
+                  les_data["cloud_cover_mean"],\
+                  les_data["rwp_mean"],\
+                  les_data["cloud_top_mean"]/1e3, les_data["cloud_base_mean"]/1e3]
+    y_lab      = ['lwp', 'cloud_cover', 'rwp', 'CB, CT [km]']
+
+    fig = plt.figure(1)
+    for plot_it in range(4):
+        plt.subplot(2,2,plot_it+1)
+        plt.plot(les_data["t"][1:], plot_les_y[plot_it][1:], '-', color="gray", label="LES", lw=3)
+        plt.plot(scm_data["t"][1:]/3600., plot_scm_y[plot_it][1:], '-', color="b", label="SCM", lw=3)
+        if plot_it == 3:
+            plt.plot(les_data["t"][1:], plot_les_y[4][1:], '-', color="gray", lw=3)
+            plt.plot(scm_data["t"][1:]/3600., plot_scm_y[4][1:], '-', color="b", lw=3)
+        plt.legend()
+        plt.grid(True)
+        plt.xlim([0, scm_data["t"][-1]/3600.])
+        plt.xlabel('time [h]')
+        plt.ylabel(y_lab[plot_it])
+    plt.tight_layout()
+    plt.savefig(folder + case + "timeseries_cloud_properties.pdf")
+    plt.clf()
+
+    # separation radius
+    fig = plt.figure(1)
+    plt.plot(scm_data["t"][1:]/3600., scm_data["rd"][1:], '-', color="b", lw=3, label="SCM")
+    plt.xlim([0, scm_data["t"][-1]/3600.])
+    plt.xlabel('time [h]')
+    plt.ylabel("plume separation radius [m]")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(folder + case + "plume_separation_radius.pdf")
+    plt.clf()
+
+def plot_contour_t(scm_data, les_data, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
 
     Input:
-    data   - scm stats file
-    les    - les stats file
-    tmin   - lower bound for time mean
-    tmax   - upper bound for time mean
+    scm_data - scm stats file
+    les_data - les stats file
     folder - folder where to save the created plot
     """
-    #TODO - make the same panels as in scampify
+
+    scm_z_half = scm_data["z_half"]/1000.0
+    scm_time   = scm_data["t"] /3600.0
+    scm_data["qv_mean"] = scm_data["qt_mean"]    - scm_data["ql_mean"]
+    scm_data["upd_qv"]  = scm_data["updraft_qt"] - scm_data["updraft_ql"]
+    scm_data["env_qv"]  = scm_data["env_qt"]     - scm_data["env_ql"]
+
+    les_z_half     = les_data["z_half"]
+    les_time       = les_data["t"]
+    les_data["qv_mean"] = les_data["qt_mean"]     - les_data["ql_mean"]
+    les_data["upd_qv"]  = les_data["updraft_qt"]  - les_data["updraft_ql"]
+    les_data["env_qv"]  = les_data["env_qt"]      - les_data["env_ql"]
+
+    les_vars  = ["thetali_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean",\
+                 "qt_mean", "env_thetali", "env_w", "env_qt", "env_ql","env_qr",\
+                 "updraft_thetali", "updraft_fraction", "updraft_buoyancy",\
+                 "updraft_w", "updraft_qt", "updraft_ql","updraft_qr",\
+                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt",\
+                 "diffusive_flux_qt", "total_flux_qt", "u_translational_mean", "v_translational_mean"]
+
+    scm_vars  = ["thetal_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean",\
+                 "qt_mean", "env_thetal", "env_w", "env_qt", "env_ql", "env_qr",\
+                 "updraft_thetal", "updraft_area", "updraft_buoyancy", "updraft_w",\
+                 "updraft_qt", "updraft_ql", "updraft_qr", "massflux_h",\
+                 "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt",\
+                 "total_flux_qt", "u_mean", "v_mean"]
+
+    labels    = ["mean thl [K]", "mean TKE [m2/s2]", "mean qv [g/kg]",\
+                 "mean ql [g/kg]", "mean qr [g/kg]", "mean qt [g/kg]", "env thl [K]",\
+                 "env w [m/s]", "env qt [g/kg]", "env ql [g/kg]", "env qr [g/kg]",\
+                 "updr thl [K]", "updr area [%]", "updr buoyancy [m/s^2]", "updr w [m/s]",\
+                 "updr qt [g/kg]", "updr ql [g/kg]", "updr qr [g/kg",\
+                 "massflux_h [kg*K/ms^2]", "diffusive_flux_h [kg*K/ms^2]",\
+                 "total_flux_h [kg*K/ms^2]", "massflux_qt [g*/ms^2]",\
+                 "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]",\
+                 "u [m/s]", "v [m/s]"]
+
+    fig_name =  ["mean_thl", "mean_TKE", "mean_qv", "mean_ql", "mean_qr",\
+                 "mean_qt", "env_thl", "env_w", "env_qt", "env_ql", "env_qr",\
+                 "upd_thl", "upd_area", "upd_buoyancy", "upd_w", "upd_qt",\
+                 "upd_ql", "upd_qr", "edmf_massflux_h", "edmf_diffusive_flux_h",\
+                 "edmf_total_flux_h", "edmf_massflux_qt", "edmf_diffusive_flux_qt",\
+                 "edmf_total_flux_qt","mean_u", "mean_v"]
+
+    cb_min = [295, 0,   2.5, 0,   -1, 2.5, 295, -0.32 #env_w
+
+    cb_max = [335, 1.05, 20, 0.05, 1,  20, 335, 0
+
     #TODO - set the same LES based cbar limits
-    #change sizes and fonts
-
-    z_half    = data["z_half"]/1000.0
-    time      = data["t"] /3600.0
-    data["qv_mean"]  = data["qt_mean"]    - data["ql_mean"]
-    data["upd_qv"] = data["updraft_qt"] - data["updraft_ql"]
-    data["env_qv"]  = data["env_qt"]     - data["env_ql"]
-
-    les_z_half     = les["z_half"]
-    les_time       = les["t"]
-    les["qv_mean"] = les["qt_mean"]     - les["ql_mean"]
-    les["upd_qv"]  = les["updraft_qt"]  - les["updraft_ql"]
-    les["env_qv"]  = les["env_qt"]      - les["env_ql"]
-
-    les_vars  = ["thetali_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean", "qt_mean", "env_thetali", "env_w", "env_qt", "env_ql","env_qr",
-                 "updraft_thetali", "updraft_fraction", "updraft_buoyancy", "updraft_w", "updraft_qt", "updraft_ql","updraft_qr",
-                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt", "u_translational_mean", "v_translational_mean"]
-
-    scm_vars  = ["thetal_mean", "tke_mean", "qv_mean", "ql_mean", "qr_mean", "qt_mean", "env_thetal", "env_w", "env_qt", "env_ql", "env_qr",
-                 "updraft_thetal", "updraft_area", "updraft_buoyancy", "updraft_w", "updraft_qt", "updraft_ql", "updraft_qr",
-                 "massflux_h", "diffusive_flux_h", "total_flux_h", "massflux_qt", "diffusive_flux_qt", "total_flux_qt", "u_mean", "v_mean"]
-
-    labels    = ["mean thl [K]", "mean TKE [m2/s2]", "mean qv [g/kg]", "mean ql [g/kg]", "mean qr [g/kg]", "mean qt [g/kg]", "env thl [K]", "env w [m/s]",
-                 "env qt [g/kg]", "env ql [g/kg]", "env qr [g/kg]", "updr thl [K]", "updr area [%]", "updr buoyancy [m/s^2]", "updr w [m/s]",
-                 "updr qt [g/kg]", "updr ql [g/kg]", "updr qr [g/kg", "massflux_h [kg*K/ms^2]", "diffusive_flux_h [kg*K/ms^2]", "total_flux_h [kg*K/ms^2]",
-                 "massflux_qt [g*/ms^2]", "diffusive_flux_qt [g*/ms^2]", "total_flux_qt [g*/ms^2]",  "u [m/s]", "v [m/s]"]
-
-    fig_name =  ["contour_thl_mean", "contour_TKE_mean", "contour_qv_mean", "contour_ql_mean", "contour_qr_mean", "contour_qt_mean", "contour_env_thl", "contour_env_w",
-                 "contour_env_qt", "contour_env_ql", "contour_env_qr", "contour_upd_thl", "contour_upd_area", "contour_upd_buoyancy", "contour_upd_w", "contour_upd_qt",
-                 "contour_upd_ql", "contour_upd_qr", "contour_massflux_h", "contour_diffusive_flux_h", "contour_total_flux_h", "contour_massflux_qt", "contour_diffusive_flux_qt",
-                 "contour_total_flux_qt","contour_u_mean", "contour_v_mean"]
-
-    plots = []
     for plot_it in range(len(labels)):
         fig = plt.figure(fig_name[plot_it])
-        # there is a bag in the initial condition for env thetal in scampy, its starts with zeros, this quick fix should be removed after the bag is fixed
+        fig.set_figheight(12)
+        fig.set_figwidth(14)
+        mpl.rcParams.update({'font.size': 18})
+        mpl.rc('lines', linewidth=4, markersize=10)
+
+        # the initial condition for env thetal in scampy starts with zeros
         if scm_vars[plot_it]=="env_thetal":
-            data[scm_vars[plot_it]][:,0] = data[scm_vars[plot_it]][:,1]
-        scm_field = np.multiply(data[scm_vars[plot_it]],1.0)
-        les_field = np.multiply(les[les_vars[plot_it]],1.0)
-        a_scm = np.multiply(data['updraft_area'],1.0)
-        a_les = np.multiply(les['updraft_fraction'],1.0)
+            scm_data[scm_vars[plot_it]][:,0] = scm_data[scm_vars[plot_it]][:,1]
+
+        scm_field = scm_data[scm_vars[plot_it]]
+        les_field = les_data[les_vars[plot_it]]
+
+        a_scm = scm_data['updraft_area']
+        a_les = les_data['updraft_fraction']
+
         if ("updraft" in scm_vars[plot_it]):
             scm_field[np.where(a_scm==0.0)] = np.nan
             scm_field[np.where(np.isnan(a_scm))] = np.nan
@@ -661,18 +702,28 @@ def plot_contour_t(data,  les, folder="plots/output/"):
         if ("updraft" in les_vars[plot_it]):
             les_field[np.where(a_les==0.0)] = np.nan
             les_field[np.where(np.isnan(a_les))] = np.nan
+
+        levels = np.linspace(cb_min[plot_it], cb_max[plot_it], 11)
+        cmap = "RdBu_r"
+
         plt.subplot(211)
+        cntrf = plt.contourf(les_time, les_z_half, les_field, cmap=cmap,\
+                             levels=levels, vmin=cb_min[plot_it], vmax=cb_max[plot_it])
+        cbar = plt.colorbar(cntrf)
+        cbar.set_label(labels[plot_it])
+        plt.ylim([0,np.max(scm_data["z_half"]/1000.0)])
         plt.ylabel('height [km]')
-        plt.contourf(les_time, les_z_half, les_field, cmap='RdBu_r')
-        plt.colorbar()
-        plt.ylim([0,np.max(data["z_half"]/1000.0)])
+
         plt.subplot(212)
+        cntrf = plt.contourf(scm_time, scm_z_half, scm_field, cmap=cmap,\
+                             levels=levels, vmin=cb_min[plot_it], vmax=cb_max[plot_it])
+        cbar = plt.colorbar(cntrf)
+        cbar.set_label(labels[plot_it])
+        plt.ylim([0,np.max(scm_data["z_half"]/1000.0)])
         plt.xlabel('time [h]')
         plt.ylabel('height [km]')
-        plt.contourf(time, z_half, scm_field, cmap='RdBu_r')
-        plt.colorbar()
-        plt.ylim([0,np.max(data["z_half"]/1000.0)])
+
         plt.tight_layout()
-        plt.savefig(folder + fig_name[plot_it]+".pdf")
+        plt.savefig(folder + "contour_" + fig_name[plot_it]+".pdf")
         plt.clf()
         plt.close()
