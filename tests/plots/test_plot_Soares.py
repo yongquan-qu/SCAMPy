@@ -24,14 +24,14 @@ def sim_data(request):
     setup = cmn.simulation_setup('Soares')
 
     # run scampy
-    #subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
-    #scampy.main1d(setup["namelist"], setup["paramlist"])
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
+    scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
     sim_data = Dataset(setup["outfile"], 'r')
 
     # remove netcdf file after tests
-    #request.addfinalizer(cmn.removing_files)
+    request.addfinalizer(cmn.removing_files)
 
     return sim_data
 
@@ -65,6 +65,17 @@ def test_plot_Soares(sim_data):
     t1 = 8
     cb_min = [0., 0.]
     cb_max = [0.01, 2.5]
+    fixed_cbar = True
+    cb_min_t = [300, 300, 300, 0, 0, 0, 0, 0, 0, 2, 2, 4.5,\
+                -0.4, 0, -0.7, -0.45,\
+                0, -0.03, 0,\
+                -0.045, -0.06, 0,\
+                0, 0, -0.04]
+    cb_max_t = [305, 305, 302, 1, 1, 1, 1, 1, 1, 5, 5, 5,\
+                0, 2.4, 0.7, 0.45,\
+                0.28, 0.01, 1.6,\
+                0.06, 0.045, 0.1,\
+                0.01, 0.1, 0.08]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)
@@ -81,7 +92,7 @@ def test_plot_Soares(sim_data):
     pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
     pls.plot_tke_break(scm_dict, les_dict, t0, t1, cn+"tke_breakdown.pdf",folder=f2)
 
-    pls.plot_contour_t(scm_dict, les_dict, folder=f2)
+    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, folder=f2)
     pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
 
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,

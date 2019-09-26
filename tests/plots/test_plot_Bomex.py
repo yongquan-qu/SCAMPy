@@ -26,14 +26,14 @@ def sim_data(request):
     #setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
-    #subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
-    #scampy.main1d(setup["namelist"], setup["paramlist"])
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
+    scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
     sim_data = Dataset(setup["outfile"], 'r')
 
     # remove netcdf file after tests
-    #request.addfinalizer(cmn.removing_files)
+    request.addfinalizer(cmn.removing_files)
 
     return sim_data
 
@@ -67,10 +67,16 @@ def test_plot_Bomex(sim_data):
     cb_min = [0., 0.]
     cb_max = [0.021, 4.8]
     fixed_cbar = True
-    cb_min_t = [298, 0, 2, 0, -1, 2, 298, -0.175, 2.5, 0, -1, 300, 0,\
-                -0.15, 0, 10, 0, -1, -0.3, -0.1, -0.08, -0.08, -0.5, -0.5, 9, -0.1]
-    cb_max_t = [312, .4, 18, 0.02, 1,  18, 312, 0, 20, 0.016, 1, 312, 0.28,\
-                0.025, 7, 19, 4, 1, 0.1, 0.3, 0.2, 0.5, 0.08, 0.25, 11, 0.1]
+    cb_min_t = [298, 298, 298.5, 0, 0, 0, -1, -1, -1, 2, 2, 12.5,\
+                -0.15, 0, -9, -2,\
+                 0, -0.075, 0,\
+                -0.09, -0.015, -0.08,\
+                 0., -0.16, -1e-5]
+    cb_max_t = [312, 312, 301, 0.02, 0.008, 2, 1, 1, 1, 18, 18, 18,\
+                0, 4, -4, 1,\
+                0.24, 0.035, .5,\
+                0.015, 0.075, 0.04,\
+                0.16, 0.02, 0.0002]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)

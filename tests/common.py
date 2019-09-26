@@ -136,7 +136,6 @@ def read_les_data(les_data):
 
     for var in variables:
         data[var] = np.transpose(np.array(les_data["profiles/"+var][:, :]))
-
     return data
 
 def read_scm_data_timeseries(scm_data):

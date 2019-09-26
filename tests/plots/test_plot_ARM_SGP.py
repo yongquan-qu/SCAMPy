@@ -27,14 +27,14 @@ def sim_data(request):
     # setup['namelist']['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
 
     # run scampy
-    #subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
-    #scampy.main1d(setup["namelist"], setup["paramlist"])
+    subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
+    scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
     sim_data = Dataset(setup["outfile"], 'r')
 
     # remove netcdf file after tests
-    #request.addfinalizer(cmn.removing_files)
+    request.addfinalizer(cmn.removing_files)
 
     return sim_data
 
@@ -70,14 +70,14 @@ def test_plot_ARM_SGP(sim_data):
     fixed_cbar = True
     cb_min_t = [295, 295, 300, 0, 0, 0, -1, -1, -1, 2.5, 2.5, 9,\
                 -0.32, 0, 9, -0.1,\
-                0, -0.1, 0,\
-                -0.32, -0.12, -0.08,\
-                -0.01, -0.08, -0.045]
+                 0, -0.1, 0,\
+                -0.25, -0.12, -0.08,\
+                -0.0, -0.44, -0.045]
     cb_max_t = [335, 335, 312, 0.05, 0.016, 4, 1, 1, 1, 20, 20, 20,\
                 0, 7, 11, 0.1,\
                 0.28, 0.03, 1.05,\
-                0.12, 0.32, 0.18,\
-                0.19, 0.025, 0.25]
+                0.12, 0.25, 0.18,\
+                0.44, 0.0, 0.25]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)

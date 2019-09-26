@@ -31,7 +31,7 @@ def sim_data(request):
     sim_data = Dataset(setup["outfile"], 'r')
 
     # remove netcdf file after tests
-    #request.addfinalizer(cmn.removing_files)
+    request.addfinalizer(cmn.removing_files)
 
     return sim_data
 
@@ -63,8 +63,18 @@ def test_plot_Tan2018(sim_data):
     cn = "Tan2018_"
     t0 = 5
     t1 = 6
-    cb_min = [0., 0.] # TODO
-    cb_max = [0.01, 0.01] # TODO
+    cb_max = [1, 1] #TODO
+    fixed_cbar = True
+    cb_min_t = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
+                0, 0, 0, 0,\
+                0, 0, 0,\
+                0, 0, 0,\
+                0, 0, 0]#TODO
+    cb_max_t = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
+                1, 1, 1, 1,\
+                1, 1, 1,\
+                1, 1, 1,\
+                1, 1, 1]#TODO
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)
@@ -81,7 +91,7 @@ def test_plot_Tan2018(sim_data):
     pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
     pls.plot_tke_break(scm_dict, les_dict, t0, t1, cn+"tke_breakdown.pdf",folder=f2)
 
-    pls.plot_contour_t(scm_dict, les_dict, folder=f2)
+    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, folder=f2)
     pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
 
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,
