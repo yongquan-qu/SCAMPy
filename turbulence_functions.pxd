@@ -103,8 +103,8 @@ cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
 
 cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
 cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
-cdef pressure_buoy_struct pressure_jia_buoy(pressure_in_struct press_in) nogil
-cdef pressure_drag_struct pressure_jia_drag(pressure_in_struct press_in) nogil
+cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil
+cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil
 
 cdef double get_wstar(double bflux, double zi )
 cdef double get_inversion(double *theta_rho, double *u, double *v, double *z_half,

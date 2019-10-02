@@ -88,8 +88,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         try:
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'tan18':
                 self.pressure_func_buoy = pressure_tan18_buoy
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'jia':
-                self.pressure_func_buoy = pressure_jia_buoy
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode':
+                self.pressure_func_buoy = pressure_normalmode_buoy
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
         except:
@@ -100,10 +100,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         try:
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'tan18':
                 self.pressure_func_drag = pressure_tan18_drag
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'jia':
-                self.pressure_func_drag = pressure_jia_drag
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'jia_signdf':
-                self.pressure_func_drag = pressure_jia_drag
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'normalmode':
+                self.pressure_func_drag = pressure_normalmode_drag
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'normalmode_signdf':
+                self.pressure_func_drag = pressure_normalmode_drag
                 self.drag_sign = 1.0
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
@@ -151,9 +151,16 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
         self.aspect_ratio = paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio']
 
-        self.pressure_normalmode_coeff1 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1']
-        self.pressure_normalmode_coeff2 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2']
-        self.pressure_normalmode_coeff3 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3']
+        try:
+            self.pressure_normalmode_coeff1 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1']
+            self.pressure_normalmode_coeff2 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2']
+            self.pressure_normalmode_coeff3 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3']
+        except:
+            self.pressure_normalmode_coeff1 = self.pressure_buoy_coeff
+            self.pressure_normalmode_coeff2 = 0.0
+            self.pressure_normalmode_coeff3 = 1.0
+            print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula'
+
         # "Legacy" coefficients used by the steady updraft routine
         self.vel_buoy_coeff = 1.0-self.pressure_buoy_coeff
         if self.calc_tke == True:
@@ -544,7 +551,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_entrainment_detrainment(GMV, Case)
             self.compute_horizontal_eddy_diffusivities(GMV)
             self.compute_turbulent_entrainment(GMV,Case)
-            self.compute_nh_pressure_sep()
+            self.compute_nh_pressure()
             self.solve_updraft_velocity_area(GMV,TS)
             self.solve_updraft_scalars(GMV, Case, TS)
             self.UpdVar.set_values_with_new()
@@ -1296,7 +1303,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
         return
 
-    cpdef compute_nh_pressure_sep(self):
+    cpdef compute_nh_pressure(self):
         cdef:
             Py_ssize_t i,k
             pressure_buoy_struct ret_b

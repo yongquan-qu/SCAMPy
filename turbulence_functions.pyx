@@ -263,7 +263,7 @@ cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
 
     return _ret
 
-cdef pressure_buoy_struct pressure_jia_buoy(pressure_in_struct press_in) nogil:
+cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil:
     cdef:
         pressure_buoy_struct _ret
 
@@ -280,7 +280,7 @@ cdef pressure_buoy_struct pressure_jia_buoy(pressure_in_struct press_in) nogil:
 
     return _ret
 
-cdef pressure_drag_struct pressure_jia_drag(pressure_in_struct press_in) nogil:
+cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil:
     cdef:
         pressure_drag_struct _ret
     _ret.nh_pressure_w = press_in.rho0_kfull * press_in.a_kfull * press_in.beta * (1.0/press_in.a_kfull*(
