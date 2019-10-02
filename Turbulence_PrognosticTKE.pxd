@@ -7,7 +7,7 @@ from ReferenceState cimport  ReferenceState
 from Cases cimport CasesBase
 from TimeStepping cimport  TimeStepping
 from NetCDFIO cimport NetCDFIO_Stats
-from turbulence_functions cimport entr_struct, entr_in_struct
+from turbulence_functions cimport *
 from Turbulence cimport ParameterizationBase
 
 
@@ -20,11 +20,16 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         EDMF_Environment.EnvironmentVariables EnvVar
         EDMF_Environment.EnvironmentThermodynamics EnvThermo
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
+        pressure_buoy_struct (*pressure_func_buoy) (pressure_in_struct press_in) nogil
+        pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
         bint use_local_micro
         bint similarity_diffusivity
         bint use_steady_updrafts
         bint calc_scalar_var
         bint calc_tke
+
+        char* asp_label
+        double drag_sign
         double surface_area
         double minimum_area
         double entrainment_factor
@@ -36,11 +41,19 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
         double pressure_drag_coeff # Tan et al. 2018: coefficient alpha_d in Eq. 30
         double [:] pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
+        double pressure_normalmode_coeff1
+        double pressure_normalmode_coeff2
+        double pressure_normalmode_coeff3
         double dt_upd
         double aspect_ratio
         double [:,:] entr_sc
         double [:,:] detr_sc
         double [:,:] nh_pressure
+        double [:,:] nh_pressure_w
+        double [:,:] nh_pressure_b
+        double [:,:] asp_ratio
+        double [:,:] b_coeff
+
         double [:,:] buoyant_frac
         double [:,:] b_mix
         double [:,:] frac_turb_entr
@@ -116,8 +129,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_eddy_diffusivities_tke(self, GridMeanVariables GMV, CasesBase Case)
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
-    cpdef compute_nh_pressure(self)
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV,  CasesBase Case)
+    cpdef compute_nh_pressure(self)
+
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
     cpdef decompose_environment(self, GridMeanVariables GMV, whichvals)
     cpdef compute_turbulent_entrainment(self, GridMeanVariables GMV, CasesBase Case)
@@ -160,4 +174,3 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                                 EDMF_Environment.EnvironmentVariable phi_e, EDMF_Environment.EnvironmentVariable psi_e,
                                 EDMF_Environment.EnvironmentVariable_2m covar_e,
                                 double *gmv_phi, double *gmv_psi, double *gmv_covar)
-
