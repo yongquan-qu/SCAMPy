@@ -60,6 +60,35 @@ cdef struct entr_in_struct:
     double poisson
     long quadrature_order
 
+cdef struct pressure_in_struct:
+    double H
+    char* asp_label
+    double a_med
+    double a_kfull
+    double a_khalf
+    double a_kphalf
+    double b_kfull
+    double rho0_kfull
+    double bcoeff_tan18
+    double alpha1
+    double alpha2
+    double beta
+    double rd
+    double w_kfull
+    double w_khalf
+    double w_kphalf
+    double w_kenv
+    double dzi
+    double drag_sign
+
+cdef struct pressure_buoy_struct:
+    double asp_ratio
+    double b_coeff
+    double nh_pressure_b
+
+cdef struct pressure_drag_struct:
+    double nh_pressure_w
+
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_z(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil
@@ -71,6 +100,12 @@ cdef entr_struct entr_detr_suselj(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_none(entr_in_struct entr_in) nogil
 cdef double buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
+
+cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
+cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
+cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil
+cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil
+
 cdef double get_wstar(double bflux, double zi )
 cdef double get_inversion(double *theta_rho, double *u, double *v, double *z_half,
                           Py_ssize_t kmin, Py_ssize_t kmax, double Ri_bulk_crit)
