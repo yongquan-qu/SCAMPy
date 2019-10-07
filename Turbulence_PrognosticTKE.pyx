@@ -571,7 +571,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         ParameterizationBase.update_inversion(self, GMV,option)
         return
 
-    cpdef compute_mixing_length(self, double obukhov_length, GridMeanVariables GMV):
+    cpdef compute_mixing_length(self, double obukhov_length, double ustar, GridMeanVariables GMV):
 
         cdef:
             Py_ssize_t k
@@ -583,8 +583,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double qt_dry, th_dry, t_cloudy, qv_cloudy, qt_cloudy, th_cloudy
             double lh, cpm, prefactor, d_buoy_thetal_dry, d_buoy_qt_dry
             double d_buoy_thetal_cloudy, d_buoy_qt_cloudy, d_buoy_thetal_total, d_buoy_qt_total
-            double grad_thl_plus=0.0, grad_qt_plus=0.0, grad_thv_plus=0.0
+            double grad_thl_plus=0.0, grad_qt_plus=0.0, grad_thv_plus=0.0, grad_th_plus=0.0
             double thv, grad_qt, grad_qt_low, grad_thv_low, grad_thv
+            double th, grad_th_low, grad_th, heating_ratio
             double grad_b_thl, grad_b_qt
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env
@@ -594,11 +595,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 z_ = self.Gr.z_half[k]
                 # kz scale (surface layer)
                 if obukhov_length < 0.0: #unstable
-                    l2 = vkb * z_ /(3.75*self.tke_ed_coeff) * ( (1.0 - 100.0 * z_/obukhov_length)**0.2 )
-                elif obukhov_length > 0.0: #stable
-                    l2 = vkb * z_ /(3.75*self.tke_ed_coeff)#/  (1. + 2.7 *z_/obukhov_length)
-                else:
-                    l2 = vkb * z_/(3.75*self.tke_ed_coeff)
+                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin( (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
+                else: # neutral or stable
+                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
 
                 # Shear-dissipation TKE equilibrium scale (Stable)
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -688,11 +687,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 z_ = self.Gr.z_half[k]
                 # kz scale (surface layer)
                 if obukhov_length < 0.0: #unstable
-                    l2 = vkb * z_ /(3.75*self.tke_ed_coeff) * ( (1.0 - 100.0 * z_/obukhov_length)**0.2 )
-                elif obukhov_length > 0.0: #stable
-                    l2 = vkb * z_ /(3.75*self.tke_ed_coeff) # /  (1. + 2.7 *z_/obukhov_length)
-                else:
-                    l2 = vkb * z_ /(3.75*self.tke_ed_coeff)
+                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
+                     (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
+                else: # neutral or stable
+                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
 
                 # Buoyancy-shear-subdomain exchange-dissipation TKE equilibrium scale
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -774,7 +772,18 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.EnvVar.QL.values[k+1]) - thv) * self.Gr.dzi
                 grad_thv = interp2pt(grad_thv_low, grad_thv_plus)
 
-                N = sqrt(fmax(g/thv*grad_thv, 0.0))
+                th = theta_c(self.Ref.p0_half[k], self.EnvVar.T.values[k])
+                grad_th_low = grad_th_plus
+                grad_th_plus = ( theta_c(self.Ref.p0_half[k+1], self.EnvVar.T.values[k+1]) - th) * self.Gr.dzi
+                grad_th = interp2pt(grad_th_low, grad_th_plus)
+
+                # Effective static stability. heating_ratio reflects latent heat effects on stability.
+                heating_ratio = 0.5
+                grad_th_eff = grad_thv - heating_ratio*(
+                    1.0 + 0.61*self.EnvVar.QT.values[k] - (1.0 + 0.61)*self.EnvVar.QL.values[k]
+                    )*(grad_th - grad_thl*th/self.EnvVar.THL.values[k])
+
+                N = sqrt(fmax(g/thv*grad_th_eff, 0.0)) 
                 if N > 0.0:
                     l1 = fmin(sqrt(fmax(0.4*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
                 else:
@@ -793,7 +802,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.ml_ratio[k] = self.mixing_length[k]/l[int(self.mls[k])]
 
         else:
-            # default mixingscheme , see Tan et al. (2018)
+            # default mixing scheme , see Tan et al. (2018)
             with nogil:
                 for k in xrange(gw, self.Gr.nzg-gw):
                     l1 = tau * sqrt(fmax(self.EnvVar.TKE.values[k],0.0))
@@ -822,7 +831,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         if self.similarity_diffusivity:
             ParameterizationBase.compute_eddy_diffusivities_similarity(self,GMV, Case)
         else:
-            self.compute_mixing_length(Case.Sur.obukhov_length, GMV)
+            self.compute_mixing_length(Case.Sur.obukhov_length, Case.Sur.ustar, GMV)
             with nogil:
                 for k in xrange(gw, self.Gr.nzg-gw):
                     lm = self.mixing_length[k]
@@ -868,16 +877,25 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double zLL = self.Gr.z_half[self.Gr.gw]
             double ustar = Case.Sur.ustar, oblength = Case.Sur.obukhov_length
             double alpha0LL  = self.Ref.alpha0_half[self.Gr.gw]
-            #double get_surface_variance = get_surface_variance(flux1, flux2 ,ustar, zLL, oblength)
+
         if self.calc_tke:
-            GMV.TKE.values[self.Gr.gw] = get_surface_tke(Case.Sur.ustar,
+            self.EnvVar.TKE.values[self.Gr.gw] = get_surface_tke(Case.Sur.ustar,
                                                      self.wstar,
                                                      self.Gr.z_half[self.Gr.gw],
                                                      Case.Sur.obukhov_length)
+            self.get_GMV_CoVar(self.UpdVar.Area,self.UpdVar.W, self.UpdVar.W, self.EnvVar.W, self.EnvVar.W, self.EnvVar.TKE,
+                                 &GMV.W.values[0],&GMV.W.values[0], &GMV.TKE.values[0])
         if self.calc_scalar_var:
-            GMV.Hvar.values[self.Gr.gw] = get_surface_variance(flux1*alpha0LL,flux1*alpha0LL, ustar, zLL, oblength)
-            GMV.QTvar.values[self.Gr.gw] = get_surface_variance(flux2*alpha0LL,flux2*alpha0LL, ustar, zLL, oblength)
-            GMV.HQTcov.values[self.Gr.gw] = get_surface_variance(flux1*alpha0LL,flux2*alpha0LL, ustar, zLL, oblength)
+            self.EnvVar.Hvar.values[self.Gr.gw] = get_surface_variance(flux1*alpha0LL,flux1*alpha0LL, ustar, zLL, oblength)
+            self.EnvVar.QTvar.values[self.Gr.gw] = get_surface_variance(flux2*alpha0LL,flux2*alpha0LL, ustar, zLL, oblength)
+            self.EnvVar.HQTcov.values[self.Gr.gw] = get_surface_variance(flux1*alpha0LL,flux2*alpha0LL, ustar, zLL, oblength)
+            self.get_GMV_CoVar(self.UpdVar.Area,self.UpdVar.H, self.UpdVar.H, self.EnvVar.H, self.EnvVar.H, self.EnvVar.Hvar,
+                             &GMV.H.values[0],&GMV.H.values[0], &GMV.Hvar.values[0])
+            self.get_GMV_CoVar(self.UpdVar.Area,self.UpdVar.QT, self.UpdVar.QT, self.EnvVar.QT, self.EnvVar.QT, self.EnvVar.QTvar,
+                             &GMV.QT.values[0],&GMV.QT.values[0], &GMV.QTvar.values[0])
+            self.get_GMV_CoVar(self.UpdVar.Area,self.UpdVar.H, self.UpdVar.QT, self.EnvVar.H, self.EnvVar.QT, self.EnvVar.HQTcov,
+                             &GMV.H.values[0], &GMV.QT.values[0], &GMV.HQTcov.values[0])
+            
         return
 
 
@@ -1578,7 +1596,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_covariance(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS):
 
         if self.similarity_diffusivity: # otherwise, we computed mixing length when we computed
-            self.compute_mixing_length(Case.Sur.obukhov_length, GMV)
+            self.compute_mixing_length(Case.Sur.obukhov_length, Case.Sur.ustar, GMV)
         if self.calc_tke:
             self.compute_tke_buoy(GMV)
             self.compute_covariance_entr(self.EnvVar.TKE, self.UpdVar.W, self.UpdVar.W, self.EnvVar.W, self.EnvVar.W)
@@ -1648,8 +1666,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                             GMV.Hvar.values[k] = 0.4*(1.0-z/250.0)*(1.0-z/250.0)*(1.0-z/250.0)
                         GMV.QTvar.values[k]  = 0.0
                         GMV.HQTcov.values[k] = 0.0
-        self.compute_mixing_length(Case.Sur.obukhov_length, GMV)
-
         return
 
 
@@ -1886,17 +1902,19 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             whalf[k] = interp2pt(self.EnvVar.W.values[k-1], self.EnvVar.W.values[k])
         wu_half = interp2pt(self.UpdVar.W.bulkvalues[gw-1], self.UpdVar.W.bulkvalues[gw])
 
-        if GmvCovar.name=='tke':
-            GmvCovar.values[gw] =get_surface_tke(Case.Sur.ustar, self.wstar, self.Gr.z_half[gw], Case.Sur.obukhov_length)
+        # Not necessary if BCs for variances are applied to environment.
+        # if GmvCovar.name=='tke':
+        #     GmvCovar.values[gw] =get_surface_tke(Case.Sur.ustar, self.wstar, self.Gr.z_half[gw], Case.Sur.obukhov_length)
 
-        elif GmvCovar.name=='thetal_var':
-            GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_hflux * alpha0LL, Case.Sur.rho_hflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
-        elif GmvCovar.name=='qt_var':
-            GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_qtflux * alpha0LL, Case.Sur.rho_qtflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
-        elif GmvCovar.name=='thetal_qt_covar':
-            GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_hflux * alpha0LL, Case.Sur.rho_qtflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
+        # elif GmvCovar.name=='thetal_var':
+        #     GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_hflux * alpha0LL, Case.Sur.rho_hflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
+        # elif GmvCovar.name=='qt_var':
+        #     GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_qtflux * alpha0LL, Case.Sur.rho_qtflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
+        # elif GmvCovar.name=='thetal_qt_covar':
+        #     GmvCovar.values[gw] = get_surface_variance(Case.Sur.rho_hflux * alpha0LL, Case.Sur.rho_qtflux * alpha0LL, Case.Sur.ustar, zLL, Case.Sur.obukhov_length)
 
-        self.get_env_covar_from_GMV(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
+        # Not necessary if BCs for variances are applied to environment.
+        # self.get_env_covar_from_GMV(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
 
         Covar_surf = Covar.values[gw]
 
