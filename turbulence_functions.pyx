@@ -52,7 +52,7 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     eps_bw2 = entr_in.c_eps*fmax( entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     del_bw2 = entr_in.c_eps*fmax((-entr_in.b),0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
     _ret.entr_sc = eps_bw2
-    _ret.detr_sc = eps0*f
+    _ret.detr_sc = eps_bw2*f + del_bw2
 
     return _ret
 

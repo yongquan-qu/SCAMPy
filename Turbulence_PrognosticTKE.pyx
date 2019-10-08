@@ -112,7 +112,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
 
         try:
-            self.asp_label = namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']
+            if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'median':
+                self.asp_label = 'median'
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'const':
+                self.asp_label = 'const'
+            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'z_dependent':
+                self.asp_label = 'z_dependent'
         except:
             self.asp_label = 'const'
             print('Turbulence--EDMF_PrognosticTKE: H/2R defaulting to constant')
