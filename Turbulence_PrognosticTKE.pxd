@@ -28,9 +28,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double surface_area
         double minimum_area
         double entrainment_factor
-        double detrainment_factor
+        double sorting_factor
+        double sorting_power
         double turbulent_entrainment_factor
-        double entrainment_erf_const
         double vel_pressure_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double vel_buoy_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
@@ -41,7 +41,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:,:] entr_sc
         double [:,:] detr_sc
         double [:,:] nh_pressure
-        double [:,:] buoyant_frac
+        double [:,:] sorting_function
         double [:,:] b_mix
         double [:,:] frac_turb_entr
         double [:,:] frac_turb_entr_full
