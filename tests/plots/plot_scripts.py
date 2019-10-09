@@ -528,14 +528,15 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
         plt.ylabel('height [km]')
         plt.title(scm_tit[it])
 
-    # TODO add rwp
+    var = ["lwp_mean", "rwp_mean"]
+    lab = ["lwp", "rwp"]
     for it in range(2):
         plt.subplot(3,2,it+5)
-        plt.plot(les_srs["t"][1:],        les_srs["lwp_mean"][1:], '-', c="gray", lw=3)
-        plt.plot(scm_srs["t"][1:]/3600.0, scm_srs["lwp_mean"][1:], '-', c="royalblue", lw=3)
+        plt.plot(les_srs["t"][1:],        les_srs[var[it]][1:], '-', c="gray", lw=3)
+        plt.plot(scm_srs["t"][1:]/3600.0, scm_srs[var[it]][1:], '-', c="royalblue", lw=3)
         plt.xlim([0, scm_srs["t"][-1]/3600.0])
         plt.xlabel('time [h]')
-        plt.ylabel("lwp ")
+        plt.ylabel(lab[it])
         plt.grid(True)
 
     plt.tight_layout()
@@ -576,10 +577,6 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     plt.tight_layout()
     plt.savefig(folder + case + "surface_heat_fluxes.pdf")
     plt.clf()
-
-    # TODO - add rwp
-    scm_data["rwp_mean"] = np.zeros_like(scm_data["lwp_mean"])
-    les_data["rwp_mean"] = np.zeros_like(les_data["lwp_mean"])
 
     # cloud timeseries
     plot_scm_y = [scm_data["lwp_mean"],\
