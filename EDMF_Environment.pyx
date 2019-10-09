@@ -428,7 +428,7 @@ cdef class EnvironmentThermodynamics:
                                 self.t_to_prog_fp, self.prog_to_t_fp,
                                 self.Ref.p0_half[k], qt_hat, h_hat
                             )
-                            # autoconversion, TODO - add accretiom
+                            # autoconversion and accretiom
                             mph = microphysics_rain_src(
                                 qt_hat,
                                 sa.ql,

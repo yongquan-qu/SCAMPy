@@ -24,18 +24,6 @@ def sim_data(request):
     cmn.removing_files
     setup = cmn.simulation_setup('Rico')
 
-    setup['namelist']['thermodynamics']['sgs'] = 'quadrature'
-    setup["namelist"]['microphysics']['rain_model'] = True
-    setup["namelist"]['grid']['nz'] = 150
-    setup["namelist"]["turbulence"]["EDMF_PrognosticTKE"]["entrainment"]="moisture_deficit"
-
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.075   # 0.15
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 1.75      # 2
-    setup["paramlist"]['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 2   # 2
-
-    pp.pprint(setup["namelist"])
-    pp.pprint(setup["paramlist"])
-
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
     scampy.main1d(setup["namelist"], setup["paramlist"])
