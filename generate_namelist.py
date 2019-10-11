@@ -4,6 +4,7 @@ import pprint
 from sys import exit
 import uuid
 import ast
+import copy
 
 #Adapated from PyCLES: https://github.com/pressel/pycles
 
@@ -15,26 +16,63 @@ def main():
 
     case_name = args.case_name
 
+    namelist_defaults = {}
+    namelist_defaults['grid'] = {}
+    namelist_defaults['grid']['dims'] = 1
+
+    namelist_defaults['thermodynamics'] = {}
+    namelist_defaults['thermodynamics']['thermal_variable'] = 'thetal'
+    namelist_defaults['thermodynamics']['saturation'] = 'sa_mean'
+
+    namelist_defaults['time_stepping'] = {}
+
+    namelist_defaults['turbulence'] = {}
+    namelist_defaults['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
+
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE'] = {}
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
+
+    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+
+    namelist_defaults['output'] = {}
+    namelist_defaults['output']['output_root'] = './'
+
+    namelist_defaults['stats_io'] = {}
+    namelist_defaults['stats_io']['stats_dir'] = 'stats'
+
+    namelist_defaults['meta'] = {}
+
     if case_name == 'Bomex':
-        namelist = Bomex()
+        namelist = Bomex(namelist_defaults)
     elif case_name == 'life_cycle_Tan2018':
-        namelist = life_cycle_Tan2018()
+        namelist = life_cycle_Tan2018(namelist_defaults)
     elif case_name == 'Soares':
-        namelist = Soares()
+        namelist = Soares(namelist_defaults)
     elif case_name == 'Rico':
-        namelist = Rico()
+        namelist = Rico(namelist_defaults)
     elif case_name == 'TRMM_LBA':
-        namelist = TRMM_LBA()
+        namelist = TRMM_LBA(namelist_defaults)
     elif case_name == 'ARM_SGP':
-        namelist = ARM_SGP()
+        namelist = ARM_SGP(namelist_defaults)
     elif case_name == 'GATE_III':
-        namelist = GATE_III()
+        namelist = GATE_III(namelist_defaults)
     elif case_name == 'DYCOMS_RF01':
-        namelist = DYCOMS_RF01()
+        namelist = DYCOMS_RF01(namelist_defaults)
     elif case_name == 'GABLS':
-        namelist = GABLS()
+        namelist = GABLS(namelist_defaults)
     elif case_name == 'SP':
-        namelist = SP()
+        namelist = SP(namelist_defaults)
     else:
         print('Not a valid case name')
         exit()
@@ -42,117 +80,49 @@ def main():
     write_file(namelist)
 
 
-def Soares():
+def Soares(namelist_defaults):
 
-    namelist = {}
+    namelist = copy.deepcopy(namelist_defaults)
 
-    namelist['grid'] = {}
-    namelist['grid']['dims'] = 1
     namelist['grid']['nz'] = 125
     namelist['grid']['gw'] = 2
     namelist['grid']['dz'] = 30.0
 
-    namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
-
-    namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 30.0
     namelist['time_stepping']['t_max'] = 8 * 3600.0
 
-    namelist['turbulence'] = {}
-    namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
-    namelist['turbulence']['EDMF_PrognosticTKE'] = {}
-    namelist['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
-    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
-    namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
-
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
-
-    namelist['output'] = {}
-    namelist['output']['output_root'] = './'
-
-    namelist['stats_io'] = {}
-    namelist['stats_io']['stats_dir'] = 'stats'
     namelist['stats_io']['frequency'] = 60.0
 
-    namelist['meta'] = {}
     namelist['meta']['simname'] = 'Soares'
     namelist['meta']['casename'] = 'Soares'
 
     return namelist
 
-def Bomex():
+def Bomex(namelist_defaults):
 
-    namelist = {}
+    namelist = copy.deepcopy(namelist_defaults)
 
-    namelist['grid'] = {}
-    namelist['grid']['dims'] = 1
     namelist['grid']['nz'] = 75
     namelist['grid']['gw'] = 2
     namelist['grid']['dz'] = 100 / 2.5
 
-    namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
-
-    namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 20.0
     namelist['time_stepping']['t_max'] = 21600.0
 
-    namelist['turbulence'] = {}
-    namelist['turbulence']['scheme'] = 'EDMF_PrognosticTKE'
-    namelist['turbulence']['EDMF_PrognosticTKE'] = {}
-    namelist['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
-    namelist['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
-    namelist['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
-    namelist['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
-    namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
-
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
-
-    namelist['output'] = {}
-    namelist['output']['output_root'] = './'
-
-    namelist['stats_io'] = {}
-    namelist['stats_io']['stats_dir'] = 'stats'
     namelist['stats_io']['frequency'] = 60.0
 
-    namelist['meta'] = {}
     namelist['meta']['simname'] = 'Bomex'
     namelist['meta']['casename'] = 'Bomex'
 
     return namelist
 
-def life_cycle_Tan2018():
+def life_cycle_Tan2018(namelist_defaults):
 
-    namelist = {}
+    namelist = copy.deepcopy(namelist_defaults)
 
-    namelist['grid'] = {}
-    namelist['grid']['dims'] = 1
     namelist['grid']['nz'] = 75
     namelist['grid']['gw'] = 2
     namelist['grid']['dz'] = 100 / 2.5
-
-    namelist['thermodynamics'] = {}
-    namelist['thermodynamics']['saturation'] = 'sa_mean'
-    namelist['thermodynamics']['thermal_variable'] = 'thetal'
 
     namelist['time_stepping'] = {}
     namelist['time_stepping']['dt'] = 30.0
