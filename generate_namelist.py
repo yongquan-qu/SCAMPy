@@ -77,9 +77,9 @@ def Soares():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -129,9 +129,9 @@ def Bomex():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -181,9 +181,9 @@ def life_cycle_Tan2018():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -233,9 +233,9 @@ def Rico():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -285,9 +285,9 @@ def TRMM_LBA():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -337,9 +337,9 @@ def ARM_SGP():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -390,9 +390,9 @@ def GATE_III(): # yair
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -442,9 +442,9 @@ def DYCOMS_RF01():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -494,9 +494,9 @@ def GABLS():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
@@ -547,9 +547,9 @@ def SP():
     namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    #namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist['output'] = {}
     namelist['output']['output_root'] = './'
