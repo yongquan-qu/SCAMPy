@@ -130,7 +130,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_horizontal_eddy_diffusivities(self, GridMeanVariables GMV)
     cpdef reset_surface_covariance(self, GridMeanVariables GMV, CasesBase Case)
     cpdef compute_pressure_plume_spacing(self, GridMeanVariables GMV,  CasesBase Case)
-    cpdef compute_nh_pressure_sep(self)
+    cpdef compute_nh_pressure(self)
 
     cpdef set_updraft_surface_bc(self, GridMeanVariables GMV, CasesBase Case)
     cpdef decompose_environment(self, GridMeanVariables GMV, whichvals)
