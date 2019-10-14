@@ -242,7 +242,6 @@ cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
         pressure_buoy_struct _ret
 
     with gil:
-        print press_in.asp_label
         if str(press_in.asp_label) == 'z_dependent':
             _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
         elif str(press_in.asp_label) == 'median':
@@ -271,7 +270,6 @@ cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) 
         pressure_buoy_struct _ret
 
     with gil:
-        print press_in.asp_label
         if press_in.asp_label.encode('utf-8') == 'z_dependent':
             _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
         elif press_in.asp_label.encode('utf-8') == 'median':
