@@ -1305,7 +1305,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef compute_nh_pressure(self):
         cdef:
-            Py_ssize_t i,k
+            Py_ssize_t i,k, alen
             pressure_buoy_struct ret_b
             pressure_drag_struct ret_w
             pressure_in_struct input
@@ -1313,7 +1313,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         input.asp_label = self.asp_label
         for i in xrange(self.n_updrafts):
             input.H = self.UpdVar.updraft_top[i]
-            input.a_med = np.median(np.argwhere(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw]))
+
+            alen = len(np.argwhere(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw]))
+            input.a_med = np.median(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw][:alen])
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 input.a_kfull = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
                 input.dzi = self.Gr.dzi
