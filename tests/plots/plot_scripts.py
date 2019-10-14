@@ -72,10 +72,11 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   (scm_data["z_half"][1]/1000.0 - scm_data["z_half"][0]/1000.0) * 0.5\
                  ])
         plt.grid(True)
-        try:
-            plt.plot(np.nanmean(plot_x_les[plot_it][:, t0_les:t1_les],axis=1), les_data["z_half"],     '-', color='k', label='les', linewidth = 2)
-        except:
-            print(plot_it)
+        print(plot_it)
+        print(x_labels[plot_it])
+        print(x_labels[plot_it])
+        print(np.nanmean(plot_x_scm[plot_it][:, t0_scm:t1_scm],axis=1))
+        print('done')
         plt.plot(np.nanmean(plot_x_scm[plot_it][:, t0_scm:t1_scm],axis=1), scm_data["z_half"]/1e3, '-', color = '#157CC7', label='scm', linewidth = 2)
 
         plt.legend()
