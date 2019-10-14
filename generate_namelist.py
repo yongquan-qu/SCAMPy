@@ -42,9 +42,9 @@ def main():
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var'] = True
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['mixing_length'] = 'sbtd_eq'
 
-    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
-    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    #namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
 
     namelist_defaults['output'] = {}
     namelist_defaults['output']['output_root'] = './'
