@@ -59,15 +59,18 @@ cdef class RainVariables:
         self.env_rwp = 0.
 
         try:
-            self.max_supersaturation = namelist['microphysics']['max_supersaturation']
-        except:
-            print "EDMF_Rain: defaulting to max_supersaturation for rain = 0.1"
-            self.max_supersaturation = 0.1
-
-        try:
             self.rain_model = namelist['microphysics']['rain_model']
         except:
+            print "EDMF_Rain: defaulting to no rain"
             self.rain_model = False
+
+        if self.rain_model:
+            try:
+                self.autoconversion = namelist['microphysics']['autoconversion']
+            except:
+                print "EDMF_Rain: defaulting to cutoff autoconverion with max_supersaturation for rain = 0.02"
+                self.autoconversion = "cutoff"
+
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):

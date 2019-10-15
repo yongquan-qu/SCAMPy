@@ -43,3 +43,5 @@ cdef double K_therm = 2.4e-2
 cdef double D_vapor = 2.26e-5
 cdef double a_vent = 1.5
 cdef double b_vent = 0.53
+# cutoff microphysics parameter
+cdef double max_supersaturation = 0.02

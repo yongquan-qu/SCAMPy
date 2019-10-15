@@ -1,6 +1,8 @@
 import numpy as np
 cimport numpy as np
 
+import sys
+
 from libc.math cimport fmax, exp, sqrt, fmin
 
 from thermodynamic_functions cimport *
@@ -45,16 +47,12 @@ cdef double rain_source_to_thetal_detailed(double p0, double T, double qt, doubl
 # instantly convert all cloud water exceeding a threshold to rain water
 # the threshold is specified as axcess saturation
 # rain water is immediately removed from the domain
-cdef double acnv_instant(double ql, double qt, double sat_treshold, double T, double p0, double ar) nogil :
+cdef double acnv_instant(double ql, double qt, double T, double p0) nogil :
 
     cdef double psat = pv_star(T)
     cdef double qsat = qv_star_c(p0, qt, psat)
 
-    if ar <= 0.:
-        _ret = 0.
-    else:
-        _ret = fmax(0.0, ql - sat_treshold * qsat)
-    return _ret
+    return fmax(0.0, ql - max_supersaturation * qsat)
 
 # time-rate expressions for 1-moment microphysics
 # autoconversion:   Kessler 1969, see Table 1 in Wood 2005: https://doi.org/10.1175/JAS3530.1
@@ -172,6 +170,8 @@ cdef double conv_q_rai_to_q_vap(double q_rai, double q_tot, double q_liq,
 
 
 cdef mph_struct microphysics_rain_src(
+                  bint rain_flag,
+                  str autoconversion,
                   double qt,
                   double ql,
                   double qr,
@@ -189,22 +189,41 @@ cdef mph_struct microphysics_rain_src(
     """
     # TODO assumes no ice
     cdef mph_struct _ret
-
     _ret.qv    = qt - ql
     _ret.thl   = t_to_thetali_c(p0, T, qt, ql, 0.0)
     _ret.th    = theta_c(p0, T)
     _ret.alpha = alpha_c(p0, T, qt, _ret.qv)
 
-    if area <= 0.:
+    #TODO - temporary way to handle different autoconversion rates
+    #bint tmp_clima_acnv_flag
+    #bint tmp_cutoff_acnv_flag
+
+    tmp_clima_acnv_flag = False
+    tmp_cutoff_acnv_flag = False
+
+    with gil:
+        if rain_flag:
+            if autoconversion == 'clima_1m':
+                tmp_clima_acnv_flag = True
+            elif autoconversion == 'cutoff':
+                tmp_cutoff_acnv_flag = True
+            else:
+                sys.exit('autoconversion scheme not recognized')
+
+    if rain_flag and area > 0.:
+        if tmp_clima_acnv_flag:
+            _ret.qr_src = fmin(ql,
+                                  (conv_q_liq_to_q_rai_acnv(ql) +
+                                   conv_q_liq_to_q_rai_accr(ql, qr, rho)) * dt
+                              )
+        if tmp_cutoff_acnv_flag:
+            _ret.qr_src = fmin(ql, acnv_instant(ql, qt, T, p0))
+
+        _ret.thl_rain_src = rain_source_to_thetal(p0, T, _ret.qr_src)
+
+    else:
         _ret.qr_src = 0.
         _ret.thl_rain_src = 0.
-    else:
-        _ret.qr_src = fmin(ql,
-                              (conv_q_liq_to_q_rai_acnv(ql) +
-                               conv_q_liq_to_q_rai_accr(ql, qr, rho)) * dt
-                          )
-
-    _ret.thl_rain_src = rain_source_to_thetal(p0, T, _ret.qr_src)
 
     _ret.qt  = qt - _ret.qr_src
     _ret.ql  = ql - _ret.qr_src
