@@ -48,7 +48,7 @@ def main():
 
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy'] = 'tan18'
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag'] = 'tan18'
-    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'median'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'] = 'const'
 
     namelist_defaults['output'] = {}
     namelist_defaults['output']['output_root'] = './'

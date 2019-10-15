@@ -28,6 +28,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
 
         pressure_buoy_struct (*pressure_func_buoy) (pressure_in_struct press_in) nogil
+        pressure_buoy_struct (*pressure_func_buoysin) (pressure_in_struct press_in) nogil
         pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
 
         bint similarity_diffusivity
@@ -35,7 +36,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         bint calc_scalar_var
         bint calc_tke
 
-        char* asp_label
+        char *asp_label
         double drag_sign
         double surface_area
         double minimum_area
@@ -51,12 +52,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double pressure_normalmode_coeff1
         double pressure_normalmode_coeff2
         double pressure_normalmode_coeff3
+        double pressure_normalmode_coeff4
         double dt_upd
         double aspect_ratio
         double [:,:] entr_sc
         double [:,:] detr_sc
         double [:,:] nh_pressure
-        double [:,:] nh_pressure_w
+        double [:,:] nh_pressure_w1
+        double [:,:] nh_pressure_w2
         double [:,:] nh_pressure_b
         double [:,:] asp_ratio
         double [:,:] b_coeff
