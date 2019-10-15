@@ -640,9 +640,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Partial buoyancy gradients
                 grad_b_thl  = grad_thl * d_buoy_thetal_total
                 grad_b_qt = grad_qt  * d_buoy_qt_total
-                ri_thl = grad_b_thl / fmax(shear2, m_eps)
-                ri_qt  = grad_b_qt / fmax(shear2, m_eps)
-                ri_grad = fmin(ri_thl+ri_qt, 0.25) # Ri_grad used in Prandtl number calculation.
+                ri_grad = fmin( grad_b_thl/fmax(shear2, m_eps) + grad_b_qt/fmax(shear2, m_eps) , 0.25) # Ri_grad used in Prandtl number calculation.
 
                 # Turbulent Prandtl number:
                 if obukhov_length <= 0.0: # globally convective
@@ -733,9 +731,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Partial buoyancy gradients
                 grad_b_thl = grad_thl * d_buoy_thetal_total
                 grad_b_qt  = grad_qt  * d_buoy_qt_total
-                ri_thl = grad_thl * d_buoy_thetal_total / fmax(shear2, m_eps)
-                ri_qt  = grad_qt  * d_buoy_qt_total / fmax(shear2, m_eps)
-                ri_grad = fmin(ri_thl+ri_qt, 0.25)
+                ri_grad = fmin( grad_b_thl/fmax(shear2, m_eps) + grad_b_qt/fmax(shear2, m_eps) , 0.25)
 
                 # Turbulent Prandtl number:
                 if obukhov_length <= 0.0: # globally convective
@@ -752,8 +748,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Subdomain exchange term
                 self.b[k] = 0.0
                 for nn in xrange(self.n_updrafts):
-                    wc_upd_nn = (self.UpdVar.W.values[nn,k]+self.UpdVar.W.values[nn,k-1])/2.0
-                    wc_env = (self.EnvVar.W.values[k] - self.EnvVar.W.values[k-1])/2.0
+                    wc_upd_nn = (self.UpdVar.W.values[nn,k] + self.UpdVar.W.values[nn,k-1])/2.0
+                    wc_env = (self.EnvVar.W.values[k] + self.EnvVar.W.values[k-1])/2.0
                     self.b[k] += self.UpdVar.Area.values[nn,k]*wc_upd_nn*self.detr_sc[nn,k]/(1.0-self.UpdVar.Area.bulkvalues[k])*(
                         (wc_upd_nn-wc_env)*(wc_upd_nn-wc_env)/2.0-self.EnvVar.TKE.values[k])
 
@@ -761,7 +757,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.l_entdet[k] = fmax( -self.b[k]/2.0/a + sqrt( self.b[k]*self.b[k] + 4.0*a*c_neg )/2.0/a, 0.0)
                 elif abs(a) < m_eps and abs(self.b[k]) > m_eps:
                     self.l_entdet[k] = c_neg/self.b[k]
-
                 l3 = self.l_entdet[k]
 
                 # Limiting stratification scale (Deardorff, 1976)
