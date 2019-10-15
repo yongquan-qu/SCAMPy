@@ -23,7 +23,7 @@ def main():
 
     namelist_defaults['thermodynamics'] = {}
     namelist_defaults['thermodynamics']['thermal_variable'] = 'thetal'
-    namelist_defaults['thermodynamics']['saturation'] = 'sa_mean'
+    namelist_defaults['thermodynamics']['sgs'] = 'mean'
 
     namelist_defaults['time_stepping'] = {}
 
