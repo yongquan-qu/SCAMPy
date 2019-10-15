@@ -640,7 +640,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Partial buoyancy gradients
                 grad_b_thl  = grad_thl * d_buoy_thetal_total
                 grad_b_qt = grad_qt  * d_buoy_qt_total
-                ri_grad = fmin( grad_b_thl/fmax(shear2, m_eps) + grad_b_qt/fmax(shear2, m_eps) , 0.25) # Ri_grad used in Prandtl number calculation.
+                ri_grad = fmin( grad_b_thl/fmax(shear2, m_eps) + grad_b_qt/fmax(shear2, m_eps) , 0.25)
 
                 # Turbulent Prandtl number:
                 if obukhov_length <= 0.0: # globally convective
