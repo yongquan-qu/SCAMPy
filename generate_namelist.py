@@ -141,8 +141,8 @@ def Rico(namelist_defaults):
     namelist['time_stepping']['dt'] = 20.0
     namelist['time_stepping']['t_max'] = 86400.0
 
-    namelist['microphysics']['max_supersaturation'] = 0.01 # 0.02
-    namelist['microphysics']['rain_model'] = True
+    #namelist['microphysics']['max_supersaturation'] = 0.01 # 0.02
+    #namelist['microphysics']['rain_model'] = True
 
     namelist['meta']['simname'] = 'Rico'
     namelist['meta']['casename'] = 'Rico'
@@ -159,8 +159,8 @@ def TRMM_LBA(namelist_defaults):
     namelist['time_stepping']['dt'] = 30.0
     namelist['time_stepping']['t_max'] = 21600.0
 
-    namelist['microphysics']['max_supersaturation'] = 0.01
-    namelist['microphysics']['rain_model'] = True
+    #namelist['microphysics']['max_supersaturation'] = 0.01
+    #namelist['microphysics']['rain_model'] = True
 
     namelist['meta']['simname'] = 'TRMM_LBA'
     namelist['meta']['casename'] = 'TRMM_LBA'
