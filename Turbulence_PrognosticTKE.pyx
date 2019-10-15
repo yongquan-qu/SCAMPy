@@ -734,12 +734,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 ri_grad = fmin( grad_b_thl/fmax(shear2, m_eps) + grad_b_qt/fmax(shear2, m_eps) , 0.25)
 
                 # Turbulent Prandtl number:
-                if obukhov_length <= 0.0: # globally convective
-                    self.prandtl_nvec[k] = 0.74
-                elif obukhov_length > 0.0: #stable
+                if obukhov_length > 0.0 and ri_grad>0.0: #stable
                     # CSB (Dan Li, 2019), with Pr_neutral=0.74 and w1=40.0/13.0
                     self.prandtl_nvec[k] = 0.74*( 2.0*ri_grad/
                         (1.0+(53.0/13.0)*ri_grad -sqrt( (1.0+(53.0/13.0)*ri_grad)**2.0 - 4.0*ri_grad ) ) )
+                else:
+                    self.prandtl_nvec[k] = 0.74
 
                 # Production/destruction terms
                 a = self.tke_ed_coeff*(shear2 - grad_b_thl/self.prandtl_nvec[k] - grad_b_qt/self.prandtl_nvec[k])* sqrt(self.EnvVar.TKE.values[k])

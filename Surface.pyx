@@ -206,7 +206,7 @@ cdef class SurfaceMoninObukhov(SurfaceBase):
         return
 
 cdef class SurfaceMoninObukhovDry(SurfaceBase):
-# Needed for dry cases. They have to be initialized with nonzero qtg for the 
+# Needed for dry cases (qt=0). They have to be initialized with nonzero qtg for the
 # reference profiles. This surface subroutine sets the latent heat flux to zero
 # to prevent errors due to nonzero qtg in vars such as the obukhov_length.
     def __init__(self, paramlist):
@@ -245,7 +245,7 @@ cdef class SurfaceMoninObukhovDry(SurfaceBase):
         self.lhf = lv * 0.0
 
         if GMV.H.name == 'thetal':
-            self.shf = cpm_c(GMV.QT.values[gw])  * self.rho_hflux
+            self.shf = cpm_c(0.0)  * self.rho_hflux
 
         elif GMV.H.name == 's':
             pv = pv_star(GMV.T.values[gw])
