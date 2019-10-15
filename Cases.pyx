@@ -126,7 +126,7 @@ cdef class Soares(CasesBase):
         self.Sur.zrough = 1.0e-4
         self.Sur.Tsurface = 300.0
         self.Sur.qsurface = 5e-3
-        self.Sur.lhf = 2.5e-5 * Ref.rho0[Gr.gw -1] * latent_heat(self.Sur.Tsurface)
+        self.Sur.lhf = 0.0 #2.5e-5 * Ref.rho0[Gr.gw -1] * latent_heat(self.Sur.Tsurface)
         self.Sur.shf = 6.0e-2 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
         self.Sur.ustar_fixed = False
         self.Sur.Gr = Gr
@@ -251,6 +251,7 @@ cdef class Bomex(CasesBase):
             else:
                 self.Fo.dTdt[k] = (-2.0/(3600 * 24.0) + (Gr.z_half[k] - 1500.0)
                                     * (0.0 - -2.0/(3600 * 24.0)) / (3000.0 - 1500.0)) * exner_c(Ref.p0_half[k])
+
             # Set large-scale drying
             if Gr.z_half[k] <= 300.0:
                 self.Fo.dqtdt[k] = -1.2e-8   #kg/(kg * s)
@@ -872,7 +873,6 @@ cdef class ARM_SGP(CasesBase):
         Theta_in = np.array([299.0, 301.5, 302.5, 303.53, 303.7, 307.13, 314.0, 343.2]) # K
         r_in = np.array([15.2,15.17,14.98,14.8,14.7,13.5,3.0,3.0])/1000 # qt should be in kg/kg
         qt_in = np.divide(r_in,(1+r_in))
-        print qt_in
 
         # interpolate to the model grid-points
         Theta = np.interp(Gr.z_half,z_in,Theta_in)
@@ -1301,7 +1301,7 @@ cdef class DYCOMS_RF01(CasesBase):
 cdef class GABLS(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'GABLS'
-        self.Sur = Surface.SurfaceMoninObukhovDry(paramlist)
+        self.Sur = Surface.SurfaceMoninObukhov(paramlist)
         self.Fo = Forcing.ForcingStandard()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
@@ -1314,7 +1314,7 @@ cdef class GABLS(CasesBase):
     cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 265.0  #Temperature at ground
-        Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
+        Ref.qtg = 1.0e-4 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
         Ref.initialize(Gr, Stats)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):

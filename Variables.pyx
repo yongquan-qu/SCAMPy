@@ -12,9 +12,10 @@ from Grid cimport Grid
 from TimeStepping cimport TimeStepping
 from NetCDFIO cimport NetCDFIO_Stats
 from ReferenceState cimport ReferenceState
+from libc.math cimport fmax, fmin
 
 from thermodynamic_functions cimport eos_struct, eos, t_to_entropy_c, t_to_thetali_c, \
-    eos_first_guess_thetal, eos_first_guess_entropy, alpha_c, buoyancy_c
+    eos_first_guess_thetal, eos_first_guess_entropy, alpha_c, buoyancy_c, relative_humidity_c
 
 cdef class VariablePrognostic:
     def __init__(self,nz_tot,loc, kind, bc, name, units):
@@ -132,6 +133,11 @@ cdef class GridMeanVariables:
         self.Gr = Gr
         self.Ref = Ref
 
+        self.lwp = 0.
+        self.cloud_base   = 0.
+        self.cloud_top    = 0.
+        self.cloud_cover  = 0.
+
         self.U = VariablePrognostic(Gr.nzg, 'half', 'velocity', 'sym','u', 'm/s' )
         self.V = VariablePrognostic(Gr.nzg, 'half', 'velocity','sym', 'v', 'm/s' )
         # Just leave this zero for now!
@@ -140,6 +146,7 @@ cdef class GridMeanVariables:
         # Create thermodynamic variables
         self.QT = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qt', 'kg/kg')
         self.QR = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'qr', 'kg/kg')
+        self.RH = VariablePrognostic(Gr.nzg, 'half', 'scalar','sym', 'RH', '%')
 
         if namelist['thermodynamics']['thermal_variable'] == 'entropy':
             self.H = VariablePrognostic(Gr.nzg, 'half', 'scalar', 'sym','s', 'J/kg/K' )
@@ -154,10 +161,12 @@ cdef class GridMeanVariables:
 
         # Diagnostic Variables--same class as the prognostic variables, but we append to diagnostics list
         # self.diagnostics_list  = []
-        self.QL = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'ql', 'kg/kg')
-        self.T = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'temperature', 'K')
-        self.B = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'buoyancy', 'm^2/s^3')
-        self.THL = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal','K')
+        self.QL  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'ql',              'kg/kg')
+        self.T   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'temperature',     'K')
+        self.B   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'buoyancy',        'm^2/s^3')
+        self.THL = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal',          'K')
+
+        self.cloud_fraction  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'cloud cfraction', 'kg/kg')
 
         # TKE   TODO   repeated from EDMF_Environment.pyx logic
         if  namelist['turbulence']['scheme'] == 'EDMF_PrognosticTKE':
@@ -191,9 +200,6 @@ cdef class GridMeanVariables:
             elif namelist['thermodynamics']['thermal_variable'] == 'thetal':
                 self.Hvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym' ,'thetal_var', 'K^2')
                 self.HQTcov = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym' ,'thetal_qt_covar', 'K(kg/kg)' )
-
-        if self.EnvThermo_scheme == 'sommeria_deardorff':
-            self.THVvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'thatav_var','K^2' )
 
         return
 
@@ -231,9 +237,6 @@ cdef class GridMeanVariables:
             self.Hvar.set_bcs(self.Gr)
             self.HQTcov.set_bcs(self.Gr)
 
-        if self.EnvThermo_scheme == 'sommeria_deardorff':
-            self.THVvar.set_bcs(self.Gr)
-
         self.zero_tendencies()
         return
 
@@ -242,6 +245,7 @@ cdef class GridMeanVariables:
         Stats.add_profile('v_mean')
         Stats.add_profile('qt_mean')
         Stats.add_profile('qr_mean')
+        Stats.add_profile('RH_mean')
         if self.H.name == 's':
             Stats.add_profile('s_mean')
             Stats.add_profile('thetal_mean')
@@ -258,13 +262,17 @@ cdef class GridMeanVariables:
             Stats.add_profile('QTvar_mean')
             Stats.add_profile('HQTcov_mean')
 
-        Stats.add_ts('lwp')
+        Stats.add_profile('cloud_fraction_mean')
+
+        Stats.add_ts('lwp_mean')
+        Stats.add_ts('cloud_base_mean')
+        Stats.add_ts('cloud_top_mean')
+        Stats.add_ts('cloud_cover_mean')
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         cdef:
             double [:] arr = self.U.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw]
-            double lwp = 0.0
             Py_ssize_t k
         Stats.write_profile('u_mean', arr)
         Stats.write_profile('v_mean',self.V.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -272,6 +280,7 @@ cdef class GridMeanVariables:
         Stats.write_profile('ql_mean',self.QL.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('qr_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('temperature_mean',self.T.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('RH_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('buoyancy_mean',self.B.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         if self.H.name == 's':
             Stats.write_profile('s_mean',self.H.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -285,10 +294,29 @@ cdef class GridMeanVariables:
             Stats.write_profile('QTvar_mean',self.QTvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
             Stats.write_profile('HQTcov_mean',self.HQTcov.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
-        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            lwp += self.Ref.rho0_half[k]*self.QL.values[k]*self.Gr.dz
-        Stats.write_ts('lwp', lwp)
+        Stats.write_profile('cloud_fraction_mean',self.cloud_fraction.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
+        self.mean_cloud_diagnostics()
+        Stats.write_ts('lwp_mean', self.lwp)
+        Stats.write_ts('cloud_base_mean',  self.cloud_base)
+        Stats.write_ts('cloud_top_mean',   self.cloud_top)
+        Stats.write_ts('cloud_cover_mean', self.cloud_cover)
+        return
+
+    cpdef mean_cloud_diagnostics(self):
+        cdef Py_ssize_t k
+        self.lwp = 0.
+        self.cloud_base   = self.Gr.z_half[self.Gr.nzg - self.Gr.gw - 1]
+        self.cloud_top    = 0.
+        self.cloud_cover  = 0.
+
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            self.lwp += self.Ref.rho0_half[k] * self.QL.values[k] * self.Gr.dz
+
+            if self.QL.values[k] > 1e-8:
+                self.cloud_base  = fmin(self.cloud_base,  self.Gr.z_half[k])
+                self.cloud_top   = fmax(self.cloud_top,   self.Gr.z_half[k])
+                self.cloud_cover = fmax(self.cloud_cover, self.cloud_fraction.values[k])
         return
 
     cpdef satadjust(self):
@@ -309,5 +337,6 @@ cdef class GridMeanVariables:
                 self.THL.values[k] = t_to_thetali_c(p0, sa.T, qt, sa.ql,0.0)
                 alpha = alpha_c(p0, sa.T, qt, qv)
                 self.B.values[k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                self.RH.values[k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, self.T.values[k])
 
         return

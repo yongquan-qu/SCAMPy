@@ -34,14 +34,6 @@ cdef  double theta_virt_c( double p0, double T, double qt, double ql) nogil :
     # Ignacio: This formulation holds when qt = qv + ql (negligible/no ice)
     return theta_c(p0, T) * (1.0 + 0.61 * (qt - ql) - ql);
 
-cdef  double theta_eq_c( double p0, double T, double qt, double ql) nogil :
-    # From (Durran and Klemp, 1982), eq. 17
-    # qd = 1 - qt
-    # qt = qv + ql + qi
-    # qr = mr/md+mv+ml+mi
-    # Ignacio: This formulation holds when qt = qv + ql (negligible/no ice)
-    return theta_c(p0, T) * exp(latent_heat(T)*(qt-ql)/(T*cpd));
-
 cdef  double pd_c(double p0, double qt, double qv)  nogil :
     return p0*(1.0-qt)/(1.0 - qt + eps_vi * qv)
 
@@ -68,6 +60,7 @@ cdef double relative_humidity_c(double p0, double qt, double ql, double qi, doub
     cdef double pv = pv_c(p0, qt, qv)
     cdef double pv_star_ = pv_star(T)
     return 100.0*pv/pv_star_
+
 
 cdef  double thetas_t_c(double p0, double T, double qt, double qv, double qc, double L) nogil  :
     cdef double qd = 1.0 - qt

@@ -1,26 +1,41 @@
 cdef struct entr_struct:
     double entr_sc
     double detr_sc
+    double buoyant_frac
+    double b_mix
 
-cdef struct evap_struct:
-    double T
-    double ql
+cdef struct buoyant_stract:
+    double b_mix
+    double buoyant_frac
 
-
+cdef struct chi_struct:
+    double T_mix
+    double ql_mix
+    double qt_mix
+    double qv_
+    double alpha_mix
+    double y1
+    double x1
 
 cdef struct entr_in_struct:
     double zi
     double wstar
     double z
+    double erf_const
+    double c_del
     double dz
     double w
     double dw
     double b
+    double rd
+    double c_eps
     double dt
     double b_mean
     double b_env
     double af
     double tke
+    double RH_upd
+    double RH_env
     double ml
     double T_mean
     double p0
@@ -38,21 +53,63 @@ cdef struct entr_in_struct:
     double env_QTvar
     double env_HQTcov
     double dw_env
+    double nh_pressure
+    double dw2dz
     double L
     double zbl
     double poisson
     long quadrature_order
 
+cdef struct pressure_in_struct:
+    double H
+    char* asp_label
+    double a_med
+    double a_kfull
+    double a_khalf
+    double a_kphalf
+    double b_kfull
+    double rho0_kfull
+    double bcoeff_tan18
+    double alpha1
+    double alpha2
+    double beta
+    double beta2
+    double rd
+    double w_kfull
+    double w_khalf
+    double w_kphalf
+    double w_kenv
+    double dzi
+    double z_full
+    double drag_sign
+
+cdef struct pressure_buoy_struct:
+    double asp_ratio
+    double b_coeff
+    double nh_pressure_b
+
+cdef struct pressure_drag_struct:
+    double nh_pressure_w1
+    double nh_pressure_w2
+
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_z(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_b_w2(entr_in_struct entr_in) nogil
-cdef double entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil
+cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil
+cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_tke(entr_in_struct entr_in) nogil
-cdef entr_struct entr_detr_tke2(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_suselj(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_none(entr_in_struct entr_in) nogil
-cdef evap_struct evap_sat_adjust(double p0, double thetal_, double qt_mix) nogil
+cdef double buoyancy_sorting(entr_in_struct entr_in) nogil
+cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
+
+cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
+cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
+cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil
+cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_in) nogil
+cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil
+
 cdef double get_wstar(double bflux, double zi )
 cdef double get_inversion(double *theta_rho, double *u, double *v, double *z_half,
                           Py_ssize_t kmin, Py_ssize_t kmax, double Ri_bulk_crit)
