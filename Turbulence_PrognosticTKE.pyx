@@ -51,6 +51,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.calc_tke = True
 
         try:
+            self.const_plume_spacing = namelist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
+        except:
+            self.const_plume_spacing = False
+
+        try:
             self.calc_scalar_var = namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var']
         except:
             self.calc_scalar_var = False
@@ -1307,7 +1312,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double cpm
 
         for i in xrange(self.n_updrafts):
-            if self.pressure_func_drag == pressure_tan18_drag:
+            if self.const_plume_spacing:
                 self.pressure_plume_spacing[i] = 500.0
             else:
                 self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)

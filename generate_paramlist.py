@@ -56,7 +56,7 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1'] = 1.0/3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2'] = 0.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3'] = 0.75
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3'] = 1.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff4'] = 1.0
 
     if case_name == 'Soares':
         paramlist = Soares(paramlist_defaults)
