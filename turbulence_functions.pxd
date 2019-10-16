@@ -89,8 +89,8 @@ cdef struct pressure_buoy_struct:
     double nh_pressure_b
 
 cdef struct pressure_drag_struct:
-    double nh_pressure_w1
-    double nh_pressure_w2
+    double nh_pressure_adv
+    double nh_pressure_drag
 
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_z(entr_in_struct entr_in) nogil

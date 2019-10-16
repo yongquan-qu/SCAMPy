@@ -259,8 +259,8 @@ cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
     cdef:
         pressure_drag_struct _ret
 
-    _ret.nh_pressure_w1 = 0.0
-    _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * (1.0/press_in.rd
+    _ret.nh_pressure_adv = 0.0
+    _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * (1.0/press_in.rd
                           * (press_in.w_kfull - press_in.w_kenv)*fabs(press_in.w_kfull - press_in.w_kenv))
 
     return _ret
@@ -305,16 +305,16 @@ cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) 
     cdef:
         pressure_drag_struct _ret
 
-    _ret.nh_pressure_w1 = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kphalf
+    _ret.nh_pressure_adv = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kphalf
                           -press_in.w_khalf)*press_in.dzi
 
     # TODO: need to test whehter the updraft_top or rd is a better length scale used in the drag term -> for now rd is used being consistent with tan18
 
     # # H based calc:  using the vertical length scale of the plume
-    # _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 2000)
+    # _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 2000)
 
     # rd based calc:  using the horizontal length scale of the plume -> as in tan18
-    _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * press_in.beta2*press_in.w_kfull**2/press_in.rd
+    _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * press_in.beta2*press_in.w_kfull**2/press_in.rd
 
     return _ret
 

@@ -212,8 +212,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         # Pressure term in updraft vertical momentum equation
         self.nh_pressure = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
         self.nh_pressure_b = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
-        self.nh_pressure_w1 = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
-        self.nh_pressure_w2 = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.nh_pressure_adv = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.nh_pressure_drag = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
         self.asp_ratio = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
         self.b_coeff = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
 
@@ -276,8 +276,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.add_profile('entrainment_sc')
         Stats.add_profile('detrainment_sc')
         Stats.add_profile('nh_pressure')
-        Stats.add_profile('nh_pressure_w1')
-        Stats.add_profile('nh_pressure_w2')
+        Stats.add_profile('nh_pressure_adv')
+        Stats.add_profile('nh_pressure_drag')
         Stats.add_profile('nh_pressure_b')
         Stats.add_profile('asp_ratio')
         Stats.add_profile('b_coeff')
@@ -352,8 +352,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             Py_ssize_t kmax = self.Gr.nzg-self.Gr.gw
             double [:] mean_entr_sc = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_nh_pressure = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
-            double [:] mean_nh_pressure_w1 = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
-            double [:] mean_nh_pressure_w2 = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_nh_pressure_adv = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_nh_pressure_drag = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_nh_pressure_b = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_asp_ratio = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_b_coeff = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
@@ -389,8 +389,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         mean_detr_sc[k] += self.UpdVar.Area.values[i,k] * self.detr_sc[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_nh_pressure[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_nh_pressure_b[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_b[i,k]/self.UpdVar.Area.bulkvalues[k]
-                        mean_nh_pressure_w1[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_w1[i,k]/self.UpdVar.Area.bulkvalues[k]
-                        mean_nh_pressure_w2[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_w2[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_nh_pressure_adv[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_adv[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_nh_pressure_drag[k] += self.UpdVar.Area.values[i,k] * self.nh_pressure_drag[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_asp_ratio[k] += self.UpdVar.Area.values[i,k] * self.asp_ratio[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_b_coeff[k] += self.UpdVar.Area.values[i,k] * self.b_coeff[i,k]/self.UpdVar.Area.bulkvalues[k]
 
@@ -416,8 +416,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.write_profile('buoyant_frac', mean_buoyant_frac[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('b_mix', mean_b_mix[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure', mean_nh_pressure[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('nh_pressure_w1', mean_nh_pressure_w1[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('nh_pressure_w2', mean_nh_pressure_w2[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('nh_pressure_adv', mean_nh_pressure_adv[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('nh_pressure_drag', mean_nh_pressure_drag[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure_b', mean_nh_pressure_b[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('asp_ratio', mean_asp_ratio[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('b_coeff', mean_b_coeff[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -1355,21 +1355,21 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     ret_b = self.pressure_func_buoy(input)
                     ret_w = self.pressure_func_drag(input)
                     self.nh_pressure_b[i,k] = ret_b.nh_pressure_b
-                    self.nh_pressure_w1[i,k] = ret_w.nh_pressure_w1
-                    self.nh_pressure_w2[i,k] = ret_w.nh_pressure_w2
+                    self.nh_pressure_adv[i,k] = ret_w.nh_pressure_adv
+                    self.nh_pressure_drag[i,k] = ret_w.nh_pressure_drag
 
                     self.b_coeff[i,k] = ret_b.b_coeff
                     self.asp_ratio[i,k] = ret_b.asp_ratio
 
                 else:
                     self.nh_pressure_b[i,k] = 0.0
-                    self.nh_pressure_w1[i,k] = 0.0
-                    self.nh_pressure_w2[i,k] = 0.0
+                    self.nh_pressure_adv[i,k] = 0.0
+                    self.nh_pressure_drag[i,k] = 0.0
 
                     self.b_coeff[i,k] = 0.0
                     self.asp_ratio[i,k] = 0.0
 
-                self.nh_pressure[i,k] = self.nh_pressure_b[i,k] + self.nh_pressure_w1[i,k] + self.nh_pressure_w2[i,k]
+                self.nh_pressure[i,k] = self.nh_pressure_b[i,k] + self.nh_pressure_adv[i,k] + self.nh_pressure_drag[i,k]
 
         return
 
