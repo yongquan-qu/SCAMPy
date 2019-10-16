@@ -61,8 +61,8 @@ cdef struct entr_in_struct:
     long quadrature_order
 
 cdef struct pressure_in_struct:
-    double H
-    char* asp_label
+    double updraft_top
+    char *asp_label
     double a_med
     double a_kfull
     double a_khalf
@@ -72,7 +72,7 @@ cdef struct pressure_in_struct:
     double bcoeff_tan18
     double alpha1
     double alpha2
-    double beta
+    double beta1
     double beta2
     double rd
     double w_kfull

@@ -42,10 +42,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
         double pressure_drag_coeff # Tan et al. 2018: coefficient alpha_d in Eq. 30
         double [:] pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
-        double pressure_normalmode_coeff1
-        double pressure_normalmode_coeff2
-        double pressure_normalmode_coeff3
-        double pressure_normalmode_coeff4
+        double pressure_normalmode_buoy_coeff1
+        double pressure_normalmode_buoy_coeff2
+        double pressure_normalmode_adv_coeff
+        double pressure_normalmode_drag_coeff
         double dt_upd
         double aspect_ratio
         double [:,:] entr_sc

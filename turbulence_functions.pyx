@@ -243,9 +243,9 @@ cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
 
     with gil:
         if str(press_in.asp_label) == 'z_dependent':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
         elif str(press_in.asp_label) == 'median':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
         elif str(press_in.asp_label) == 'const':
             # _ret.asp_ratio = 1.72
             _ret.asp_ratio = 1.0
@@ -271,9 +271,9 @@ cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) 
 
     with gil:
         if press_in.asp_label.encode('utf-8') == 'z_dependent':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
         elif press_in.asp_label.encode('utf-8') == 'median':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
         elif press_in.asp_label.encode('utf-8') == 'const':
             # _ret.asp_ratio = 1.72
             _ret.asp_ratio = 1.0
@@ -289,15 +289,15 @@ cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_i
 
     with gil:
         if press_in.asp_label.encode('utf-8') == 'z_dependent':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_kfull)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
         elif press_in.asp_label.encode('utf-8') == 'median':
-            _ret.asp_ratio = press_in.H/2.0/sqrt(press_in.a_med)/press_in.rd
+            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
         elif press_in.asp_label.encode('utf-8') == 'const':
             # _ret.asp_ratio = 1.72
             _ret.asp_ratio = 1.0
 
     _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*_ret.asp_ratio**2 )
-    _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff * sin(3.14*press_in.z_full/press_in.H)
+    _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff * sin(3.14*press_in.z_full/press_in.updraft_top)
 
     return _ret
 
@@ -305,11 +305,13 @@ cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) 
     cdef:
         pressure_drag_struct _ret
 
-    _ret.nh_pressure_w1 = press_in.rho0_kfull * press_in.a_kfull * press_in.beta*press_in.w_kfull*(press_in.w_kphalf
+    _ret.nh_pressure_w1 = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kphalf
                           -press_in.w_khalf)*press_in.dzi
 
+    # TODO: need to test whehter the updraft_top or rd is a better length scale used in the drag term -> for now rd is used being consistent with tan18
+
     # # H based calc:  using the vertical length scale of the plume
-    # _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.H, 2000)
+    # _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 2000)
 
     # rd based calc:  using the horizontal length scale of the plume -> as in tan18
     _ret.nh_pressure_w2 = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * press_in.beta2*press_in.w_kfull**2/press_in.rd

@@ -153,17 +153,23 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
         self.aspect_ratio = paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio']
 
-        try:
-            self.pressure_normalmode_coeff1 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1']
-            self.pressure_normalmode_coeff2 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2']
-            self.pressure_normalmode_coeff3 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3']
-            self.pressure_normalmode_coeff4 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff4']
-        except:
-            self.pressure_normalmode_coeff1 = self.pressure_buoy_coeff
-            self.pressure_normalmode_coeff2 = 0.0
-            self.pressure_normalmode_coeff3 = 0.0
-            self.pressure_normalmode_coeff4 = 1.0
-            print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula'
+        if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode':
+            try:
+                self.pressure_normalmode_buoy_coeff1 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1']
+                self.pressure_normalmode_buoy_coeff2 = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff2']
+            except:
+                self.pressure_normalmode_buoy_coeff1 = self.pressure_buoy_coeff
+                self.pressure_normalmode_buoy_coeff2 = 0.0
+                print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula buoyancy term'
+
+        if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'normalmode':
+            try:
+                self.pressure_normalmode_adv_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff']
+                self.pressure_normalmode_drag_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff']
+            except:
+                self.pressure_normalmode_adv_coeff = 0.0
+                self.pressure_normalmode_drag_coeff = 1.0
+                print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula drag term'
 
         # "Legacy" coefficients used by the steady updraft routine
         self.vel_buoy_coeff = 1.0-self.pressure_buoy_coeff
@@ -1321,7 +1327,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         input.asp_label = self.asp_label
         for i in xrange(self.n_updrafts):
-            input.H = self.UpdVar.updraft_top[i]
+            input.updraft_top = self.UpdVar.updraft_top[i]
             alen = len(np.argwhere(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw]))
             input.a_med = np.median(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw][:alen])
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
@@ -1334,10 +1340,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 input.b_kfull = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
                 input.rho0_kfull = self.Ref.rho0[k]
                 input.bcoeff_tan18 = self.pressure_buoy_coeff
-                input.alpha1 = self.pressure_normalmode_coeff1
-                input.alpha2 = self.pressure_normalmode_coeff2
-                input.beta = self.pressure_normalmode_coeff3
-                input.beta2 = self.pressure_normalmode_coeff4
+                input.alpha1 = self.pressure_normalmode_buoy_coeff1
+                input.alpha2 = self.pressure_normalmode_buoy_coeff2
+                input.beta1 = self.pressure_normalmode_adv_coeff
+                input.beta2 = self.pressure_normalmode_drag_coeff
                 input.rd = self.pressure_plume_spacing[i]
                 input.w_kfull = self.UpdVar.W.values[i,k]
                 input.w_khalf = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
