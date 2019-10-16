@@ -537,9 +537,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         # update grid-mean cloud fraction and cloud cover
         for k in xrange(self.Gr.nzg):
+            self.EnvVar.Area.values[k] = 1.0 - self.UpdVar.Area.bulkvalues[k]
             GMV.cloud_fraction.values[k] = \
-            self.EnvVar.Area.values[k] * self.EnvVar.cloud_fraction.values[k] +\
-            self.UpdVar.Area.bulkvalues[k] * self.UpdVar.cloud_fraction[k]
+                self.EnvVar.Area.values[k] * self.EnvVar.cloud_fraction.values[k] +\
+                self.UpdVar.Area.bulkvalues[k] * self.UpdVar.cloud_fraction[k]
         GMV.cloud_cover = min(self.EnvVar.cloud_cover + np.sum(self.UpdVar.cloud_cover), 1)
 
         # Back out the tendencies of the grid mean variables for the whole timestep by differencing GMV.new and
