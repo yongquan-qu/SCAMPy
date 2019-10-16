@@ -302,7 +302,7 @@ cdef class UpdraftVariables:
                     if self.QL.values[i,k] > 1e-8:
                         self.cloud_base[i]  = fmin(self.cloud_base[i],  self.Gr.z_half[k])
                         self.cloud_top[i]   = fmax(self.cloud_top[i],   self.Gr.z_half[k])
-                        self.cloud_cover[i] = fmax(self.cloud_cover[i], self.cloud_fraction.values[i,k])
+                        self.cloud_cover[i] = fmax(self.cloud_cover[i], self.Area.values[i,k])
 
         return
 

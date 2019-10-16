@@ -209,7 +209,7 @@ cdef class EnvironmentVariables:
             if self.QL.values[k] > 1e-8 and self.Area.values[k] > 1e-3:
                 self.cloud_base  = fmin(self.cloud_base,  self.Gr.z_half[k])
                 self.cloud_top   = fmax(self.cloud_top,   self.Gr.z_half[k])
-                self.cloud_cover = fmax(self.cloud_cover, self.cloud_fraction.values[k])
+                self.cloud_cover = fmax(self.cloud_cover, self.Area.values[k])
         return
 
 cdef class EnvironmentThermodynamics:
