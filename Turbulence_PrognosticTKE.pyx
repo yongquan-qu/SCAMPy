@@ -114,12 +114,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
 
         try:
-            if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'median':
-                self.asp_label = 'median'
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'const':
-                self.asp_label = 'const'
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']) == 'z_dependent':
-                self.asp_label = 'z_dependent'
+            self.asp_label = namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']
         except:
             self.asp_label = 'const'
             print('Turbulence--EDMF_PrognosticTKE: H/2R defaulting to constant')
@@ -1311,9 +1306,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef:
             double cpm
 
-        cpm = cpm_c(Case.Sur.qsurface)
         for i in xrange(self.n_updrafts):
-            self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
+            if self.pressure_func_drag == pressure_tan18_drag:
+                self.pressure_plume_spacing[i] = 500.0
+            else:
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
         return
 
     cpdef compute_nh_pressure(self):
