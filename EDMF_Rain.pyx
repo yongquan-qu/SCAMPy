@@ -6,6 +6,7 @@
 
 import cython
 import numpy as np
+import sys
 
 cimport Grid
 cimport ReferenceState
@@ -59,17 +60,13 @@ cdef class RainVariables:
         self.env_rwp = 0.
 
         try:
-            self.rain_model = namelist['microphysics']['rain_model']
+            self.rain_model = str(namelist['microphysics']['rain_model'])
         except:
             print "EDMF_Rain: defaulting to no rain"
-            self.rain_model = False
+            self.rain_model = "None"
 
-        if self.rain_model:
-            try:
-                self.autoconversion = namelist['microphysics']['autoconversion']
-            except:
-                print "EDMF_Rain: defaulting to cutoff autoconverion with max_supersaturation for rain = 0.02"
-                self.autoconversion = "cutoff"
+        if self.rain_model not in ["None", "cutoff", "clima_1m"]:
+            sys.exit('rain model not recognized')
 
         return
 

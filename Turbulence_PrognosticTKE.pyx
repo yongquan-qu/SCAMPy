@@ -175,7 +175,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         # Create the class for rain
         self.Rain = EDMF_Rain.RainVariables(namelist, Gr)
-        if self.use_steady_updrafts == True and self.Rain.rain_model ==True:
+        if self.use_steady_updrafts == True and self.Rain.rain_model != "None":
             sys.exit('PrognosticTKE: rain model is available for prognostic updrafts only')
         self.RainPhysics = EDMF_Rain.RainPhysics(Gr, Ref)
 
@@ -533,7 +533,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.update_GMV_ED(GMV, Case, TS)
         self.compute_covariance(GMV, Case, TS)
 
-        if self.Rain.rain_model:
+        if self.Rain.rain_model == "clima_1m":
 
             # sum updraft and environment rain into bulk rain
             self.Rain.sum_subdomains_rain(self.UpdThermo, self.EnvThermo)

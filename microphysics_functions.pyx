@@ -170,8 +170,7 @@ cdef double conv_q_rai_to_q_vap(double q_rai, double q_tot, double q_liq,
 
 
 cdef mph_struct microphysics_rain_src(
-                  bint rain_flag,
-                  str autoconversion,
+                  str rain_model,
                   double qt,
                   double ql,
                   double qr,
@@ -195,29 +194,32 @@ cdef mph_struct microphysics_rain_src(
     _ret.alpha = alpha_c(p0, T, qt, _ret.qv)
 
     #TODO - temporary way to handle different autoconversion rates
-    #bint tmp_clima_acnv_flag
-    #bint tmp_cutoff_acnv_flag
-
+    # cython doesn't allow for string comparison without gil
     tmp_clima_acnv_flag = False
     tmp_cutoff_acnv_flag = False
-
+    tmp_no_acnv_flag = False
     with gil:
-        if rain_flag:
-            if autoconversion == 'clima_1m':
-                tmp_clima_acnv_flag = True
-            elif autoconversion == 'cutoff':
-                tmp_cutoff_acnv_flag = True
-            else:
-                sys.exit('autoconversion scheme not recognized')
+        if rain_model == 'clima_1m':
+            tmp_clima_acnv_flag = True
+        elif rain_model == 'cutoff':
+            tmp_cutoff_acnv_flag = True
+        elif rain_model == 'None':
+            tmp_no_acnv_flag = True
+        else:
+            sys.exit('rain model not recognized')
 
-    if rain_flag and area > 0.:
+    if area > 0.:
         if tmp_clima_acnv_flag:
             _ret.qr_src = fmin(ql,
                                   (conv_q_liq_to_q_rai_acnv(ql) +
                                    conv_q_liq_to_q_rai_accr(ql, qr, rho)) * dt
                               )
+
         if tmp_cutoff_acnv_flag:
             _ret.qr_src = fmin(ql, acnv_instant(ql, qt, T, p0))
+
+        if tmp_no_acnv_flag:
+            _ret.qr_src = 0.
 
         _ret.thl_rain_src = rain_source_to_thetal(p0, T, _ret.qr_src)
 

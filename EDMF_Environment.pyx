@@ -335,7 +335,6 @@ cdef class EnvironmentThermodynamics:
                 # autoconversion and accretion
                 mph = microphysics_rain_src(
                     Rain.rain_model,
-                    Rain.autoconversion,
                     EnvVar.QT.values[k],
                     sa.ql,
                     Rain.Env_QR.values[k],
@@ -433,7 +432,6 @@ cdef class EnvironmentThermodynamics:
                             # autoconversion and accretiom
                             mph = microphysics_rain_src(
                                 Rain.rain_model,
-                                Rain.autoconversion,
                                 qt_hat,
                                 sa.ql,
                                 Rain.Env_QR.values[k],
@@ -503,7 +501,6 @@ cdef class EnvironmentThermodynamics:
                     )
                     mph = microphysics_rain_src(
                         Rain.rain_model,
-                        Rain.autoconversion,
                         EnvVar.QT.values[k],
                         sa.ql,
                         Rain.Env_QR.values[k],
