@@ -73,12 +73,14 @@ cdef struct pressure_in_struct:
     double alpha1
     double alpha2
     double beta
+    double beta2
     double rd
     double w_kfull
     double w_khalf
     double w_kphalf
     double w_kenv
     double dzi
+    double z_full
     double drag_sign
 
 cdef struct pressure_buoy_struct:
@@ -87,7 +89,8 @@ cdef struct pressure_buoy_struct:
     double nh_pressure_b
 
 cdef struct pressure_drag_struct:
-    double nh_pressure_w
+    double nh_pressure_w1
+    double nh_pressure_w2
 
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_z(entr_in_struct entr_in) nogil
@@ -104,6 +107,7 @@ cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
 cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
 cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
 cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil
+cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_in) nogil
 cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil
 
 cdef double get_wstar(double bflux, double zi )
