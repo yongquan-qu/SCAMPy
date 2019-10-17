@@ -36,7 +36,7 @@ def main():
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
-    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing'] = False
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_constant_plume_spacing'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
