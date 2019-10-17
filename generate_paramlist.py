@@ -47,10 +47,11 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 3.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_factor'] = 4.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing'] = 500.0
 
     # TODO: merge the tan18 buoyancy forluma into normalmode formula -> simply set buoy_coeff1 as 1./3. and buoy_coeff2 as 0.
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
@@ -86,11 +87,9 @@ def main():
 
     write_file(paramlist)
 
-
 def Soares(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'Soares'
 
     return paramlist
@@ -99,7 +98,6 @@ def Soares(paramlist_defaults):
 def Bomex(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'Bomex'
 
     return  paramlist
@@ -107,7 +105,6 @@ def Bomex(paramlist_defaults):
 def life_cycle_Tan2018(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'life_cycle_Tan2018'
 
     return  paramlist
@@ -117,7 +114,6 @@ def Rico(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'Rico'
-
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
@@ -128,7 +124,6 @@ def TRMM_LBA(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'TRMM_LBA'
-
     paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
@@ -136,7 +131,6 @@ def TRMM_LBA(paramlist_defaults):
 def ARM_SGP(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'ARM_SGP'
 
     return  paramlist
@@ -145,7 +139,6 @@ def ARM_SGP(paramlist_defaults):
 def GATE_III(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'GATE_III'
 
     return  paramlist
@@ -156,7 +149,6 @@ def DYCOMS_RF01(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
-
     paramlist['turbulence']['prandtl_number'] = 0.8
 
     return  paramlist
@@ -166,16 +158,13 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-
     paramlist['turbulence']['prandtl_number'] = 0.74
-
     return  paramlist
 
 # Not fully implemented yet - Ignacio
 def SP(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
-
     paramlist['meta']['casename'] = 'SP'
 
     return  paramlist

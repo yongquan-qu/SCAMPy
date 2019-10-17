@@ -51,6 +51,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.calc_tke = True
 
         try:
+            self.use_const_plume_spacing = namelist['turbulence']['EDMF_PrognosticTKE']['use_constant_plume_spacing']
+        except:
+            self.use_const_plume_spacing = False
+
+        try:
             self.calc_scalar_var = namelist['turbulence']['EDMF_PrognosticTKE']['calc_scalar_var']
         except:
             self.calc_scalar_var = False
@@ -147,8 +152,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.surface_area = paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area']
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
-        self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
-        self.entrainment_erf_const = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const']
+        self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
+        self.sorting_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_factor']
+        self.sorting_power = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_power']
         self.turbulent_entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor']
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
         self.aspect_ratio = paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio']
@@ -199,7 +205,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         # Detrainment rates
         self.detr_sc = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
 
-        self.buoyant_frac = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
+        self.sorting_function = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
         self.b_mix = np.zeros((self.n_updrafts, Gr.nzg),dtype=np.double,order='c')
 
         # turbulent entrainment
@@ -284,7 +290,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         Stats.add_profile('horizontal_KM')
         Stats.add_profile('horizontal_KH')
-        Stats.add_profile('buoyant_frac')
+        Stats.add_profile('sorting_function')
         Stats.add_profile('b_mix')
         Stats.add_ts('rd')
         Stats.add_profile('turbulent_entrainment')
@@ -369,7 +375,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double [:] mean_turb_entr_QT = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_horizontal_KM = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_horizontal_KH = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
-            double [:] mean_buoyant_frac = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
+            double [:] mean_sorting_function = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
             double [:] mean_b_mix = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
 
         self.UpdVar.io(Stats, self.Ref)
@@ -401,7 +407,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         mean_turb_entr_QT[k] += self.UpdVar.Area.values[i,k] * self.turb_entr_QT[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_horizontal_KM[k] += self.UpdVar.Area.values[i,k] * self.horizontal_KM[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_horizontal_KH[k] += self.UpdVar.Area.values[i,k] * self.horizontal_KH[i,k]/self.UpdVar.Area.bulkvalues[k]
-                        mean_buoyant_frac[k] += self.UpdVar.Area.values[i,k] * self.buoyant_frac[i,k]/self.UpdVar.Area.bulkvalues[k]
+                        mean_sorting_function[k] += self.UpdVar.Area.values[i,k] * self.sorting_function[i,k]/self.UpdVar.Area.bulkvalues[k]
                         mean_b_mix[k] += self.UpdVar.Area.values[i,k] * self.b_mix[i,k]/self.UpdVar.Area.bulkvalues[k]
 
         Stats.write_profile('turbulent_entrainment', mean_frac_turb_entr[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -413,7 +419,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.write_profile('horizontal_KH', mean_horizontal_KH[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('entrainment_sc', mean_entr_sc[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('detrainment_sc', mean_detr_sc[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('buoyant_frac', mean_buoyant_frac[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('sorting_function', mean_sorting_function[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('b_mix', mean_b_mix[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure', mean_nh_pressure[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('nh_pressure_adv', mean_nh_pressure_adv[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
@@ -1263,8 +1269,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.env_QTvar = self.EnvVar.QTvar.values[k]
                     input.env_HQTcov = self.EnvVar.HQTcov.values[k]
                     input.c_eps = self.entrainment_factor
-                    input.erf_const = self.entrainment_erf_const
-                    input.c_del = self.detrainment_factor
+                    input.sort_pow = self.sorting_power
+                    input.sort_fact = self.sorting_factor
                     input.rd = self.pressure_plume_spacing[i]
                     input.nh_pressure = self.nh_pressure[i,k]
                     input.RH_upd = self.UpdVar.RH.values[i,k]
@@ -1284,14 +1290,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     ret = self.entr_detr_fp(input)
                     self.entr_sc[i,k] = ret.entr_sc
                     self.detr_sc[i,k] = ret.detr_sc
-                    self.buoyant_frac[i,k] = ret.buoyant_frac
+                    self.sorting_function[i,k] = ret.sorting_function
                     self.b_mix[i,k] = ret.b_mix
 
                 else:
                     self.entr_sc[i,k] = 0.0
                     self.detr_sc[i,k] = 0.0
-                    self.buoyant_frac[i,k] = 0.0
-                    self.buoyant_frac[i,k] = 0.0
+                    self.sorting_function[i,k] = 0.0
                     self.b_mix[i,k] = self.EnvVar.B.values[k]
         return
 
@@ -1317,9 +1322,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef:
             double cpm
 
-        cpm = cpm_c(Case.Sur.qsurface)
         for i in xrange(self.n_updrafts):
-            self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
+            if self.use_const_plume_spacing:
+                self.pressure_plume_spacing[i] = self.constant_plume_spacing
+            else:
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],self.constant_plume_spacing)
         return
 
     cpdef compute_nh_pressure(self):

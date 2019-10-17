@@ -24,6 +24,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         pressure_buoy_struct (*pressure_func_buoysin) (pressure_in_struct press_in) nogil
         pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
         bint use_local_micro
+        bint use_const_plume_spacing
         bint similarity_diffusivity
         bint use_steady_updrafts
         bint calc_scalar_var
@@ -34,9 +35,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double surface_area
         double minimum_area
         double entrainment_factor
-        double detrainment_factor
+        double sorting_factor
+        double sorting_power
         double turbulent_entrainment_factor
-        double entrainment_erf_const
         double vel_pressure_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double vel_buoy_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
@@ -47,17 +48,17 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double pressure_normalmode_adv_coeff
         double pressure_normalmode_drag_coeff
         double dt_upd
+        double constant_plume_spacing
         double aspect_ratio
         double [:,:] entr_sc
         double [:,:] detr_sc
         double [:,:] nh_pressure
+        double [:,:] sorting_function
         double [:,:] nh_pressure_adv
         double [:,:] nh_pressure_drag
         double [:,:] nh_pressure_b
         double [:,:] asp_ratio
         double [:,:] b_coeff
-
-        double [:,:] buoyant_frac
         double [:,:] b_mix
         double [:,:] frac_turb_entr
         double [:,:] frac_turb_entr_full

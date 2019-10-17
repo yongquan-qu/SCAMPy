@@ -1,12 +1,12 @@
 cdef struct entr_struct:
     double entr_sc
     double detr_sc
-    double buoyant_frac
+    double sorting_function
     double b_mix
 
 cdef struct buoyant_stract:
     double b_mix
-    double buoyant_frac
+    double sorting_function
 
 cdef struct chi_struct:
     double T_mix
@@ -21,8 +21,8 @@ cdef struct entr_in_struct:
     double zi
     double wstar
     double z
-    double erf_const
-    double c_del
+    double sort_pow
+    double sort_fact
     double dz
     double w
     double dw
