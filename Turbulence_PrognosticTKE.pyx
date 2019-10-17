@@ -152,6 +152,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.surface_area = paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area']
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
+        self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
         self.sorting_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_factor']
         self.sorting_power = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_power']
         self.turbulent_entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor']
@@ -540,10 +541,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.update_GMV_ED(GMV, Case, TS)
         self.compute_covariance(GMV, Case, TS)
 
-        # update grid-mean cloud fraction
+        # update grid-mean cloud fraction and cloud cover
         for k in xrange(self.Gr.nzg):
+            self.EnvVar.Area.values[k] = 1.0 - self.UpdVar.Area.bulkvalues[k]
             GMV.cloud_fraction.values[k] = \
-            self.EnvVar.cloud_fraction.values[k] + self.UpdVar.cloud_fraction[k]
+                self.EnvVar.Area.values[k] * self.EnvVar.cloud_fraction.values[k] +\
+                self.UpdVar.Area.bulkvalues[k] * self.UpdVar.cloud_fraction[k]
+        GMV.cloud_cover = min(self.EnvVar.cloud_cover + np.sum(self.UpdVar.cloud_cover), 1)
 
         # Back out the tendencies of the grid mean variables for the whole timestep by differencing GMV.new and
         # GMV.values
@@ -1058,6 +1062,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 for k in xrange(self.Gr.nzg-1):
                     val1 = 1.0/(1.0-self.UpdVar.Area.bulkvalues[k])
                     val2 = self.UpdVar.Area.bulkvalues[k] * val1
+                    self.EnvVar.Area.values[k] = 1.0 - self.UpdVar.Area.bulkvalues[k]
                     self.EnvVar.QT.values[k] = fmax(val1 * GMV.QT.values[k] - val2 * self.UpdVar.QT.bulkvalues[k],0.0) #Yair - this is here to prevent negative QT
                     self.EnvVar.H.values[k] = val1 * GMV.H.values[k] - val2 * self.UpdVar.H.bulkvalues[k]
                     # Have to account for staggering of W--interpolate area fraction to the "full" grid points
@@ -1313,9 +1318,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         for i in xrange(self.n_updrafts):
             if self.const_plume_spacing:
-                self.pressure_plume_spacing[i] = 500.0
+                self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],500.0)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],self.constant_plume_spacing)
         return
 
     cpdef compute_nh_pressure(self):

@@ -52,6 +52,7 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing'] = 500.0
 
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1'] = 1.0/3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2'] = 0.0
@@ -121,7 +122,7 @@ def TRMM_LBA(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'TRMM_LBA'
-    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.01
+    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
 

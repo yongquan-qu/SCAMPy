@@ -209,7 +209,7 @@ cdef class EnvironmentVariables:
             if self.QL.values[k] > 1e-8 and self.Area.values[k] > 1e-3:
                 self.cloud_base  = fmin(self.cloud_base,  self.Gr.z_half[k])
                 self.cloud_top   = fmax(self.cloud_top,   self.Gr.z_half[k])
-                self.cloud_cover = fmax(self.cloud_cover, self.cloud_fraction.values[k])
+                self.cloud_cover = fmax(self.cloud_cover, self.Area.values[k] * self.cloud_fraction.values[k])
         return
 
 cdef class EnvironmentThermodynamics:
@@ -258,7 +258,7 @@ cdef class EnvironmentThermodynamics:
     cdef void update_cloud_dry(self, long k, EnvironmentVariables EnvVar, double T, double th, double qt, double ql, double qv) nogil :
 
         if ql > 0.0:
-            EnvVar.cloud_fraction.values[k] = EnvVar.Area.values[k]
+            EnvVar.cloud_fraction.values[k] = 1.0
             self.th_cloudy[k]   = th
             self.t_cloudy[k]    = T
             self.qt_cloudy[k]   = qt
@@ -401,7 +401,7 @@ cdef class EnvironmentThermodynamics:
                                        outer_env[i_qt_cld]+outer_env[i_qt_dry], outer_env[i_ql],\
                                        outer_env[i_qr], outer_env[i_alpha])
                     # update cloudy/dry variables for buoyancy in TKE
-                    EnvVar.cloud_fraction.values[k] = outer_env[i_cf] * EnvVar.Area.values[k]
+                    EnvVar.cloud_fraction.values[k] = outer_env[i_cf]
                     self.qt_dry[k]    = outer_env[i_qt_dry]
                     self.th_dry[k]    = theta_c(self.Ref.p0_half[k], outer_env[i_T_dry])
                     self.t_cloudy[k]  = outer_env[i_T_cld]

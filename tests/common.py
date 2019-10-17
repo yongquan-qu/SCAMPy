@@ -32,9 +32,6 @@ def simulation_setup(case):
     paramlist = json.loads(file_params)
     # add here changes to paramlist file such as:
     #paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.15
-    paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 0.1/3.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 1.0
-    paramlist['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.5
     write_file("paramlist_"+case+".in",paramlist)
     #pp.pprint(paramlist)
 
