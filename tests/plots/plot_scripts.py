@@ -12,7 +12,6 @@ from matplotlib import ticker
 def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
     """
     Plots mean profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -83,7 +82,6 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
 def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -151,7 +149,6 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -214,7 +211,6 @@ def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -267,7 +263,6 @@ def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -321,7 +316,6 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -375,7 +369,6 @@ def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
 def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -427,7 +420,6 @@ def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
 def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance components profiles from Scampy
-
     Input:
     scm_data   - scm stats file
     tmin   - lower bound for time mean
@@ -478,7 +470,6 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
               cb_min, cb_max, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
-
     Input:
     scm_srs  - scm timeseries file
     les_srs  - les timeseries file
@@ -547,7 +538,6 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
 def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     """
     Plots timeseries from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -620,7 +610,6 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
 def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
-
     Input:
     scm_data - scm stats file
     les_data - les stats file

@@ -74,7 +74,6 @@ def write_file(name, list):
 def read_scm_data(scm_data):
     """
     Read data from netcdf file into a dictionary that can be used for plots
-
     Input:
     scm_data  - scampy netcdf dataset with simulation results
     """
@@ -115,7 +114,6 @@ def read_scm_data(scm_data):
 def read_les_data(les_data):
     """
     Read data from netcdf file into a dictionary that can be used for plots
-
     Input:
     les_data - pycles netcdf dataset with specific fileds taken from LES stats file
     """
@@ -141,7 +139,6 @@ def read_les_data(les_data):
 def read_scm_data_timeseries(scm_data):
     """
     Read 1D data from netcdf file into a dictionary that can be used for plots
-
     Input:
     scm_data - scampy netcdf dataset with simulation results
     """
@@ -163,7 +160,6 @@ def read_scm_data_timeseries(scm_data):
 def read_les_data_timeseries(les_data):
     """
     Read 1D data from netcdf file into a dictionary that can be used for plots
-
     Input:
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """

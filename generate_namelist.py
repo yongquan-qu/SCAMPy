@@ -35,10 +35,11 @@ def main():
 
     namelist_defaults['turbulence']['EDMF_PrognosticTKE'] = {}
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['updraft_number'] = 1
-    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'buoyancy_sorting'
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'moisture_deficit'
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['extrapolate_buoyancy'] = True
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_steady_updrafts'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_local_micro'] = True
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_constant_plume_spacing'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['use_similarity_diffusivity'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_area'] = False
     namelist_defaults['turbulence']['EDMF_PrognosticTKE']['calculate_tke'] = True
@@ -124,7 +125,6 @@ def life_cycle_Tan2018(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 30.0
     namelist['time_stepping']['t_max'] = 6*3600.0
-
     namelist['meta']['simname'] = 'life_cycle_Tan2018'
     namelist['meta']['casename'] = 'life_cycle_Tan2018'
 
@@ -140,8 +140,8 @@ def Rico(namelist_defaults):
     namelist['time_stepping']['dt'] = 20.0
     namelist['time_stepping']['t_max'] = 86400.0
 
-    #namelist['microphysics']['rain_model'] = 'cutoff'
-    namelist['microphysics']['rain_model'] = 'clima_1m'
+    namelist['microphysics']['rain_model'] = 'cutoff'
+    #namelist['microphysics']['rain_model'] = 'clima_1m'
 
     namelist['meta']['simname'] = 'Rico'
     namelist['meta']['casename'] = 'Rico'
@@ -158,8 +158,8 @@ def TRMM_LBA(namelist_defaults):
     namelist['time_stepping']['dt'] = 30.0
     namelist['time_stepping']['t_max'] = 21600.0
 
-    #namelist['microphysics']['rain_model'] = 'cutoff'
-    namelist['microphysics']['rain_model'] = 'clima_1m'
+    namelist['microphysics']['rain_model'] = 'cutoff'
+    #namelist['microphysics']['rain_model'] = 'clima_1m'
 
     namelist['meta']['simname'] = 'TRMM_LBA'
     namelist['meta']['casename'] = 'TRMM_LBA'
@@ -175,7 +175,6 @@ def ARM_SGP(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 10.0
     namelist['time_stepping']['t_max'] = 3600.0 * 14.5
-
     namelist['meta']['simname'] = 'ARM_SGP'
     namelist['meta']['casename'] = 'ARM_SGP'
 
@@ -192,7 +191,6 @@ def GATE_III(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 5.0
     namelist['time_stepping']['t_max'] = 3600.0 * 24.0
-
     namelist['meta']['simname'] = 'GATE_III'
     namelist['meta']['casename'] = 'GATE_III'
 
@@ -207,7 +205,6 @@ def DYCOMS_RF01(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 10.0
     namelist['time_stepping']['t_max'] = 60 * 60 * 4.
-
     namelist['meta']['simname'] = 'DYCOMS_RF01'
     namelist['meta']['casename'] = 'DYCOMS_RF01'
 
@@ -222,7 +219,6 @@ def GABLS(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 1.0
     namelist['time_stepping']['t_max'] = 12 * 3600.0
-
     namelist['meta']['simname'] = 'GABLS'
     namelist['meta']['casename'] = 'GABLS'
 
@@ -238,7 +234,6 @@ def SP(namelist_defaults):
 
     namelist['time_stepping']['dt'] = 5.0
     namelist['time_stepping']['t_max'] = 7200.0
-
     namelist['meta']['simname'] = 'SP'
     namelist['meta']['casename'] = 'SP'
 
