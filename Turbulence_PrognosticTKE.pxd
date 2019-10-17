@@ -30,8 +30,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         bint calc_scalar_var
         bint calc_tke
 
-        char *asp_label
-        double drag_sign
+        str asp_label
+        bint drag_sign
         double surface_area
         double minimum_area
         double entrainment_factor
@@ -43,10 +43,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
         double pressure_drag_coeff # Tan et al. 2018: coefficient alpha_d in Eq. 30
         double [:] pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
-        double pressure_normalmode_coeff1
-        double pressure_normalmode_coeff2
-        double pressure_normalmode_coeff3
-        double pressure_normalmode_coeff4
+        double pressure_normalmode_buoy_coeff1
+        double pressure_normalmode_buoy_coeff2
+        double pressure_normalmode_adv_coeff
+        double pressure_normalmode_drag_coeff
         double dt_upd
         double constant_plume_spacing
         double aspect_ratio
@@ -54,8 +54,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:,:] detr_sc
         double [:,:] nh_pressure
         double [:,:] sorting_function
-        double [:,:] nh_pressure_w1
-        double [:,:] nh_pressure_w2
+        double [:,:] nh_pressure_adv
+        double [:,:] nh_pressure_drag
         double [:,:] nh_pressure_b
         double [:,:] asp_ratio
         double [:,:] b_coeff
