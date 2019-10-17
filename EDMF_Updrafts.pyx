@@ -197,7 +197,7 @@ cdef class UpdraftVariables:
                     self.W.bulkvalues[k] = 0.0
 
                 if self.QL.bulkvalues[k] > 1e-8 and self.Area.bulkvalues[k] > 1e-3:
-                    self.cloud_fraction[k] = self.Area.bulkvalues[k]
+                    self.cloud_fraction[k] = 1.0
                 else:
                     self.cloud_fraction[k] = 0.
         return
@@ -298,6 +298,7 @@ cdef class UpdraftVariables:
                         self.cloud_base[i]  = fmin(self.cloud_base[i],  self.Gr.z_half[k])
                         self.cloud_top[i]   = fmax(self.cloud_top[i],   self.Gr.z_half[k])
                         self.cloud_cover[i] = fmax(self.cloud_cover[i], self.Area.values[i,k])
+
         return
 
 

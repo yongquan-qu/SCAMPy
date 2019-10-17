@@ -47,13 +47,15 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_const'] = 0.5
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
 
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff1'] = 1.0/3.0
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff2'] = 0.0
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3'] = 0.75
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_coeff3'] = 1.0
+    # TODO: merge the tan18 buoyancy forluma into normalmode formula -> simply set buoy_coeff1 as 1./3. and buoy_coeff2 as 0.
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
+
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 1.0/3.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff2'] = 0.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff'] = 0.75
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] = 1.0
 
     if case_name == 'Soares':
         paramlist = Soares(paramlist_defaults)
