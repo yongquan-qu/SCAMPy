@@ -127,7 +127,7 @@ def TRMM_LBA(paramlist_defaults):
 
     paramlist['meta']['casename'] = 'TRMM_LBA'
 
-    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.01
+    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
 

@@ -535,10 +535,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.update_GMV_ED(GMV, Case, TS)
         self.compute_covariance(GMV, Case, TS)
 
-        # update grid-mean cloud fraction
+        # update grid-mean cloud fraction and cloud cover
         for k in xrange(self.Gr.nzg):
+            self.EnvVar.Area.values[k] = 1.0 - self.UpdVar.Area.bulkvalues[k]
             GMV.cloud_fraction.values[k] = \
-            self.EnvVar.cloud_fraction.values[k] + self.UpdVar.cloud_fraction[k]
+                self.EnvVar.Area.values[k] * self.EnvVar.cloud_fraction.values[k] +\
+                self.UpdVar.Area.bulkvalues[k] * self.UpdVar.cloud_fraction[k]
+        GMV.cloud_cover = min(self.EnvVar.cloud_cover + np.sum(self.UpdVar.cloud_cover), 1)
 
         # Back out the tendencies of the grid mean variables for the whole timestep by differencing GMV.new and
         # GMV.values
@@ -1053,6 +1056,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 for k in xrange(self.Gr.nzg-1):
                     val1 = 1.0/(1.0-self.UpdVar.Area.bulkvalues[k])
                     val2 = self.UpdVar.Area.bulkvalues[k] * val1
+                    self.EnvVar.Area.values[k] = 1.0 - self.UpdVar.Area.bulkvalues[k]
                     self.EnvVar.QT.values[k] = fmax(val1 * GMV.QT.values[k] - val2 * self.UpdVar.QT.bulkvalues[k],0.0) #Yair - this is here to prevent negative QT
                     self.EnvVar.H.values[k] = val1 * GMV.H.values[k] - val2 * self.UpdVar.H.bulkvalues[k]
                     # Have to account for staggering of W--interpolate area fraction to the "full" grid points
