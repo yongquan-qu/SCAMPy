@@ -30,7 +30,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         bint calc_tke
 
         str asp_label
-        double drag_sign
+        bint drag_sign
         double surface_area
         double minimum_area
         double entrainment_factor

@@ -98,7 +98,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.pressure_func_buoy = pressure_tan18_buoy
             print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
 
-        self.drag_sign = 0.0
+        self.drag_sign = False
         try:
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'tan18':
                 self.pressure_func_drag = pressure_tan18_drag
@@ -106,7 +106,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.pressure_func_drag = pressure_normalmode_drag
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'normalmode_signdf':
                 self.pressure_func_drag = pressure_normalmode_drag
-                self.drag_sign = 1.0
+                self.drag_sign = True
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
         except:
