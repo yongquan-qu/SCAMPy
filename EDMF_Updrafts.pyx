@@ -304,7 +304,6 @@ cdef class UpdraftVariables:
                         self.cloud_top[i]   = fmax(self.cloud_top[i],   self.Gr.z_half[k])
                         self.cloud_cover[i] = fmax(self.cloud_cover[i], self.Area.values[i,k])
 
-
         return
 
 cdef class UpdraftThermodynamics:
