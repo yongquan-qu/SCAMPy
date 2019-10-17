@@ -29,7 +29,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         bint calc_scalar_var
         bint calc_tke
 
-        char *asp_label
+        str asp_label
         double drag_sign
         double surface_area
         double minimum_area

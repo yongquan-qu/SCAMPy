@@ -114,7 +114,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             print('Turbulence--EDMF_PrognosticTKE: defaulting to pressure closure Tan2018')
 
         try:
-            self.asp_label = namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label']
+            self.asp_label = str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_asp_label'])
         except:
             self.asp_label = 'const'
             print('Turbulence--EDMF_PrognosticTKE: H/2R defaulting to constant')
@@ -1325,7 +1325,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             pressure_drag_struct ret_w
             pressure_in_struct input
 
-        input.asp_label = self.asp_label
         for i in xrange(self.n_updrafts):
             input.updraft_top = self.UpdVar.updraft_top[i]
             alen = len(np.argwhere(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw]))
@@ -1351,6 +1350,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 input.w_kenv = self.EnvVar.W.values[k]
                 input.drag_sign = self.drag_sign
 
+                if self.asp_label == 'z_dependent':
+                    input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_kfull)/input.rd
+                elif self.asp_label == 'median':
+                    input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_med)/input.rd
+                elif self.asp_label == 'const':
+                    # _ret.asp_ratio = 1.72
+                    input.asp_ratio = 1.0
+
                 if input.a_kfull>0.0:
                     ret_b = self.pressure_func_buoy(input)
                     ret_w = self.pressure_func_drag(input)
@@ -1359,7 +1366,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.nh_pressure_drag[i,k] = ret_w.nh_pressure_drag
 
                     self.b_coeff[i,k] = ret_b.b_coeff
-                    self.asp_ratio[i,k] = ret_b.asp_ratio
+                    self.asp_ratio[i,k] = input.asp_ratio
 
                 else:
                     self.nh_pressure_b[i,k] = 0.0

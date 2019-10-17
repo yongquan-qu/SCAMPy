@@ -241,15 +241,6 @@ cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
     cdef:
         pressure_buoy_struct _ret
 
-    with gil:
-        if str(press_in.asp_label) == 'z_dependent':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
-        elif str(press_in.asp_label) == 'median':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
-        elif str(press_in.asp_label) == 'const':
-            # _ret.asp_ratio = 1.72
-            _ret.asp_ratio = 1.0
-
     _ret.b_coeff = press_in.bcoeff_tan18
     _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff
 
@@ -269,16 +260,7 @@ cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) 
     cdef:
         pressure_buoy_struct _ret
 
-    with gil:
-        if press_in.asp_label.encode('utf-8') == 'z_dependent':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'median':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'const':
-            # _ret.asp_ratio = 1.72
-            _ret.asp_ratio = 1.0
-
-    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*_ret.asp_ratio**2 )
+    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*press_in.asp_ratio**2 )
     _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff
 
     return _ret
@@ -287,16 +269,7 @@ cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_i
     cdef:
         pressure_buoy_struct _ret
 
-    with gil:
-        if press_in.asp_label.encode('utf-8') == 'z_dependent':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_kfull)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'median':
-            _ret.asp_ratio = press_in.updraft_top/2.0/sqrt(press_in.a_med)/press_in.rd
-        elif press_in.asp_label.encode('utf-8') == 'const':
-            # _ret.asp_ratio = 1.72
-            _ret.asp_ratio = 1.0
-
-    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*_ret.asp_ratio**2 )
+    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*press_in.asp_ratio**2 )
     _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff * sin(3.14*press_in.z_full/press_in.updraft_top)
 
     return _ret

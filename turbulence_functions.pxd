@@ -82,9 +82,9 @@ cdef struct pressure_in_struct:
     double dzi
     double z_full
     double drag_sign
+    double asp_ratio
 
 cdef struct pressure_buoy_struct:
-    double asp_ratio
     double b_coeff
     double nh_pressure_b
 
