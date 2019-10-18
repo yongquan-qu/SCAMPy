@@ -1743,7 +1743,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.V.new[k+gw] = x[k]
 
         GMV.QT.set_bcs(self.Gr)
-        GMV.QR.set_bcs(self.Gr)
         GMV.H.set_bcs(self.Gr)
         GMV.U.set_bcs(self.Gr)
         GMV.V.set_bcs(self.Gr)
@@ -1828,8 +1827,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 GMV.QL.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.QL.bulkvalues[k] \
                                     + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.QL.values[k])
-
-                GMV.QR.values[k]  = self.Rain.QR.values[k] * self.Rain.RainArea.values[k]
 
                 GMV.T.values[k] = (self.UpdVar.Area.bulkvalues[k] * self.UpdVar.T.bulkvalues[k] \
                                     + (1.0 - self.UpdVar.Area.bulkvalues[k]) * self.EnvVar.T.values[k])

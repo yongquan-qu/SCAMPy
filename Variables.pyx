@@ -156,7 +156,6 @@ cdef class GridMeanVariables:
         self.T   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'temperature',     'K')
         self.B   = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'buoyancy',        'm^2/s^3')
         self.THL = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal',          'K')
-        self.QR  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'qr',              'kg/kg')
 
         self.cloud_fraction  = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'cloud fraction', '-')
 
@@ -232,7 +231,6 @@ cdef class GridMeanVariables:
         Stats.add_profile('u_mean')
         Stats.add_profile('v_mean')
         Stats.add_profile('qt_mean')
-        Stats.add_profile('qr_mean')
         Stats.add_profile('RH_mean')
         if self.H.name == 's':
             Stats.add_profile('s_mean')
@@ -266,9 +264,8 @@ cdef class GridMeanVariables:
         Stats.write_profile('v_mean',self.V.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('qt_mean',self.QT.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('ql_mean',self.QL.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('qr_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('temperature_mean',self.T.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
-        Stats.write_profile('RH_mean',self.QR.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('RH_mean',self.RH.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('buoyancy_mean',self.B.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         if self.H.name == 's':
             Stats.write_profile('s_mean',self.H.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
