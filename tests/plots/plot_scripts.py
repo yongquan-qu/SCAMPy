@@ -12,7 +12,6 @@ from matplotlib import ticker
 def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
     """
     Plots mean profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -83,7 +82,6 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
 def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -151,7 +149,6 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -214,7 +211,6 @@ def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -267,7 +263,6 @@ def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -321,7 +316,6 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -375,7 +369,6 @@ def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
 def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance profiles from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -427,7 +420,6 @@ def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
 def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     """
     Plots variance and covariance components profiles from Scampy
-
     Input:
     scm_data   - scm stats file
     tmin   - lower bound for time mean
@@ -478,7 +470,6 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
               cb_min, cb_max, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
-
     Input:
     scm_srs  - scm timeseries file
     les_srs  - les timeseries file
@@ -528,14 +519,15 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
         plt.ylabel('height [km]')
         plt.title(scm_tit[it])
 
-    # TODO add rwp
+    var = ["lwp_mean", "rwp_mean"]
+    lab = ["lwp", "rwp"]
     for it in range(2):
         plt.subplot(3,2,it+5)
-        plt.plot(les_srs["t"][1:],        les_srs["lwp_mean"][1:], '-', c="gray", lw=3)
-        plt.plot(scm_srs["t"][1:]/3600.0, scm_srs["lwp_mean"][1:], '-', c="royalblue", lw=3)
+        plt.plot(les_srs["t"][1:],        les_srs[var[it]][1:], '-', c="gray", lw=3)
+        plt.plot(scm_srs["t"][1:]/3600.0, scm_srs[var[it]][1:], '-', c="royalblue", lw=3)
         plt.xlim([0, scm_srs["t"][-1]/3600.0])
         plt.xlabel('time [h]')
-        plt.ylabel("lwp ")
+        plt.ylabel(lab[it])
         plt.grid(True)
 
     plt.tight_layout()
@@ -546,7 +538,6 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
 def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     """
     Plots timeseries from Scampy
-
     Input:
     scm_data - scm stats file
     les_data - les stats file
@@ -576,10 +567,6 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     plt.tight_layout()
     plt.savefig(folder + case + "surface_heat_fluxes.pdf")
     plt.clf()
-
-    # TODO - add rwp
-    scm_data["rwp_mean"] = np.zeros_like(scm_data["lwp_mean"])
-    les_data["rwp_mean"] = np.zeros_like(les_data["lwp_mean"])
 
     # cloud timeseries
     plot_scm_y = [scm_data["lwp_mean"],\
@@ -623,7 +610,6 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
 def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
-
     Input:
     scm_data - scm stats file
     les_data - les stats file

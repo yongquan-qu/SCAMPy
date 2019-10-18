@@ -1,5 +1,7 @@
 cimport EDMF_Updrafts
 cimport EDMF_Environment
+cimport EDMF_Rain
+
 from Grid cimport Grid
 from Variables cimport VariablePrognostic, VariableDiagnostic, GridMeanVariables
 from Surface cimport  SurfaceBase
@@ -10,54 +12,60 @@ from NetCDFIO cimport NetCDFIO_Stats
 from turbulence_functions cimport *
 from Turbulence cimport ParameterizationBase
 
-
 cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cdef:
         Py_ssize_t n_updrafts
+
         EDMF_Updrafts.UpdraftVariables UpdVar
-        EDMF_Updrafts.UpdraftMicrophysics UpdMicro
         EDMF_Updrafts.UpdraftThermodynamics UpdThermo
+
         EDMF_Environment.EnvironmentVariables EnvVar
         EDMF_Environment.EnvironmentThermodynamics EnvThermo
+
+        EDMF_Rain.RainVariables Rain
+        EDMF_Rain.RainPhysics RainPhysics
+
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
+
         pressure_buoy_struct (*pressure_func_buoy) (pressure_in_struct press_in) nogil
         pressure_buoy_struct (*pressure_func_buoysin) (pressure_in_struct press_in) nogil
         pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
-        bint use_local_micro
+
+        bint use_const_plume_spacing
         bint similarity_diffusivity
         bint use_steady_updrafts
         bint calc_scalar_var
         bint calc_tke
 
-        char *asp_label
-        double drag_sign
+        str asp_label
+        bint drag_sign
         double surface_area
         double minimum_area
         double entrainment_factor
-        double detrainment_factor
+        double sorting_factor
+        double sorting_power
         double turbulent_entrainment_factor
-        double entrainment_erf_const
         double vel_pressure_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double vel_buoy_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set
         double pressure_buoy_coeff # Tan et al. 2018: coefficient alpha_b in Eq. 30
         double pressure_drag_coeff # Tan et al. 2018: coefficient alpha_d in Eq. 30
         double [:] pressure_plume_spacing # Tan et al. 2018: coefficient r_d in Eq. 30
-        double pressure_normalmode_coeff1
-        double pressure_normalmode_coeff2
-        double pressure_normalmode_coeff3
-        double pressure_normalmode_coeff4
+        double pressure_normalmode_buoy_coeff1
+        double pressure_normalmode_buoy_coeff2
+        double pressure_normalmode_adv_coeff
+        double pressure_normalmode_drag_coeff
         double dt_upd
+        double constant_plume_spacing
         double aspect_ratio
         double [:,:] entr_sc
         double [:,:] detr_sc
         double [:,:] nh_pressure
-        double [:,:] nh_pressure_w1
-        double [:,:] nh_pressure_w2
+        double [:,:] sorting_function
+        double [:,:] nh_pressure_adv
+        double [:,:] nh_pressure_drag
         double [:,:] nh_pressure_b
         double [:,:] asp_ratio
         double [:,:] b_coeff
-
-        double [:,:] buoyant_frac
         double [:,:] b_mix
         double [:,:] frac_turb_entr
         double [:,:] frac_turb_entr_full
@@ -113,7 +121,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] QTvar_rain
         double [:] HQTcov_rain
 
-
         double [:] mls
         double [:] ml_ratio
         double [:] l_entdet
@@ -141,8 +148,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_entrainment_detrainment(self, GridMeanVariables GMV, CasesBase Case)
     cpdef zero_area_fraction_cleanup(self, GridMeanVariables GMV)
     cpdef set_subdomain_bcs(self)
-    cpdef solve_updraft_velocity_area(self, GridMeanVariables GMV, TimeStepping TS)
-    cpdef solve_updraft_scalars(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
+    cpdef solve_updraft_velocity_area(self)
+    cpdef solve_updraft_scalars(self, GridMeanVariables GMV)
     cpdef update_GMV_MF(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef update_GMV_ED(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_covariance(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)

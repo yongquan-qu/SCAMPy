@@ -74,7 +74,6 @@ def write_file(name, list):
 def read_scm_data(scm_data):
     """
     Read data from netcdf file into a dictionary that can be used for plots
-
     Input:
     scm_data  - scampy netcdf dataset with simulation results
     """
@@ -115,7 +114,6 @@ def read_scm_data(scm_data):
 def read_les_data(les_data):
     """
     Read data from netcdf file into a dictionary that can be used for plots
-
     Input:
     les_data - pycles netcdf dataset with specific fileds taken from LES stats file
     """
@@ -141,12 +139,11 @@ def read_les_data(les_data):
 def read_scm_data_timeseries(scm_data):
     """
     Read 1D data from netcdf file into a dictionary that can be used for plots
-
     Input:
     scm_data - scampy netcdf dataset with simulation results
     """
     variables = ["cloud_cover_mean", "cloud_base_mean", "cloud_top_mean",\
-                 "ustar", "lwp_mean", "shf", "lhf", "Tsurface", "rd"]
+                 "ustar", "lwp_mean", "rwp_mean", "shf", "lhf", "Tsurface", "rd"]
 
     data = {"z_half" : np.array(scm_data["profiles/z_half"][:]),\
             "t" : np.array(scm_data["profiles/t"][:])}
@@ -163,7 +160,6 @@ def read_scm_data_timeseries(scm_data):
 def read_les_data_timeseries(les_data):
     """
     Read 1D data from netcdf file into a dictionary that can be used for plots
-
     Input:
     les_data - netcdf Dataset with specific fileds taken from LES stats file
     """
@@ -187,5 +183,6 @@ def read_les_data_timeseries(les_data):
     data["shf"] = np.array(les_data["timeseries/shf_surface_mean"][:])
     data["lhf"] = np.array(les_data["timeseries/lhf_surface_mean"][:])
     data["lwp_mean"] = np.array(les_data["timeseries/lwp_mean"][:])
+    data["rwp_mean"] = np.zeros_like(data["lwp_mean"]) #TODO - add rwp to les stats
 
     return data

@@ -1,12 +1,12 @@
 cdef struct entr_struct:
     double entr_sc
     double detr_sc
-    double buoyant_frac
+    double sorting_function
     double b_mix
 
 cdef struct buoyant_stract:
     double b_mix
-    double buoyant_frac
+    double sorting_function
 
 cdef struct chi_struct:
     double T_mix
@@ -21,8 +21,8 @@ cdef struct entr_in_struct:
     double zi
     double wstar
     double z
-    double erf_const
-    double c_del
+    double sort_pow
+    double sort_fact
     double dz
     double w
     double dw
@@ -61,8 +61,8 @@ cdef struct entr_in_struct:
     long quadrature_order
 
 cdef struct pressure_in_struct:
-    double H
-    char* asp_label
+    double updraft_top
+    char *asp_label
     double a_med
     double a_kfull
     double a_khalf
@@ -72,7 +72,7 @@ cdef struct pressure_in_struct:
     double bcoeff_tan18
     double alpha1
     double alpha2
-    double beta
+    double beta1
     double beta2
     double rd
     double w_kfull
@@ -82,15 +82,15 @@ cdef struct pressure_in_struct:
     double dzi
     double z_full
     double drag_sign
+    double asp_ratio
 
 cdef struct pressure_buoy_struct:
-    double asp_ratio
     double b_coeff
     double nh_pressure_b
 
 cdef struct pressure_drag_struct:
-    double nh_pressure_w1
-    double nh_pressure_w2
+    double nh_pressure_adv
+    double nh_pressure_drag
 
 cdef entr_struct entr_detr_dry(entr_in_struct entr_in) nogil
 cdef entr_struct entr_detr_inverse_z(entr_in_struct entr_in) nogil
