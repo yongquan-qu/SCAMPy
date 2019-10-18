@@ -38,9 +38,6 @@ def main():
     paramlist_defaults['turbulence']['prandtl_number'] = 1.0
     paramlist_defaults['turbulence']['Ri_bulk_crit'] = 0.2
 
-    paramlist_defaults['turbulence']['updraft_microphysics'] = {}
-    paramlist_defaults['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.1
-
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE'] = {}
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
@@ -94,7 +91,6 @@ def Soares(paramlist_defaults):
 
     return paramlist
 
-
 def Bomex(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
@@ -114,17 +110,14 @@ def Rico(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'Rico'
-    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
-
 
 def TRMM_LBA(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'TRMM_LBA'
-    paramlist['turbulence']['updraft_microphysics']['max_supersaturation'] = 0.02
 
     return  paramlist
 
@@ -135,14 +128,12 @@ def ARM_SGP(paramlist_defaults):
 
     return  paramlist
 
-
 def GATE_III(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
     paramlist['meta']['casename'] = 'GATE_III'
 
     return  paramlist
-
 
 def DYCOMS_RF01(paramlist_defaults):
 
@@ -168,7 +159,6 @@ def SP(paramlist_defaults):
     paramlist['meta']['casename'] = 'SP'
 
     return  paramlist
-
 
 def write_file(paramlist):
 

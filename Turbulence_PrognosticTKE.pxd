@@ -1,5 +1,7 @@
 cimport EDMF_Updrafts
 cimport EDMF_Environment
+cimport EDMF_Rain
+
 from Grid cimport Grid
 from Variables cimport VariablePrognostic, VariableDiagnostic, GridMeanVariables
 from Surface cimport  SurfaceBase
@@ -10,20 +12,25 @@ from NetCDFIO cimport NetCDFIO_Stats
 from turbulence_functions cimport *
 from Turbulence cimport ParameterizationBase
 
-
 cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cdef:
         Py_ssize_t n_updrafts
+
         EDMF_Updrafts.UpdraftVariables UpdVar
-        EDMF_Updrafts.UpdraftMicrophysics UpdMicro
         EDMF_Updrafts.UpdraftThermodynamics UpdThermo
+
         EDMF_Environment.EnvironmentVariables EnvVar
         EDMF_Environment.EnvironmentThermodynamics EnvThermo
+
+        EDMF_Rain.RainVariables Rain
+        EDMF_Rain.RainPhysics RainPhysics
+
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
+
         pressure_buoy_struct (*pressure_func_buoy) (pressure_in_struct press_in) nogil
         pressure_buoy_struct (*pressure_func_buoysin) (pressure_in_struct press_in) nogil
         pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
-        bint use_local_micro
+
         bint use_const_plume_spacing
         bint similarity_diffusivity
         bint use_steady_updrafts
@@ -114,7 +121,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] QTvar_rain
         double [:] HQTcov_rain
 
-
         double [:] mls
         double [:] ml_ratio
         double [:] l_entdet
@@ -142,8 +148,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
     cpdef compute_entrainment_detrainment(self, GridMeanVariables GMV, CasesBase Case)
     cpdef zero_area_fraction_cleanup(self, GridMeanVariables GMV)
     cpdef set_subdomain_bcs(self)
-    cpdef solve_updraft_velocity_area(self, GridMeanVariables GMV, TimeStepping TS)
-    cpdef solve_updraft_scalars(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
+    cpdef solve_updraft_velocity_area(self)
+    cpdef solve_updraft_scalars(self, GridMeanVariables GMV)
     cpdef update_GMV_MF(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef update_GMV_ED(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_covariance(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)

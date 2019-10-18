@@ -15,6 +15,7 @@ import numpy as np
 import main as scampy
 import common as cmn
 import plot_scripts as pls
+import pprint as pp
 
 @pytest.fixture(scope="module")
 def sim_data(request):

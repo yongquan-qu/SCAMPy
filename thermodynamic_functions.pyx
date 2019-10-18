@@ -174,5 +174,3 @@ cdef eos_struct eos( double (*t_to_prog)(double, double,double,double, double) n
         _ret.ql = ql_2
 
     return _ret
-
-

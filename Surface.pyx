@@ -257,7 +257,7 @@ cdef class SurfaceSullivanPatton(SurfaceBase):
             sd = sd_c(pd, GMV.T.values[gw])
             self.shf = (self.rho_hflux - self.lhf/lv * (sv-sd)) * GMV.T.values[gw]
 
-        
+
         self.ustar =  sqrt(self.cm) * self.windspeed
         # CK--testing this--EDMF scheme checks greater or less than zero,
         if fabs(self.bflux) < 1e-10:
