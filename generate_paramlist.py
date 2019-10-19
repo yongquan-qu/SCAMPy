@@ -48,7 +48,9 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.05
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.25
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing'] = 500.0
+    # This constant_plume_spacing corresponds to plume_spacing/alpha_d in the Tan et al paper,
+    #with values plume_spacing=500.0, alpha_d = 0.375
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing'] = 1333.0
 
     # TODO: merge the tan18 buoyancy forluma into normalmode formula -> simply set buoy_coeff1 as 1./3. and buoy_coeff2 as 0.
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
