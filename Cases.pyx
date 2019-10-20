@@ -1300,7 +1300,7 @@ cdef class DYCOMS_RF01(CasesBase):
 cdef class GABLS(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'GABLS'
-        self.Sur = Surface.SurfaceMoninObukhov(paramlist)
+        self.Sur = Surface.SurfaceMoninObukhovDry(paramlist)
         self.Fo = Forcing.ForcingStandard()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
@@ -1313,7 +1313,7 @@ cdef class GABLS(CasesBase):
     cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 265.0  #Temperature at ground
-        Ref.qtg = 1.0e-4 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
+        Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
         Ref.initialize(Gr, Stats)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
