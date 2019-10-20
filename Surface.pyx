@@ -158,7 +158,7 @@ cdef class SurfaceMoninObukhov(SurfaceBase):
             double zb = self.Gr.z_half[gw]
             double theta_rho_g = theta_rho_c(self.Ref.Pg, self.Tsurface, self.qsurface, self.qsurface)
             double theta_rho_b = theta_rho_c(self.Ref.p0_half[gw], GMV.T.values[gw], self.qsurface, self.qsurface)
-            double Nb2,
+            double Nb2
             double h_star
             double pv, pd, sv, sd
             double lv = latent_heat(GMV.T.values[gw])
@@ -221,7 +221,7 @@ cdef class SurfaceMoninObukhovDry(SurfaceBase):
             double zb = self.Gr.z_half[gw]
             double theta_rho_g = theta_rho_c(self.Ref.Pg, self.Tsurface, self.qsurface, self.qsurface)
             double theta_rho_b = theta_rho_c(self.Ref.p0_half[gw], GMV.T.values[gw], self.qsurface, self.qsurface)
-            double Nb2,
+            double Nb2
             double h_star
             double pv, pd, sv, sd
             double lv = latent_heat(GMV.T.values[gw])
