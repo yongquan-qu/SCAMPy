@@ -263,7 +263,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.massflux_tke = np.zeros((Gr.nzg,),dtype=np.double,order='c')
 
         # Added by Ignacio : Length scheme in use (mls), and smooth min effect (ml_ratio)
-        self.prandtl_nvec = np.zeros((Gr.nzg,),dtype=np.double, order='c')
+        # Variable Prandtl number initialized as neutral value.
+        self.prandtl_nvec = np.multiply( self.prandtl_number, np.ones((Gr.nzg,),dtype=np.double, order='c'))
         self.mls = np.zeros((Gr.nzg,),dtype=np.double, order='c')
         self.ml_ratio = np.zeros((Gr.nzg,),dtype=np.double, order='c')
         self.l_entdet = np.zeros((Gr.nzg,),dtype=np.double, order='c')
@@ -590,8 +591,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         while time_elapsed < TS.dt:
             self.compute_entrainment_detrainment(GMV, Case)
-            self.compute_horizontal_eddy_diffusivities(GMV)
-            self.compute_turbulent_entrainment(GMV,Case)
+            if self.turbulent_entrainment_factor > 1.0e-6:
+                self.compute_horizontal_eddy_diffusivities(GMV)
+                self.compute_turbulent_entrainment(GMV,Case)
             self.compute_nh_pressure()
             self.solve_updraft_velocity_area()
             self.solve_updraft_scalars(GMV)
