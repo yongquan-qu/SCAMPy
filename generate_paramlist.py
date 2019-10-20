@@ -40,8 +40,8 @@ def main():
 
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE'] = {}
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.16
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.35
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.18
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.26
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_factor'] = 4.0
