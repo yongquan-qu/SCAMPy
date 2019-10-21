@@ -2060,8 +2060,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     combined_detr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k]\
                                      + 2.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
 
-                    Covar.entr_gain[k]  -= tke_factor*combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
-                    Covar.detr_loss[k]  -= combined_detr * Covar.values[k]
+                    Covar.entr_gain[k]  += tke_factor * combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
+                    Covar.detr_loss[k]  += combined_detr * Covar.values[k]
         return
 
 
