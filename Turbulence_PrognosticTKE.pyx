@@ -677,12 +677,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         entr_w = interp2pt(self.entr_sc[i,k], self.entr_sc[i,k+1])
                         detr_w = interp2pt(self.detr_sc[i,k], self.detr_sc[i,k+1])
                         B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
-                        if self.use_const_plume_spacing:
-                            presure_term_ = 1.0/self.constant_plume_spacing
-                        else:
-                            presure_term_ = 1.0/ (self.aspect_ratio*self.UpdVar.updraft_top[i]*sqrt(fmax(area_k,self.minimum_area)))
                         w2 = ((self.vel_buoy_coeff * B_k + 0.5 * w_km * w_km * dzi)
-                              /(0.5 * dzi +entr_w + pressure_term_))
+                              /(0.5 * dzi +entr_w + (1.0/self.pressure_plume_spacing[i])/sqrt(fmax(area_k,self.minimum_area))))
                         if w2 > 0.0:
                             self.UpdVar.W.values[i,k] = sqrt(w2)
                         else:
@@ -1345,7 +1341,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i],self.constant_plume_spacing)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 500.0)
         return
 
     cpdef compute_nh_pressure(self):
@@ -2047,7 +2043,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     combined_detr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k]\
                                      + 2.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
 
-                    Covar.entr_gain[k]  -= tke_factor*combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
+                    Covar.entr_gain[k]  -= tke_factor * combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
                     Covar.detr_loss[k]  -= combined_detr * Covar.values[k]
         return
 
