@@ -340,7 +340,7 @@ cdef double get_mixing_tau(double zi, double wstar) nogil:
 
 cdef double get_surface_tke(double ustar, double wstar, double zLL, double oblength) nogil:
     if oblength < 0.0:
-        return ((3.75 + cbrt(zLL/oblength * zLL/oblength)) * ustar * ustar + 0.2 * wstar * wstar)
+        return ((3.75 + cbrt(zLL/oblength * zLL/oblength)) * ustar * ustar)
     else:
         return (3.75 * ustar * ustar)
 

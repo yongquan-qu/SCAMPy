@@ -42,7 +42,7 @@ cdef class ParameterizationBase:
         self.KM = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'diffusivity', 'm^2/s') # eddy viscosity
         self.KH = VariableDiagnostic(Gr.nzg,'half', 'scalar','sym', 'viscosity', 'm^2/s') # eddy diffusivity
         # get values from paramlist
-        self.prandtl_number = paramlist['turbulence']['prandtl_number']
+        self.prandtl_number = paramlist['turbulence']['prandtl_number_0']
         self.Ri_bulk_crit = paramlist['turbulence']['Ri_bulk_crit']
 
         return
