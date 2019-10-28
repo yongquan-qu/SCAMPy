@@ -181,7 +181,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         if self.calc_tke == True:
             self.tke_ed_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff']
             self.tke_diss_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff']
-
+            self.static_stab_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['static_stab_coeff']
+            # Latent heat stability effect
+            self.lambda_stab = paramlist['turbulence']['EDMF_PrognosticTKE']['lambda_stab']
         # Need to code up as paramlist option?
         self.minimum_area = 1e-5
 
@@ -751,7 +753,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double d_buoy_thetal_cloudy, d_buoy_qt_cloudy, d_buoy_thetal_total, d_buoy_qt_total
             double grad_thl_plus=0.0, grad_qt_plus=0.0, grad_thv_plus=0.0, grad_th_plus=0.0
             double thv, grad_qt, grad_qt_low, grad_thv_low, grad_thv
-            double th, grad_th_low, grad_th, heating_ratio
+            double th, grad_th_low, grad_th
             double grad_b_thl, grad_b_qt
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env
@@ -832,7 +834,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                 N = sqrt(fmax(g/thv*grad_thv, 0.0))
                 if N > 0.0:
-                    l1 = fmin(sqrt(fmax(0.4*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
+                    l1 = fmin(sqrt(fmax(self.static_stab_coeff*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
                 else:
                     l1 = 1.0e6
 
@@ -940,15 +942,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 grad_th_plus = ( theta_c(self.Ref.p0_half[k+1], self.EnvVar.T.values[k+1]) - th) * self.Gr.dzi
                 grad_th = interp2pt(grad_th_low, grad_th_plus)
 
-                # Effective static stability. heating_ratio reflects latent heat effects on stability.
-                heating_ratio = 0.5
-                grad_th_eff = grad_thv - heating_ratio*(
+                # Effective static stability. lambda_stab reflects latent heat effects on stability.
+                grad_th_eff = grad_thv - self.lambda_stab*(
                     1.0 + 0.61*self.EnvVar.QT.values[k] - (1.0 + 0.61)*self.EnvVar.QL.values[k]
                     )*(grad_th - grad_thl*th/self.EnvVar.THL.values[k])
 
                 N = sqrt(fmax(g/thv*grad_th_eff, 0.0))
                 if N > 0.0:
-                    l1 = fmin(sqrt(fmax(0.4*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
+                    l1 = fmin(sqrt(fmax(self.static_stab_coeff*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
                 else:
                     l1 = 1.0e6
 

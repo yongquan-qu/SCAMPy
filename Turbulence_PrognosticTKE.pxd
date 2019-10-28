@@ -100,6 +100,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double max_area_factor
         double tke_ed_coeff
         double tke_diss_coeff
+        double static_stab_coeff
+        double lambda_stab
 
         double [:] Hvar_shear
         double [:] QTvar_shear

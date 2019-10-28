@@ -218,7 +218,7 @@ def GABLS(namelist_defaults):
     namelist['grid']['dz'] = 3.125
 
     namelist['time_stepping']['dt'] = 1.0
-    namelist['time_stepping']['t_max'] = 12 * 3600.0
+    namelist['time_stepping']['t_max'] = 9 * 3600.0
     namelist['meta']['simname'] = 'GABLS'
     namelist['meta']['casename'] = 'GABLS'
 

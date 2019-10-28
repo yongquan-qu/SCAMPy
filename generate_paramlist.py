@@ -42,6 +42,8 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_ed_coeff'] = 0.18
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['tke_diss_coeff'] = 0.26
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['static_stab_coeff'] = 0.4
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['lambda_stab'] = 0.5
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.03
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_factor'] = 4.0
@@ -152,6 +154,7 @@ def GABLS(paramlist_defaults):
 
     paramlist['meta']['casename'] = 'GABLS'
     paramlist['turbulence']['prandtl_number_0'] = 0.74
+    paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
 # Not fully implemented yet - Ignacio

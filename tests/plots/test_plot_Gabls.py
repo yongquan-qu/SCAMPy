@@ -63,8 +63,8 @@ def test_plot_Gabls(sim_data):
     f1 = "plots/output/Gabls/"
     f2 = f1 + "all_variables/"
     cn = "Gabls_"
-    t0 = 10
-    t1 = 12
+    t0 = 8
+    t1 = 9
     cb_min = [0., 0.]
     cb_max = [0.01, 0.4]
     fixed_cbar = True
