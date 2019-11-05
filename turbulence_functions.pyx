@@ -42,17 +42,28 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
         double f, eps0, a, b
+        double dw2, db_p, db_m, f_eu, f_ue
 
-    a = entr_in.sort_fact
-    b = entr_in.sort_pow
-    f = a*(fabs((entr_in.RH_upd/100.0)**b-(entr_in.RH_env/100.0)**b))**(1/b)
-    _ret.sorting_function = f
+    # a = entr_in.sort_fact
+    # b = entr_in.sort_pow
+    # f = a*(fabs((entr_in.RH_upd/100.0)**b-(entr_in.RH_env/100.0)**b))**(1/b)
+    # _ret.sorting_function = f
 
-    eps0 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-    eps_bw2 = entr_in.c_eps*fmax( entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    del_bw2 = entr_in.c_eps*fmax((-entr_in.b),0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    _ret.entr_sc = eps_bw2
-    _ret.detr_sc = eps_bw2*f + del_bw2
+    # eps0 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
+    # eps_bw2 = entr_in.c_eps*fmax( entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    # del_bw2 = entr_in.c_eps*fmax((-entr_in.b),0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
+    # _ret.entr_sc = eps_bw2
+    # _ret.detr_sc = eps_bw2*f + del_bw2
+
+
+    f_ue = fmax( (entr_in.RH_upd/100.0)**b - (entr_in.RH_env/100.0)**b ,0.0)
+    f_eu = fmax( (entr_in.RH_env/100.0)**b - (entr_in.RH_upd/100.0)**b ,0.0)
+    dw2  = fmax((entr_in.w - entr_in.w_env)**2.0, 0.0001)
+    db_p = fmax(entr_in.b - entr_in.b_env,0.0)
+    db_m = fmax(entr_in.b_env - entr_in.b,0.0)
+    _ret.sorting_function = f_ue
+    _ret.entr_sc = entr_in.c_eps*db_p/dw2 + entr_in.sort_fact*db_m/dw2*f_eu**(1/entr_in.sort_pow)
+    _ret.detr_sc = entr_in.c_eps*db_m/dw2 + entr_in.sort_fact*db_p/dw2*f_ue**(1/entr_in.sort_pow)
 
     return _ret
 
