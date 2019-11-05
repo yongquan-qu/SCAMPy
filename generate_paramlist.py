@@ -99,6 +99,7 @@ def Bomex(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
     paramlist['meta']['casename'] = 'Bomex'
+    paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 
@@ -144,7 +145,7 @@ def DYCOMS_RF01(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
-    paramlist['turbulence']['prandtl_number_0'] = 0.8
+    paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 

@@ -814,10 +814,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Turbulent Prandtl number:
                 if obukhov_length > 0.0 and ri_grad>0.0: #stable
                     # CSB (Dan Li, 2019), with Pr_neutral=0.74 and w1=40.0/13.0
-                    self.prandtl_nvec[k] = 0.74*( 2.0*ri_grad/
+                    self.prandtl_nvec[k] = self.prandtl_number*( 2.0*ri_grad/
                         (1.0+(53.0/13.0)*ri_grad -sqrt( (1.0+(53.0/13.0)*ri_grad)**2.0 - 4.0*ri_grad ) ) )
                 else:
-                    self.prandtl_nvec[k] = 0.74
+                    self.prandtl_nvec[k] = self.prandtl_number
 
                 l3 = sqrt(self.tke_diss_coeff/fmax(self.tke_ed_coeff, m_eps)) * sqrt(self.EnvVar.TKE.values[k])
                 l3 /= sqrt(fmax(shear2 - grad_b_thl/self.prandtl_nvec[k] - grad_b_qt/self.prandtl_nvec[k], m_eps))
@@ -905,10 +905,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 # Turbulent Prandtl number:
                 if obukhov_length > 0.0 and ri_grad>0.0: #stable
                     # CSB (Dan Li, 2019), with Pr_neutral=0.74 and w1=40.0/13.0
-                    self.prandtl_nvec[k] = 0.74*( 2.0*ri_grad/
+                    self.prandtl_nvec[k] = self.prandtl_number*( 2.0*ri_grad/
                         (1.0+(53.0/13.0)*ri_grad -sqrt( (1.0+(53.0/13.0)*ri_grad)**2.0 - 4.0*ri_grad ) ) )
                 else:
-                    self.prandtl_nvec[k] = 0.74
+                    self.prandtl_nvec[k] = self.prandtl_number
 
                 # Production/destruction terms
                 a = self.tke_ed_coeff*(shear2 - grad_b_thl/self.prandtl_nvec[k] - grad_b_qt/self.prandtl_nvec[k])* sqrt(self.EnvVar.TKE.values[k])
