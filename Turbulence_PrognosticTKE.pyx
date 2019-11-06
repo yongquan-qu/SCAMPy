@@ -153,7 +153,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
         self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
-        self.sorting_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_factor']
+        self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
         self.sorting_power = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_power']
         self.turbulent_entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor']
         self.pressure_buoy_coeff = paramlist['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff']
@@ -1301,7 +1301,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.env_HQTcov = self.EnvVar.HQTcov.values[k]
                     input.c_eps = self.entrainment_factor
                     input.sort_pow = self.sorting_power
-                    input.sort_fact = self.sorting_factor
+                    input.c_del = self.detrainment_factor
                     input.rd = self.pressure_plume_spacing[i]
                     input.nh_pressure = self.nh_pressure[i,k]
                     input.RH_upd = self.UpdVar.RH.values[i,k]

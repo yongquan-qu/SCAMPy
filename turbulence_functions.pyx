@@ -44,7 +44,7 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
         double f, eps0, a, b
         double dw2, db_p, db_m, f_eu, f_ue
 
-    # a = entr_in.sort_fact
+    # a = entr_in.c_del
     # b = entr_in.sort_pow
     # f = a*(fabs((entr_in.RH_upd/100.0)**b-(entr_in.RH_env/100.0)**b))**(1/b)
     # _ret.sorting_function = f
@@ -62,8 +62,8 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     db_p = fmax(entr_in.b - entr_in.b_env,0.0)
     db_m = fmax(entr_in.b_env - entr_in.b,0.0)
     _ret.sorting_function = f_ue
-    _ret.entr_sc = entr_in.c_eps*db_p/dw2 + entr_in.sort_fact*db_m/dw2*f_eu**(1/entr_in.sort_pow)
-    _ret.detr_sc = entr_in.c_eps*db_m/dw2 + entr_in.sort_fact*db_p/dw2*f_ue**(1/entr_in.sort_pow)
+    _ret.entr_sc = entr_in.c_eps*db_p/dw2 + entr_in.c_del*db_m/dw2*f_eu**(1/entr_in.sort_pow)
+    _ret.detr_sc = entr_in.c_eps*db_m/dw2 + entr_in.c_del*db_p/dw2*f_ue**(1/entr_in.sort_pow)
 
     return _ret
 
@@ -82,7 +82,7 @@ cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
     _ret.entr_sc = eps_bw2
     if entr_in.ql_up>0.0:
         D_ = 0.5*(1.0+entr_in.sort_pow*(ret_b.sorting_function))
-        _ret.detr_sc = del_bw2*(1.0+entr_in.sort_fact*D_)
+        _ret.detr_sc = del_bw2*(1.0+entr_in.c_del*D_)
     else:
         _ret.detr_sc = 0.0
 

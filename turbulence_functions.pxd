@@ -22,7 +22,7 @@ cdef struct entr_in_struct:
     double wstar
     double z
     double sort_pow
-    double sort_fact
+    double c_del
     double dz
     double w
     double dw
