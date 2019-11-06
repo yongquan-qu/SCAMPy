@@ -44,18 +44,6 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
         double f, eps0, a, b
         double dw2, db_p, db_m, f_eu, f_ue
 
-    # a = entr_in.c_del
-    # b = entr_in.sort_pow
-    # f = a*(fabs((entr_in.RH_upd/100.0)**b-(entr_in.RH_env/100.0)**b))**(1/b)
-    # _ret.sorting_function = f
-
-    # eps0 = entr_in.c_eps*fabs(entr_in.b) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # eps_bw2 = entr_in.c_eps*fmax( entr_in.b,0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # del_bw2 = entr_in.c_eps*fmax((-entr_in.b),0.0) / fmax(entr_in.w * entr_in.w, 1e-2)
-    # _ret.entr_sc = eps_bw2
-    # _ret.detr_sc = eps_bw2*f + del_bw2
-
-
     f_ue = fmax( (entr_in.RH_upd/100.0)**b - (entr_in.RH_env/100.0)**b ,0.0)
     f_eu = fmax( (entr_in.RH_env/100.0)**b - (entr_in.RH_upd/100.0)**b ,0.0)
     dw2  = fmax((entr_in.w - entr_in.w_env)**2.0, 0.0001)
