@@ -1011,9 +1011,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 for i in xrange(self.n_updrafts):
                     if self.UpdVar.Area.values[i,k]>0.0:
-                        R_up = self.pressure_plume_spacing[i]#*sqrt(self.UpdVar.Area.values[i,k])
-                        l = fmin(self.mixing_length[k],R_up)
-                        self.horizontal_KM[i,k] = self.turbulent_entrainment_factor*sqrt(fmax(GMV.TKE.values[k],0.0))*l
+                        self.horizontal_KM[i,k] = self.turbulent_entrainment_factor*sqrt(fmax(GMV.TKE.values[k],0.0))*self.pressure_plume_spacing[i]
                         self.horizontal_KH[i,k] = self.horizontal_KM[i,k] / self.prandtl_nvec[k]
                     else:
                         self.horizontal_KM[i,k] = 0.0
@@ -1233,8 +1231,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                     a = self.UpdVar.Area.values[i,k]
                     a_full = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
-                    R_up = self.pressure_plume_spacing[i]#*sqrt(a)
-                    R_up_full = self.pressure_plume_spacing[i]#*sqrt(a_full)
+                    R_up = self.pressure_plume_spacing[i]
+                    R_up_full = self.pressure_plume_spacing[i]
                     wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                     if a*wu_half  > 0.0:
                         self.turb_entr_H[i,k]  = (2.0/R_up**2.0)*self.Ref.rho0_half[k] * a * self.horizontal_KH[i,k]  * \
@@ -1242,7 +1240,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.turb_entr_QT[i,k] = (2.0/R_up**2.0)*self.Ref.rho0_half[k]* a * self.horizontal_KH[i,k]  * \
                                                      (self.EnvVar.QT.values[k] - self.UpdVar.QT.values[i,k])
                         self.frac_turb_entr[i,k]    = (2.0/R_up**2.0) * self.horizontal_KH[i,k] / wu_half
-
                     else:
                         self.turb_entr_H[i,k] = 0.0
                         self.turb_entr_QT[i,k] = 0.0
@@ -1358,7 +1355,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 500.0)*0.13
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i]*0.13, 500.0*0.13)
         return
 
     cpdef compute_nh_pressure(self):
@@ -2035,7 +2032,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             Covar.detr_loss[k] = 0.0
             for i in xrange(self.n_updrafts):
                 if self.UpdVar.Area.values[i,k] > self.minimum_area:
-                    R_up = self.pressure_plume_spacing[i]#*sqrt(self.UpdVar.Area.values[i,k])
+                    R_up = self.pressure_plume_spacing[i]
                     if Covar.name =='tke':
                         updvar1 = interp2pt(UpdVar1.values[i,k], UpdVar1.values[i,k-1])
                         updvar2 = interp2pt(UpdVar2.values[i,k], UpdVar2.values[i,k-1])
