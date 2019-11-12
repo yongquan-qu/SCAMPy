@@ -1300,9 +1300,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.env_Hvar = self.EnvVar.Hvar.values[k]
                     input.env_QTvar = self.EnvVar.QTvar.values[k]
                     input.env_HQTcov = self.EnvVar.HQTcov.values[k]
-                    input.c_eps = self.entrainment_factor
+                    input.c_ent = self.entrainment_factor
                     input.sort_pow = self.sorting_power
-                    input.c_del = self.detrainment_factor
+                    input.c_det = self.detrainment_factor
                     input.rd = self.pressure_plume_spacing[i]
                     input.nh_pressure = self.nh_pressure[i,k]
                     input.RH_upd = self.UpdVar.RH.values[i,k]
@@ -2026,7 +2026,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef:
             Py_ssize_t i, k
             double tke_factor
-            double updvar1, updvar2, envvar1, envvar2, combined_entr, combined_detr, K
+            double updvar1, updvar2, envvar1, envvar2, combined_entr, combined_detr, K_hrz
 
         # here the diffusive componenet of trhe turbulent entrainment is added to the dynamic entr and detrainment
         #with nogil:
@@ -2042,19 +2042,19 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         envvar1 = interp2pt(EnvVar1.values[k], EnvVar1.values[k-1])
                         envvar2 = interp2pt(EnvVar2.values[k], EnvVar2.values[k-1])
                         tke_factor = 0.5
-                        K = self.horizontal_KM[i,k]
+                        K_hrz = self.horizontal_KM[i,k]
                     else:
                         updvar1 = UpdVar1.values[i,k]
                         updvar2 = UpdVar2.values[i,k]
                         envvar1 = EnvVar1.values[k]
                         envvar2 = EnvVar2.values[k]
                         tke_factor = 1.0
-                        K = self.horizontal_KH[i,k]
+                        K_hrz = self.horizontal_KH[i,k]
                     w_u = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
                     combined_entr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.detr_sc[i,k]\
-                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
+                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K_hrz
                     combined_detr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k]\
-                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
+                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K_hrz
 
                     Covar.entr_gain[k]  += tke_factor * combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
                     Covar.detr_loss[k]  += combined_detr * Covar.values[k]
