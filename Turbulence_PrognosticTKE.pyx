@@ -678,7 +678,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         detr_w = interp2pt(self.detr_sc[i,k], self.detr_sc[i,k+1])
                         B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
                         w2 = ((self.vel_buoy_coeff * B_k + 0.5 * w_km * w_km * dzi)
-                              # /(0.5 * dzi +entr_w + (1.0/self.pressure_plume_spacing[i])/sqrt(fmax(area_k,self.minimum_area))))
                               /(0.5 * dzi +entr_w + (1.0/self.pressure_plume_spacing[i])))
                         if w2 > 0.0:
                             self.UpdVar.W.values[i,k] = sqrt(w2)
@@ -1355,7 +1354,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 65)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 500)
         return
 
     cpdef compute_nh_pressure(self):
@@ -2200,7 +2199,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                             else:
                                 K = self.horizontal_KH[i,k]
 
-                            R_up = self.pressure_plume_spacing[i]#*sqrt(self.UpdVar.Area.values[i,k])
+                            R_up = self.pressure_plume_spacing[i]
                             wu_half = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
                             D_env += self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * wu_half * self.entr_sc[i,k]\
                                      + 2.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
