@@ -939,9 +939,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 grad_th = interp2pt(grad_th_low, grad_th_plus)
 
                 # Effective static stability. lambda_stab reflects latent heat effects on stability.
-                grad_th_eff = grad_thv - self.lambda_stab*(
-                    1.0 + 0.61*self.EnvVar.QT.values[k] - (1.0 + 0.61)*self.EnvVar.QL.values[k]
-                    )*(grad_th - grad_thl*th/self.EnvVar.THL.values[k])
+                # Set for now to environmental cloud_fraction (TBD: Rain)
+                grad_th_eff = (1.0-self.EnvVar.cloud_fraction.values[k])*grad_thv + self.EnvVar.cloud_fraction.values[k]*(
+                    1.0/exp( - lh * self.EnvVar.QL.values[k]/ cpm / self.EnvVar.T.values[k] )*(
+                        (1.0+ (eps_vi-1.0)*self.EnvVar.QT.values[k])*grad_thl+(eps_vi-1.0)*self.EnvVar.THL.values[k]*grad_qt))
 
                 N = sqrt(fmax(g/thv*grad_th_eff, 0.0))
                 if N > 0.0:
