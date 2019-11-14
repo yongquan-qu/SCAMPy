@@ -128,7 +128,7 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
             plt.legend()
         if it == 5:
 
-            xmax = np.min([np.max(scm_data["detrainment_sc"]), 0.05])
+            xmax = 0.015#np.min([np.max(scm_data["detrainment_sc"]), 0.05])
             if xmax == 0.0:
                 xmax = np.max(scm_data["detrainment_sc"])
 

@@ -22,17 +22,17 @@ cdef struct entr_in_struct:
     double wstar
     double z
     double sort_pow
-    double sort_fact
+    double c_det
     double dz
-    double w
+    double w_upd
     double dw
-    double b
+    double b_upd
     double rd
-    double c_eps
+    double c_ent
     double dt
     double b_mean
     double b_env
-    double af
+    double a_upd
     double tke
     double RH_upd
     double RH_env
