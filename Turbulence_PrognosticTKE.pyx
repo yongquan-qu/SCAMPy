@@ -747,9 +747,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double qt_dry, th_dry, t_cloudy, qv_cloudy, qt_cloudy, th_cloudy
             double lh, cpm, prefactor, d_buoy_thetal_dry, d_buoy_qt_dry
             double d_buoy_thetal_cloudy, d_buoy_qt_cloudy, d_buoy_thetal_total, d_buoy_qt_total
-            double grad_thl_plus=0.0, grad_qt_plus=0.0, grad_thv_plus=0.0, grad_th_plus=0.0
+            double grad_thl_plus=0.0, grad_qt_plus=0.0, grad_thv_plus=0.0
             double thv, grad_qt, grad_qt_low, grad_thv_low, grad_thv
-            double th, grad_th_low, grad_th
             double grad_b_thl, grad_b_qt
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env
@@ -933,15 +932,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     self.EnvVar.QL.values[k+1]) - thv) * self.Gr.dzi
                 grad_thv = interp2pt(grad_thv_low, grad_thv_plus)
 
-                th = theta_c(self.Ref.p0_half[k], self.EnvVar.T.values[k])
-                grad_th_low = grad_th_plus
-                grad_th_plus = ( theta_c(self.Ref.p0_half[k+1], self.EnvVar.T.values[k+1]) - th) * self.Gr.dzi
-                grad_th = interp2pt(grad_th_low, grad_th_plus)
-
-                # Effective static stability. lambda_stab reflects latent heat effects on stability.
-                # Set for now to environmental cloud_fraction (TBD: Rain)
+                # Effective static stability using environmental mean.
+                # Set lambda for now to environmental cloud_fraction (TBD: Rain)
                 grad_th_eff = (1.0-self.EnvVar.cloud_fraction.values[k])*grad_thv + self.EnvVar.cloud_fraction.values[k]*(
-                    1.0/exp( - lh * self.EnvVar.QL.values[k]/ cpm / self.EnvVar.T.values[k] )*(
+                    1.0/exp( - latent_heat(self.EnvVar.T.values[k]) * self.EnvVar.QL.values[k]
+                        / cpm_c(self.EnvVar.QT.values[k]) / self.EnvVar.T.values[k] )*(
                         (1.0+ (eps_vi-1.0)*self.EnvVar.QT.values[k])*grad_thl+(eps_vi-1.0)*self.EnvVar.THL.values[k]*grad_qt))
 
                 N = sqrt(fmax(g/thv*grad_th_eff, 0.0))
