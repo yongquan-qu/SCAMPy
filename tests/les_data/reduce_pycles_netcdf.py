@@ -28,6 +28,8 @@ def main():
 
     resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
     resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
+    sgs_z_flux_thetali_ = data.groups['profiles'].variables['sgs_z_flux_thetali']
+    sgs_z_flux_qt_ = data.groups['profiles'].variables['sgs_z_flux_qt']
 
     updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
     rho_ = data.groups['reference'].variables['rho0_half']
@@ -116,7 +118,7 @@ def main():
     t_ = np.divide(data.groups['profiles'].variables['t'],3600.0)
 
 
-    # flux diagnosis
+    # flux diagnosis (diffusive_flux = total_flux - massflux, diffusive_flux is weighted by env_fraction as in scampy TubrbProgTKE line 1723)
     a_1_a = np.multiply(updraft_fraction_, np.subtract(1.0,updraft_fraction_))
     rho_temp = np.tile(rho_,(np.shape(updraft_fraction_)[0],1))
     updraft_buoyancy_ -=buoyancy_mean_
@@ -126,18 +128,18 @@ def main():
     env_Hvar_ = calc_covar(env_thetali2_,   env_thetali_,  env_thetali_)
     env_QTvar_ = calc_covar(env_qt2_,        env_qt_,       env_qt_)
     env_HQTcov_ = calc_covar(env_qt_thetali_, env_qt_,       env_thetali_)
+    massflux_          = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_w_, env_w_)))
     massflux_h_        = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_thetali_, env_thetali_)))
     massflux_qt_       = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_qt_, env_qt_)))
-    total_flux_h_      = np.array(resolved_z_flux_thetali_[:, :])
-    total_flux_qt_     = np.array(resolved_z_flux_qt_[:, :])
+    total_flux_h_      = np.add(resolved_z_flux_thetali_[:, :], sgs_z_flux_thetali_[:, :])
+    total_flux_qt_     = np.add(resolved_z_flux_qt_[:, :], sgs_z_flux_qt_[:, :])
+    massflux_          = np.multiply(rho_temp, massflux_)
+    massflux_h_        = np.multiply(rho_temp, massflux_h_)
+    massflux_qt_       = np.multiply(rho_temp, massflux_qt_) # already multiplied qt by 1000 above
+    total_flux_h_      = np.multiply(rho_temp, total_flux_h_)
+    total_flux_qt_     = np.multiply(rho_temp, total_flux_qt_)* 1000
     diffusive_flux_h_  = np.subtract(total_flux_h_,massflux_h_)
     diffusive_flux_qt_ = np.subtract(total_flux_qt_,massflux_qt_)
-    massflux_h_        = np.multiply(rho_temp, massflux_h_)
-    massflux_qt_       = np.multiply(rho_temp, massflux_qt_)
-    total_flux_h_      = np.multiply(rho_temp, total_flux_h_)
-    total_flux_qt_     = np.multiply(rho_temp, total_flux_qt_)
-    diffusive_flux_h_  = np.multiply(rho_temp, diffusive_flux_h_)
-    diffusive_flux_qt_ = np.multiply(rho_temp, diffusive_flux_qt_)
 
     output = nc.Dataset(fname, "w", format="NETCDF4")
     output.createDimension('z', len(z_half_))
@@ -158,6 +160,7 @@ def main():
     env_Hvar = profiles_grp.createVariable('env_Hvar','f4',('t','z'))
     env_QTvar = profiles_grp.createVariable('env_QTvar','f4',('t','z'))
     env_HQTcov = profiles_grp.createVariable('env_HQTcov','f4',('t','z'))
+    massflux = profiles_grp.createVariable('massflux','f4',('t','z'))
     massflux_h = profiles_grp.createVariable('massflux_h','f4',('t','z'))
     massflux_qt = profiles_grp.createVariable('massflux_qt','f4',('t','z'))
     total_flux_h = profiles_grp.createVariable('total_flux_h','f4',('t','z'))
@@ -165,8 +168,8 @@ def main():
     diffusive_flux_h = profiles_grp.createVariable('diffusive_flux_h','f4',('t','z'))
     diffusive_flux_qt = profiles_grp.createVariable('diffusive_flux_qt','f4',('t','z'))
     buoyancy_mean = profiles_grp.createVariable('buoyancy_mean','f4',('t','z'))
-    resolved_z_flux_thetali = profiles_grp.createVariable('resolved_z_flux_thetali','f4',('t','z'))
-    resolved_z_flux_qt = profiles_grp.createVariable('resolved_z_flux_qt','f4',('t','z'))
+    # resolved_z_flux_thetali = profiles_grp.createVariable('resolved_z_flux_thetali','f4',('t','z'))
+    # resolved_z_flux_qt = profiles_grp.createVariable('resolved_z_flux_qt','f4',('t','z'))
     temperature_mean = profiles_grp.createVariable('temperature_mean','f4',('t','z'))
     updraft_ddz_p_alpha = profiles_grp.createVariable('updraft_ddz_p_alpha','f4',('t','z'))
     thetali_mean = profiles_grp.createVariable('thetali_mean','f4',('t','z'))
@@ -205,13 +208,13 @@ def main():
     tke_nd_mean = profiles_grp.createVariable('tke_nd_mean','f4',('t','z'))
 
     timeseries_grp = output.groups['timeseries']
-    cloud_fraction = timeseries_grp.createVariable('cloud_fraction','f4','t')
-    cloud_base = timeseries_grp.createVariable('cloud_base','f4','t')
-    cloud_top = timeseries_grp.createVariable('cloud_top','f4','t')
+    cloud_fraction_mean = timeseries_grp.createVariable('cloud_fraction_mean','f4','t')
+    cloud_base_mean = timeseries_grp.createVariable('cloud_base_mean','f4','t')
+    cloud_top_mean = timeseries_grp.createVariable('cloud_top_mean','f4','t')
     friction_velocity_mean = timeseries_grp.createVariable('friction_velocity_mean','f4','t')
     shf_surface_mean = timeseries_grp.createVariable('shf_surface_mean','f4','t')
     lhf_surface_mean = timeseries_grp.createVariable('lhf_surface_mean','f4','t')
-    lwp = timeseries_grp.createVariable('lwp','f4','t')
+    lwp_mean = timeseries_grp.createVariable('lwp_mean','f4','t')
     # thetali_srf_int = timeseries_grp.createVariable('thetali_srf_int','f4','t')
 
     rho[:] = rho_[:]
@@ -221,6 +224,7 @@ def main():
     env_Hvar[:,:] = env_Hvar_[:,:]
     env_QTvar[:,:] = env_QTvar_[:,:]
     env_HQTcov[:,:] = env_HQTcov_[:,:]
+    massflux[:,:] = massflux_[:,:]
     massflux_h[:,:] = massflux_h_[:,:]
     massflux_qt[:,:] = massflux_qt_[:,:]
     total_flux_h[:,:] = total_flux_h_[:,:]
@@ -228,8 +232,8 @@ def main():
     diffusive_flux_h[:,:] = diffusive_flux_h_[:,:]
     diffusive_flux_qt[:,:] = diffusive_flux_qt_[:,:]
     buoyancy_mean[:,:] = buoyancy_mean_[:,:]
-    resolved_z_flux_thetali[:,:] = resolved_z_flux_thetali_[:,:]
-    resolved_z_flux_qt[:,:] = resolved_z_flux_qt_[:,:]
+    # resolved_z_flux_thetali[:,:] = resolved_z_flux_thetali_[:,:]
+    # resolved_z_flux_qt[:,:] = resolved_z_flux_qt_[:,:]
     temperature_mean[:,:] = temperature_mean_[:,:]
     updraft_ddz_p_alpha[:,:] = updraft_ddz_p_alpha_[:,:]
     thetali_mean[:,:] = thetali_mean_[:,:]
@@ -267,13 +271,13 @@ def main():
     tke_prod_S[:,:] = tke_prod_S_[:,:]
     tke_nd_mean[:,:] = tke_nd_mean_[:,:]
 
-    cloud_fraction[:] = cloud_fraction_[:]
-    cloud_base[:] = cloud_base_[:]
-    cloud_top[:] = cloud_top_[:]
+    cloud_fraction_mean[:] = cloud_fraction_[:]
+    cloud_base_mean[:] = cloud_base_[:]
+    cloud_top_mean[:] = cloud_top_[:]
     friction_velocity_mean[:] = friction_velocity_mean_[:]
     shf_surface_mean[:] = shf_surface_mean_[:]
     lhf_surface_mean[:] = lhf_surface_mean_[:]
-    lwp[:] = lwp_[:]
+    lwp_mean[:] = lwp_[:]
 
     z_half[:] = z_half_[:]
     t[:] = t_[:]

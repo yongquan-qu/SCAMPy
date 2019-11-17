@@ -41,25 +41,35 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   r'$\bar{q}_{r,upd} [\mathrm{g/kg}]$',
                   "updraft area [%]",
                   r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
-                  r'$\bar{q}_{r,env} [\mathrm{g/kg}]$']
+                  r'$\bar{q}_{r,env} [\mathrm{g/kg}]$',
+                  r'$massflux [\mathrm{kg m^2/s}]$',
+                  r'$massflux \theta_l [\mathrm{kg K m^2/s}]$',
+                  r'$massflux qt [\mathrm{kg m^2/s}]$',
+                  r'$total flux \theta_l [\mathrm{kg K m^2/s}]$',
+                  r'$total flux qt [\mathrm{kg m^2/s}]$',
+                  ]
 
     fig_name  =  ["mean_qt", "mean_ql", "mean_qr", "mean_qv", "mean_thetal",\
                   "mean_TKE", "mean_u", "mean_v", "updraft_w", "updraft_buoyancy",\
-                  "updraft_ql", "updraft_qr", "updraft_area", "env_ql", "env_qr"]
+                  "updraft_ql", "updraft_qr", "updraft_area", "env_ql", "env_qr",\
+                  "massflux", "massflux_h", "massflux_qt", "total_flux_h", "total_flux_qt"]
 
     plot_x_scm = [scm_data["qt_mean"], scm_data["ql_mean"], scm_data["qr_mean"],\
                   qv_mean_scm, scm_data["thetal_mean"], scm_data["tke_mean"],\
                   scm_data["u_mean"], scm_data["v_mean"], scm_data["updraft_w"],\
                   scm_data["updraft_buoyancy"], scm_data["updraft_ql"],\
                   scm_data["updraft_qr"], scm_data["updraft_area"], scm_data["env_ql"],\
-                  scm_data["env_qr"]]
+                  scm_data["env_qr"], scm_data["massflux"], scm_data["massflux_h"], scm_data["massflux_qt"],\
+                  scm_data["total_flux_h"], scm_data["total_flux_qt"]]
 
     plot_x_les = [les_data["qt_mean"], les_data["ql_mean"], les_data["qr_mean"],\
                   qv_mean_les, les_data["thetali_mean"], les_data["tke_mean"],\
                   les_data["u_translational_mean"], les_data["v_translational_mean"],\
                   les_data["updraft_w"], les_data["updraft_buoyancy"],\
                   les_data["updraft_ql"], les_data["updraft_qr"],\
-                  les_data["updraft_fraction"], les_data["env_ql"], les_data["env_qr"]]
+                  les_data["updraft_fraction"], les_data["env_ql"],\
+                  les_data["env_qr"],les_data["massflux"], les_data["massflux_h"], les_data["massflux_qt"],\
+                  les_data["total_flux_h"], les_data["total_flux_qt"]]
 
     plots = []
     for plot_it in range(len(x_labels)):
@@ -309,6 +319,51 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
             plt.plot(np.nanmean(scm_data["v_mean"][:, t0_scm:t1_scm], axis=1),\
                      scm_data["z_half"]/1e3, "-", color="darkorange", label='v-scm', lw=3)
             plt.legend()
+
+    plt.savefig(folder + title)
+    plt.clf()
+
+def plot_fluxes(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+    """
+    Plots updraft and environment profiles from Scampy
+    Input:
+    scm_data - scm stats file
+    les_data - les stats file
+    tmin     - lower bound for time mean
+    tmax     - upper bound for time mean
+    title    - name for the created plot
+    folder   - folder where to save the created plot
+    """
+    t0_scm = int(np.where(np.array(scm_data["t"]) > tmin*3600.0)[0][0])
+    t0_les = int(np.where(np.array(les_data["t"]) > tmin)[0][0])
+    t1_scm = int(np.where(np.array(tmax*3600.0<= scm_data["t"]))[0][0])
+    t1_les = int(np.where(np.array(tmax<= les_data["t"]))[0][0])
+
+    fig = plt.figure(1)
+    fig.set_figheight(12)
+    fig.set_figwidth(14)
+    mpl.rcParams.update({'font.size': 18})
+    mpl.rc('lines', linewidth=4, markersize=10)
+
+    scm_var = ["total_flux_h", "massflux_h",  "diffusive_flux_h",\
+               "total_flux_qt", "massflux_qt","diffusive_flux_qt"]
+
+    les_var = ["total_flux_h", "massflux_h",  "diffusive_flux_h",\
+               "total_flux_qt", "massflux_qt","diffusive_flux_qt"]
+
+    lab = [r'$ \langle w^* \theta_l^* \rangle  \; [\mathrm{kg K m^2/s}]$', r'$massflux \; \theta_l  \; [\mathrm{kg K m^2/s}]$', r'$ \overline{w^\prime \theta_l^\prime}^{env}  \; [\mathrm{kg K m^2/s}]$',\
+           r'$ \langle w^* q_t^* \rangle  \; [\mathrm{g K m^2/s}]$',      r'$massflux \; q_t  \; [\mathrm{g K m^2/s}]$', r'$ \overline{w^\prime q_t^\prime}^{env}  \; [\mathrm{g K m^2/s}]$']
+
+    for it in range(6):
+        plt.subplot(2,3,it+1)
+        plt.grid(True)
+        plt.plot(np.nanmean(les_data[les_var[it]][:, t0_les:t1_les], axis=1),\
+                 les_data["z_half"], '-', color='gray', label='les', lw=3)
+        plt.plot(np.nanmean(scm_data[scm_var[it]][:, t0_scm:t1_scm], axis=1),\
+                 scm_data["z_half"]/1e3, "-", color="royalblue", label='scm', lw=3)
+        plt.xlabel(lab[it])
+        if it in [0,3]:
+            plt.ylabel("z [km]")
 
     plt.savefig(folder + title)
     plt.clf()

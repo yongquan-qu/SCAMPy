@@ -118,7 +118,7 @@ def read_les_data(les_data):
     les_data - pycles netcdf dataset with specific fileds taken from LES stats file
     """
     variables = ["temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
-                "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
+                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali",\
                  "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\

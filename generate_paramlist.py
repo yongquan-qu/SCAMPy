@@ -46,9 +46,9 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['lambda_stab'] = 0.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.8
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.05
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.2
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.04
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 3.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.18
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.077
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 5.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.2
     # This constant_plume_spacing corresponds to plume_spacing/alpha_d in the Tan et al paper,
     #with values plume_spacing=500.0, alpha_d = 0.375
@@ -57,10 +57,10 @@ def main():
     # TODO: merge the tan18 buoyancy forluma into normalmode formula -> simply set buoy_coeff1 as 1./3. and buoy_coeff2 as 0.
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
 
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.3
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 1.0/3.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff2'] = 0.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff'] = 0.2
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] =  4.2
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] =  4.23
 
     if case_name == 'Soares':
         paramlist = Soares(paramlist_defaults)
