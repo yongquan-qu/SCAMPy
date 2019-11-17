@@ -44,9 +44,9 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   r'$\bar{q}_{r,env} [\mathrm{g/kg}]$',
                   r'$massflux [\mathrm{kg m^2/s}]$',
                   r'$massflux \theta_l [\mathrm{kg K m^2/s}]$',
-                  r'$massflux qt [\mathrm{kg m^2/s}]$',
+                  r'$massflux qt [\mathrm{g m^2/s}]$',
                   r'$total flux \theta_l [\mathrm{kg K m^2/s}]$',
-                  r'$total flux qt [\mathrm{kg m^2/s}]$',
+                  r'$total flux qt [\mathrm{g m^2/s}]$',
                   ]
 
     fig_name  =  ["mean_qt", "mean_ql", "mean_qr", "mean_qv", "mean_thetal",\
@@ -351,8 +351,8 @@ def plot_fluxes(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
     les_var = ["total_flux_h", "massflux_h",  "diffusive_flux_h",\
                "total_flux_qt", "massflux_qt","diffusive_flux_qt"]
 
-    lab = [r'$ \langle w^* \theta_l^* \rangle  \; [\mathrm{kg K m^2/s}]$', r'$massflux \; \theta_l  \; [\mathrm{kg K m^2/s}]$', r'$ \overline{w^\prime \theta_l^\prime}^{env}  \; [\mathrm{kg K m^2/s}]$',\
-           r'$ \langle w^* q_t^* \rangle  \; [\mathrm{g K m^2/s}]$',      r'$massflux \; q_t  \; [\mathrm{g K m^2/s}]$', r'$ \overline{w^\prime q_t^\prime}^{env}  \; [\mathrm{g K m^2/s}]$']
+    lab = [r'$ \langle w^* \theta_l^* \rangle  \; [\mathrm{kg K /m^2s}]$', r'$massflux \; \theta_l  \; [\mathrm{kg K/m^2 s}]$', r'$ \overline{w^\prime \theta_l^\prime}^{env}  \; [\mathrm{kg K/m^2s}]$',\
+           r'$ \langle w^* q_t^* \rangle  \; [\mathrm{g /m^2s}]$',      r'$massflux \; q_t  \; [\mathrm{g/m^2 s}]$', r'$ \overline{w^\prime q_t^\prime}^{env}  \; [\mathrm{g/m^2s}]$']
 
     for it in range(6):
         plt.subplot(2,3,it+1)
