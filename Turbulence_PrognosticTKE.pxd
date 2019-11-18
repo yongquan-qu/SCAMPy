@@ -85,6 +85,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] massflux_tendency_h
         double [:] massflux_tendency_qt
         double [:] diffusive_flux_h
+        double [:] diffusive_flux_u
+        double [:] diffusive_flux_v
         double [:] diffusive_flux_qt
         double [:] diffusive_tendency_h
         double [:] diffusive_tendency_qt
