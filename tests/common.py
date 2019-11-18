@@ -94,8 +94,8 @@ def read_scm_data(scm_data):
                  "tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"\
                 ]
 
-    data = {"z_half" : np.array(scm_data["profiles/z_half"][:]),\
-            "t" : np.array(scm_data["profiles/t"][:]),\
+    data = {"z_half" : np.divide(np.array(scm_data["profiles/z_half"][:]),1000.0),\
+            "t" : np.divide(np.array(scm_data["profiles/t"][:]),3600.0),\
             "rho_half": np.array(scm_data["reference/rho0_half"][:])}
 
     for var in variables:
@@ -128,13 +128,21 @@ def read_les_data(les_data):
                  "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov",\
                  "massflux_h" ,"massflux_qt" ,"total_flux_h" ,"total_flux_qt" ,"diffusive_flux_h" ,"diffusive_flux_qt"]
 
-    data = {"z_half" : np.array(les_data["z_half"][:]),\
-            "t" : np.array(les_data["t"][:]),\
+    data = {"z_half" : np.divide(np.array(les_data["z_half"][:]),1000.0),\
+            "t" : np.divide(np.array(les_data["t"][:]),3600.0),\
             "rho": np.array(les_data["profiles/rho"][:]),\
-            "p0": np.array(les_data["profiles/p0"][:])}
+            "p0": np.divide(np.array(les_data["profiles/p0"][:]),100.0)}
 
     for var in variables:
-        data[var] = np.transpose(np.array(les_data["profiles/"+var][:, :]))
+        data[var] = []
+        if ("qt" in var or "ql" in var or "qr" in var):
+            try:
+                data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
+            except:
+                data[var] = np.transpose(np.array(les_data["profiles/w_mean" ][:, :])) * 0  #g/kg
+        else:
+            data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
+
     return data
 
 def read_scm_data_timeseries(scm_data):
