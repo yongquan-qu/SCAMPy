@@ -1747,7 +1747,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.U.new[k+gw] = x[k]
             self.diffusive_flux_u[gw] = interp2pt(Case.Sur.rho_uflux, -rho_ae_K[gw] * dzi *(GMV.U.values[gw+1]-GMV.U.values[gw]) )
             for k in xrange(self.Gr.gw+1, self.Gr.nzg-self.Gr.gw):
-                self.diffusive_flux_u[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KH.values[k] * dzi * (GMV.U.values[k+1]-GMV.U.values[k-1])
+                self.diffusive_flux_u[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KM.values[k] * dzi * (GMV.U.values[k+1]-GMV.U.values[k-1])
 
         # Solve V
         with nogil:
@@ -1761,7 +1761,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 GMV.V.new[k+gw] = x[k]
             self.diffusive_flux_v[gw] = interp2pt(Case.Sur.rho_vflux, -rho_ae_K[gw] * dzi *(GMV.V.values[gw+1]-GMV.V.values[gw]) )
             for k in xrange(self.Gr.gw+1, self.Gr.nzg-self.Gr.gw):
-                self.diffusive_flux_v[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KH.values[k] * dzi * (GMV.V.values[k+1]-GMV.V.values[k-1])
+                self.diffusive_flux_v[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KM.values[k] * dzi * (GMV.V.values[k+1]-GMV.V.values[k-1])
 
         GMV.QT.set_bcs(self.Gr)
         GMV.H.set_bcs(self.Gr)
