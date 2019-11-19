@@ -72,12 +72,14 @@ def main():
     try:
         qt_mean_ = data.groups['profiles'].variables['qt_mean']
         qt_mean2_ = data.groups['profiles'].variables['qt_mean2']
+        qt_mean3_ = data.groups['profiles'].variables['qt_mean3']
         env_qt_ = data.groups['profiles'].variables['env_qt']
         env_qt2_ = data.groups['profiles'].variables['env_qt2']
         updraft_qt_ = data.groups['profiles'].variables['updraft_qt']
     except:
         qt_mean_ = np.zeros_like(env_w_)
         qt_mean2_ = np.zeros_like(env_w_)
+        qt_mean3_ = np.zeros_like(env_w_)
         env_qt_ = np.zeros_like(env_w_)
         env_qt2_ = np.zeros_like(env_w_)
         updraft_qt_ = np.zeros_like(env_w_)
@@ -97,9 +99,11 @@ def main():
     try:
         thetali_mean_ = data.groups['profiles'].variables['thetali_mean']
         thetali_mean2_ = data.groups['profiles'].variables['thetali_mean2']
+        thetali_mean3_ = data.groups['profiles'].variables['thetali_mean3']
     except:
         thetali_mean_ = data.groups['profiles'].variables['theta_mean']
         thetali_mean2_ = data.groups['profiles'].variables['theta_mean2']
+        thetali_mean3_ = data.groups['profiles'].variables['theta_mean3']
 
     env_thetali_ = data.groups['profiles'].variables['env_thetali']
     env_thetali2_ = data.groups['profiles'].variables['env_thetali2']
@@ -161,6 +165,11 @@ def main():
     diffusive_flux_u_  = np.subtract(total_flux_u_,massflux_u_)
     diffusive_flux_v_  = np.subtract(total_flux_v_,massflux_v_)
 
+    Hskew_ = calc_skew(thetali_mean_, thetali_mean2_, thetali_mean3_, Hvar_mean_)
+    QTskew_ = calc_skew(qt_mean_, qt_mean2_, qt_mean3_, QTvar_mean_)
+    Hskew_[np.where(Hskew_<1e-6)] = 0.0
+    QTskew_[np.where(QTskew_<1e-6)] = 0.0
+
     output = nc.Dataset(fname, "w", format="NETCDF4")
     output.createDimension('z', len(z_half_))
     output.createDimension('t', len(t_))
@@ -180,6 +189,8 @@ def main():
     env_Hvar = profiles_grp.createVariable('env_Hvar','f4',('t','z'))
     env_QTvar = profiles_grp.createVariable('env_QTvar','f4',('t','z'))
     env_HQTcov = profiles_grp.createVariable('env_HQTcov','f4',('t','z'))
+    Hskew = profiles_grp.createVariable('Hskew','f4',('t','z'))
+    QTskew = profiles_grp.createVariable('QTskew','f4',('t','z'))
     massflux = profiles_grp.createVariable('massflux','f4',('t','z'))
     massflux_h = profiles_grp.createVariable('massflux_h','f4',('t','z'))
     massflux_qt = profiles_grp.createVariable('massflux_qt','f4',('t','z'))
@@ -247,6 +258,8 @@ def main():
     p0[:] = p0_[:]
     Hvar_mean[:,:] = Hvar_mean_[:,:]
     QTvar_mean[:,:] = QTvar_mean_[:,:]
+    Hskew[:,:] = Hskew_[:,:]
+    QTskew[:,:] = QTskew_[:,:]
     env_Hvar[:,:] = env_Hvar_[:,:]
     env_QTvar[:,:] = env_QTvar_[:,:]
     env_HQTcov[:,:] = env_HQTcov_[:,:]
@@ -319,6 +332,11 @@ def calc_covar(var_sq, var1, var2):
 
     covar = np.subtract(var_sq,np.multiply(var1,var2))
     return covar
+
+def calc_skew(var, var2, var3, covar):
+
+    skew = np.divide(np.subtract(var3,np.subtract(3*np.multiply(var,var2),2.0*np.power(var,3.0)) ),np.power(np.clip(covar,1e-16,1e16),3/2))
+    return skew
 
 if __name__ == '__main__':
     main()
