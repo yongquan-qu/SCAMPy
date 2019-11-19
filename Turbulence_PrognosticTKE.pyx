@@ -1356,7 +1356,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 250.0)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 150.0)
         return
 
     cpdef compute_nh_pressure(self):
@@ -1884,6 +1884,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_covariance_interdomain_src(self.UpdVar.Area,self.UpdVar.H,self.UpdVar.QT,self.EnvVar.H, self.EnvVar.QT, self.EnvVar.HQTcov)
             self.compute_covariance_rain(TS, GMV) # need to update this one
 
+            self.GMV_skewness(GMV.Hskew, GMV.Hvar,  self.EnvVar.Hvar,  self.EnvVar.H,  self.UpdVar.H)
+            self.GMV_skewness(GMV.QTskew,GMV.QTvar, self.EnvVar.QTvar, self.EnvVar.QT, self.UpdVar.QT)
+
         self.reset_surface_covariance(GMV, Case)
         if self.calc_tke:
             self.update_covariance_ED(GMV, Case,TS, GMV.W, GMV.W, GMV.TKE, self.EnvVar.TKE, self.EnvVar.W, self.EnvVar.W, self.UpdVar.W, self.UpdVar.W)
@@ -2245,3 +2248,28 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
 
         return
+
+
+    cdef void GMV_skewness(self, VariableDiagnostic GmvSkewness, VariableDiagnostic GmvCovar, EDMF_Environment.EnvironmentVariable_2m EnvCovar,
+                           EDMF_Environment.EnvironmentVariable  EnvVar, EDMF_Updrafts.UpdraftVariable  UpdVar):
+        cdef:
+            psi_e, psi_u, phi_e, phi_u
+            double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
+            double [:,:] au = self.UpdVar.Area.values
+
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            GmvSkewness.values[k] = 0.0
+            for i in xrange(self.n_updrafts):
+                if GmvSkewness.name =='W_skewness':
+                    phi_u = interp2pt(UpdVar.values[i,k],UpdVar.values[i,k-1])
+                    phi_e = interp2pt(EnvVar.values[k],  EnvVar.values[k-1])
+                    tke_factor = 2.0
+                else:
+                    phi_u = UpdVar.values[i,k]
+                    phi_e = EnvVar.values[k]
+                    tke_factor = 1.0
+
+                GmvSkewness.values[k] += (au[i,k]*ae[k]*(ae[k]-au[i,k])*(phi_u-phi_e)**3-3*au[i,k]*ae[k]*(phi_u-phi_e)*(EnvCovar.values[k]))/fmax(GmvCovar.values[k]**(3/2),np.finfo(float).eps)
+
+        return
+

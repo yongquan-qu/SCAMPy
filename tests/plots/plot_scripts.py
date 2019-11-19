@@ -49,13 +49,15 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   r'$total \; flux \; qt [\mathrm{g m^2/s}]$',
                   r'$total \; flux \; u [\mathrm{ m^3/s^2}]$',
                   r'$total \; flux \; v [\mathrm{ m^3/s^2}]$',
+                  r'$ \angle \theta_l^*\theta_l^*\theta_l^* \rangle / \angle \theta_l^*\theta_l^* \rangle^{3/2}$',
+                  r'$ \angle q_t^*q_t^*q_t^* \rangle / \angle q_t^*q_t^* \rangle^{3/2}$',
                   ]
 
     fig_name  =  ["mean_qt", "mean_ql", "mean_qr", "mean_qv", "mean_thetal",\
                   "mean_TKE", "mean_u", "mean_v", "updraft_w", "updraft_buoyancy",\
                   "updraft_ql", "updraft_qr", "updraft_area", "env_ql", "env_qr",\
                   "massflux", "massflux_h", "massflux_qt", "total_flux_h", "total_flux_qt",\
-                  "total_flux_u", "total_flux_v"]
+                  "total_flux_u", "total_flux_v", "thetali_skewness", "qt_skewness"]
 
     plot_x_scm = [scm_data["qt_mean"], scm_data["ql_mean"], scm_data["qr_mean"],\
                   qv_mean_scm, scm_data["thetal_mean"], scm_data["tke_mean"],\
@@ -63,7 +65,7 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   scm_data["updraft_buoyancy"], scm_data["updraft_ql"],\
                   scm_data["updraft_qr"], scm_data["updraft_area"], scm_data["env_ql"],\
                   scm_data["env_qr"], scm_data["massflux"], scm_data["massflux_h"], scm_data["massflux_qt"],\
-                  scm_data["total_flux_h"], scm_data["total_flux_qt"],scm_data["diffusive_flux_u"], scm_data["diffusive_flux_v"]]
+                  scm_data["total_flux_h"], scm_data["total_flux_qt"],scm_data["diffusive_flux_u"], scm_data["diffusive_flux_v"], scm_data["Hskew"],scm_data["QTskew"]]
 
     plot_x_les = [les_data["qt_mean"], les_data["ql_mean"], les_data["qr_mean"],\
                   qv_mean_les, les_data["thetali_mean"], les_data["tke_mean"],\
@@ -72,7 +74,7 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   les_data["updraft_ql"], les_data["updraft_qr"],\
                   les_data["updraft_fraction"], les_data["env_ql"],\
                   les_data["env_qr"],les_data["massflux"], les_data["massflux_h"], les_data["massflux_qt"],\
-                  les_data["total_flux_h"], les_data["total_flux_qt"], les_data["total_flux_u"], les_data["total_flux_v"]]
+                  les_data["total_flux_h"], les_data["total_flux_qt"], les_data["total_flux_u"], les_data["total_flux_v"], les_data["Hskew"],les_data["QTskew"]]
 
     plots = []
     for plot_it in range(len(x_labels)):

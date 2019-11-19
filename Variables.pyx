@@ -185,11 +185,14 @@ cdef class GridMeanVariables:
 
         if self.calc_scalar_var:
             self.QTvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'qt_var','kg^2/kg^2' )
+            self.QTskew = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'qt_skew','kg^2/kg^2' )
             if namelist['thermodynamics']['thermal_variable'] == 'entropy':
                 self.Hvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 's_var', '(J/kg/K)^2')
+                self.Hskew = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 's_skew', '-')
                 self.HQTcov = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym' ,'s_qt_covar', '(J/kg/K)(kg/kg)' )
             elif namelist['thermodynamics']['thermal_variable'] == 'thetal':
                 self.Hvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym' ,'thetal_var', 'K^2')
+                self.Hskew = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 'thetal_skew', '-')
                 self.HQTcov = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym' ,'thetal_qt_covar', 'K(kg/kg)' )
 
         return
@@ -248,6 +251,9 @@ cdef class GridMeanVariables:
             Stats.add_profile('QTvar_mean')
             Stats.add_profile('HQTcov_mean')
 
+            Stats.add_profile('Hskew')
+            Stats.add_profile('QTskew')
+
         Stats.add_profile('cloud_fraction_mean')
 
         Stats.add_ts('lwp_mean')
@@ -278,6 +284,9 @@ cdef class GridMeanVariables:
             Stats.write_profile('Hvar_mean',self.Hvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
             Stats.write_profile('QTvar_mean',self.QTvar.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
             Stats.write_profile('HQTcov_mean',self.HQTcov.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+
+            Stats.write_profile('Hskew',self.Hskew.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+            Stats.write_profile('QTskew',self.QTskew.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
 
         Stats.write_profile('cloud_fraction_mean',self.cloud_fraction.values[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_ts('cloud_cover_mean', self.cloud_cover)
