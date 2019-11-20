@@ -123,6 +123,16 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
                 np.nanmean(scm_data["updraft_buoyancy"][:, t0_scm : t1_scm], axis=1),\
                 np.nanmean(scm_data["entrainment_sc"][:, t0_scm : t1_scm], axis=1)]
 
+    pz_vars = [ np.nanmean(scm_data["nh_pressure_b"][:,  t0_scm : t1_scm] /\
+                           scm_data["updraft_area"][:, t0_scm : t1_scm], axis=1\
+                          ) / scm_data["rho_half"][:],
+                np.nanmean(scm_data["nh_pressure_adv"][:,  t0_scm : t1_scm] /\
+                           scm_data["updraft_area"][:, t0_scm : t1_scm], axis=1\
+                          ) / scm_data["rho_half"][:],
+                np.nanmean(scm_data["nh_pressure_drag"][:,  t0_scm : t1_scm] /\
+                           scm_data["updraft_area"][:, t0_scm : t1_scm], axis=1\
+                          ) / scm_data["rho_half"][:] ]
+
     x_lab = ["eddy_diffusivity", "mixing_length [km]", "non hydro pressure [Pa]",\
              "turbulent_entrainment", "buoyancy [m/s^2]", "entr and detr [1/m]"]
 
@@ -134,6 +144,11 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
         if it == 2:
             plt.plot(np.nanmean(-les_data["updraft_ddz_p_alpha"][:, t0_les : t1_les], axis=1),\
                      les_data["z_half"], '-', color='gray', label='les', lw=3)
+            plt.plot(pz_vars[0], scm_data["z_half"], "--", c="r", lw=3)
+            plt.plot(pz_vars[1], scm_data["z_half"], "--", c="g", lw=3)
+            plt.plot(pz_vars[2], scm_data["z_half"], "--", c="y", lw=3)
+            plt.legend(['LES','SCM','virtual mass','adv','drag'])
+
         if it == 4:
             plt.plot(scm_vars[it], scm_data["z_half"], "-", c="royalblue", lw=3, label="b_upd")
             plt.plot(np.nanmean(scm_data["b_mix"][:, t0_scm : t1_scm],axis=1),\

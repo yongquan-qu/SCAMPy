@@ -84,7 +84,7 @@ def read_scm_data(scm_data):
                  "massflux_h", "diffusive_flux_h", "total_flux_h", "diffusive_flux_u", "diffusive_flux_v",\
                  "massflux_qt","diffusive_flux_qt","total_flux_qt","turbulent_entrainment",\
                  "eddy_viscosity", "eddy_diffusivity", "mixing_length", "mixing_length_ratio",\
-                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "eddy_diffusivity",\
+                 "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "nh_pressure_b", "nh_pressure_adv", "nh_pressure_drag", "eddy_diffusivity",\
                  "Hvar_mean", "QTvar_mean", "HQTcov_mean", "env_Hvar", "env_QTvar", "env_HQTcov",\
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
