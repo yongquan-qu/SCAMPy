@@ -81,7 +81,7 @@ def read_scm_data(scm_data):
                  "buoyancy_mean", "b_mix","u_mean", "v_mean", "tke_mean",\
                  "updraft_buoyancy", "updraft_area", "env_qt", "updraft_qt", "env_ql", "updraft_ql", "updraft_thetal",\
                  "env_qr", "updraft_qr", "updraft_w", "env_w", "env_thetal",\
-                 "massflux_h", "diffusive_flux_h", "total_flux_h",\
+                 "massflux_h", "diffusive_flux_h", "total_flux_h", "diffusive_flux_u", "diffusive_flux_v",\
                  "massflux_qt","diffusive_flux_qt","total_flux_qt","turbulent_entrainment",\
                  "eddy_viscosity", "eddy_diffusivity", "mixing_length", "mixing_length_ratio",\
                  "entrainment_sc", "detrainment_sc", "massflux", "nh_pressure", "eddy_diffusivity",\
@@ -94,8 +94,8 @@ def read_scm_data(scm_data):
                  "tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"\
                 ]
 
-    data = {"z_half" : np.array(scm_data["profiles/z_half"][:]),\
-            "t" : np.array(scm_data["profiles/t"][:]),\
+    data = {"z_half" : np.divide(np.array(scm_data["profiles/z_half"][:]),1000.0),\
+            "t" : np.divide(np.array(scm_data["profiles/t"][:]),3600.0),\
             "rho_half": np.array(scm_data["reference/rho0_half"][:])}
 
     for var in variables:
@@ -118,22 +118,31 @@ def read_les_data(les_data):
     les_data - pycles netcdf dataset with specific fileds taken from LES stats file
     """
     variables = ["temperature_mean", "thetali_mean", "qt_mean", "ql_mean", "buoyancy_mean",\
-                "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
+                 "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali",\
                  "env_qt", "updraft_qt", "env_ql", "updraft_ql",\
+                 "diffusive_flux_u", "diffusive_flux_v","massflux_u", "massflux_v","total_flux_u", "total_flux_v",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\
                  "thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",\
                  "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S",\
                  "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov",\
                  "massflux_h" ,"massflux_qt" ,"total_flux_h" ,"total_flux_qt" ,"diffusive_flux_h" ,"diffusive_flux_qt"]
 
-    data = {"z_half" : np.array(les_data["z_half"][:]),\
-            "t" : np.array(les_data["t"][:]),\
+    data = {"z_half" : np.divide(np.array(les_data["z_half"][:]),1000.0),\
+            "t" : np.divide(np.array(les_data["t"][:]),3600.0),\
             "rho": np.array(les_data["profiles/rho"][:]),\
-            "p0": np.array(les_data["profiles/p0"][:])}
+            "p0": np.divide(np.array(les_data["profiles/p0"][:]),100.0)}
 
     for var in variables:
-        data[var] = np.transpose(np.array(les_data["profiles/"+var][:, :]))
+        data[var] = []
+        if ("qt" in var or "ql" in var or "qr" in var):
+            try:
+                data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
+            except:
+                data[var] = np.transpose(np.array(les_data["profiles/w_mean" ][:, :])) * 0  #g/kg
+        else:
+            data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
+
     return data
 
 def read_scm_data_timeseries(scm_data):
