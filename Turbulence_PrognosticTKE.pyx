@@ -1367,6 +1367,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 input.a_kfull = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
                 input.dzi = self.Gr.dzi
+                input.dz = self.Gr.dz
                 input.z_full = self.Gr.z[k]
 
                 input.a_khalf = self.UpdVar.Area.values[i,k]
