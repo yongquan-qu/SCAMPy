@@ -261,6 +261,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.massflux_qt = np.zeros((Gr.nzg,),dtype=np.double,order='c')
         self.diffusive_flux_h = np.zeros((Gr.nzg,),dtype=np.double,order='c')
         self.diffusive_flux_qt = np.zeros((Gr.nzg,),dtype=np.double,order='c')
+        self.diffusive_flux_u = np.zeros((Gr.nzg,),dtype=np.double,order='c')
+        self.diffusive_flux_v = np.zeros((Gr.nzg,),dtype=np.double,order='c')
         if self.calc_tke:
             self.massflux_tke = np.zeros((Gr.nzg,),dtype=np.double,order='c')
 
@@ -311,6 +313,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.add_profile('massflux_tendency_h')
         Stats.add_profile('massflux_tendency_qt')
         Stats.add_profile('diffusive_flux_h')
+        Stats.add_profile('diffusive_flux_u')
+        Stats.add_profile('diffusive_flux_v')
         Stats.add_profile('diffusive_flux_qt')
         Stats.add_profile('diffusive_tendency_h')
         Stats.add_profile('diffusive_tendency_qt')
@@ -441,6 +445,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         Stats.write_profile('massflux_tendency_qt', self.massflux_tendency_qt[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('diffusive_flux_h', self.diffusive_flux_h[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('diffusive_flux_qt', self.diffusive_flux_qt[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('diffusive_flux_u', self.diffusive_flux_u[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
+        Stats.write_profile('diffusive_flux_v', self.diffusive_flux_v[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('diffusive_tendency_h', self.diffusive_tendency_h[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('diffusive_tendency_qt', self.diffusive_tendency_qt[self.Gr.gw:self.Gr.nzg-self.Gr.gw])
         Stats.write_profile('total_flux_h', np.add(mf_h[self.Gr.gw:self.Gr.nzg-self.Gr.gw],
@@ -1350,7 +1356,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 500)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 250.0)
         return
 
     cpdef compute_nh_pressure(self):
@@ -1739,6 +1745,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         with nogil:
             for k in xrange(nz):
                 GMV.U.new[k+gw] = x[k]
+            self.diffusive_flux_u[gw] = interp2pt(Case.Sur.rho_uflux, -rho_ae_K[gw] * dzi *(GMV.U.values[gw+1]-GMV.U.values[gw]) )
+            for k in xrange(self.Gr.gw+1, self.Gr.nzg-self.Gr.gw):
+                self.diffusive_flux_u[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KM.values[k] * dzi * (GMV.U.values[k+1]-GMV.U.values[k-1])
 
         # Solve V
         with nogil:
@@ -1750,6 +1759,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         with nogil:
             for k in xrange(nz):
                 GMV.V.new[k+gw] = x[k]
+            self.diffusive_flux_v[gw] = interp2pt(Case.Sur.rho_vflux, -rho_ae_K[gw] * dzi *(GMV.V.values[gw+1]-GMV.V.values[gw]) )
+            for k in xrange(self.Gr.gw+1, self.Gr.nzg-self.Gr.gw):
+                self.diffusive_flux_v[k] = -0.5 * self.Ref.rho0_half[k]*ae[k] * self.KM.values[k] * dzi * (GMV.V.values[k+1]-GMV.V.values[k-1])
 
         GMV.QT.set_bcs(self.Gr)
         GMV.H.set_bcs(self.Gr)
