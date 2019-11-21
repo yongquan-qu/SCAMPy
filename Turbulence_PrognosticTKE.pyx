@@ -1884,8 +1884,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_covariance_interdomain_src(self.UpdVar.Area,self.UpdVar.H,self.UpdVar.QT,self.EnvVar.H, self.EnvVar.QT, self.EnvVar.HQTcov)
             self.compute_covariance_rain(TS, GMV) # need to update this one
 
-            self.GMV_skewness(GMV.Hskew, GMV.Hvar,  self.EnvVar.Hvar,  self.EnvVar.H,  self.UpdVar.H)
-            self.GMV_skewness(GMV.QTskew,GMV.QTvar, self.EnvVar.QTvar, self.EnvVar.QT, self.UpdVar.QT)
+            self.GMV_third_m(GMV.H_third_m,  self.EnvVar.Hvar,  self.EnvVar.H,  self.UpdVar.H)
+            self.GMV_third_m(GMV.QT_third_m, self.EnvVar.QTvar, self.EnvVar.QT, self.UpdVar.QT)
+            self.GMV_third_m(GMV.W_third_m,  self.EnvVar.TKE,  self.EnvVar.W,  self.UpdVar.W)
 
         self.reset_surface_covariance(GMV, Case)
         if self.calc_tke:
@@ -1954,6 +1955,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     GMV.QTvar.values[k] = 0.0
                 if fabs(GMV.HQTcov.values[k]) < tmp_eps:
                     GMV.HQTcov.values[k] = 0.0
+                if fabs(GMV.W_third_m.values[k]) < tmp_eps:
+                    GMV.W_third_m.values[k] = 0.0
+                if fabs(GMV.H_third_m.values[k]) < tmp_eps:
+                    GMV.H_third_m.values[k] = 0.0
+                if fabs(GMV.QT_third_m.values[k]) < tmp_eps:
+                    GMV.QT_third_m.values[k] = 0.0
                 if self.EnvVar.Hvar.values[k] < tmp_eps:
                     self.EnvVar.Hvar.values[k] = 0.0
                 if self.EnvVar.TKE.values[k] < tmp_eps:
@@ -2249,27 +2256,27 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         return
 
-
-    cdef void GMV_skewness(self, VariableDiagnostic GmvSkewness, VariableDiagnostic GmvCovar, EDMF_Environment.EnvironmentVariable_2m EnvCovar,
+    cdef void GMV_third_m(self, VariableDiagnostic Gmv_third_m, EDMF_Environment.EnvironmentVariable_2m EnvCovar,
                            EDMF_Environment.EnvironmentVariable  EnvVar, EDMF_Updrafts.UpdraftVariable  UpdVar):
         cdef:
-            psi_e, psi_u, phi_e, phi_u
             double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
             double [:,:] au = self.UpdVar.Area.values
+            double Upd_cubed, GMVv_, GMVcov_
+            double tke_factor = 1.0
 
+        if EnvCovar.name == 'tke':
+            tke_factor = 2.0/3.0
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            GmvSkewness.values[k] = 0.0
+            GMVv_   = ae[k]*EnvVar.values[k]
             for i in xrange(self.n_updrafts):
-                if GmvSkewness.name =='W_skewness':
-                    phi_u = interp2pt(UpdVar.values[i,k],UpdVar.values[i,k-1])
-                    phi_e = interp2pt(EnvVar.values[k],  EnvVar.values[k-1])
-                    tke_factor = 2.0
-                else:
-                    phi_u = UpdVar.values[i,k]
-                    phi_e = EnvVar.values[k]
-                    tke_factor = 1.0
+                GMVv_ += au[i,k]*UpdVar.values[i,k]
 
-                GmvSkewness.values[k] += (au[i,k]*ae[k]*(ae[k]-au[i,k])*(phi_u-phi_e)**3-3*au[i,k]*ae[k]*(phi_u-phi_e)*(EnvCovar.values[k]))/fmax(GmvCovar.values[k]**(3/2),np.finfo(float).eps)
+            GMVcov_ = ae[k]*(EnvCovar.values[k]*tke_factor + (EnvVar.values[k] - GMVv_)**2.0)
+            Upd_cubed = 0.0
+            for i in xrange(self.n_updrafts):
+                GMVcov_ += au[i,k]*(UpdVar.values[i,k] - GMVv_)**2.0
+                Upd_cubed += au[i,k]*UpdVar.values[i,k]**3
 
+            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(EnvVar.values[k]**3 + 3.0*EnvVar.values[k]*EnvCovar.values[k]*tke_factor) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
+        Gmv_third_m.values[self.Gr.gw] = 0.0 # this is here as first value is biased with BC area fraction
         return
-

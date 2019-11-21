@@ -89,7 +89,7 @@ def read_scm_data(scm_data):
                  "Hvar_dissipation", "QTvar_dissipation", "HQTcov_dissipation",\
                  "Hvar_entr_gain", "QTvar_entr_gain", "HQTcov_entr_gain",\
                  "Hvar_detr_loss", "QTvar_detr_loss", "HQTcov_detr_loss",\
-                 "Hvar_shear", "QTvar_shear", "HQTcov_shear", "Hskew", "QTskew",\
+                 "Hvar_shear", "QTvar_shear", "HQTcov_shear", "H_third_m", "QT_third_m", "W_third_m",\
                  "Hvar_rain", "QTvar_rain", "HQTcov_rain","tke_entr_gain","tke_detr_loss",\
                  "tke_advection","tke_buoy","tke_dissipation","tke_pressure","tke_transport","tke_shear"\
                 ]
@@ -100,7 +100,9 @@ def read_scm_data(scm_data):
 
     for var in variables:
         data[var] = []
-        if ("qt" in var or "ql" in var or "qr" in var):
+        if (var=="QT_third_m"):
+            data[var] = np.transpose(np.array(scm_data["profiles/"  + var][:, :]))*1e9  #g/kg
+        elif ("qt" in var or "ql" in var or "qr" in var):
             try:
                 data[var] = np.transpose(np.array(scm_data["profiles/"  + var][:, :])) * 1000  #g/kg
             except:
@@ -125,7 +127,7 @@ def read_les_data(les_data):
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\
                  "thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",\
                  "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S",\
-                 "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov", "Hskew", "QTskew", \
+                 "Hvar_mean" ,"QTvar_mean" ,"env_Hvar" ,"env_QTvar" ,"env_HQTcov", "H_third_m", "QT_third_m", "W_third_m",\
                  "massflux_h" ,"massflux_qt" ,"total_flux_h" ,"total_flux_qt" ,"diffusive_flux_h" ,"diffusive_flux_qt"]
 
     data = {"z_half" : np.divide(np.array(les_data["z_half"][:]),1000.0),\
@@ -135,13 +137,16 @@ def read_les_data(les_data):
 
     for var in variables:
         data[var] = []
-        if ("qt" in var or "ql" in var or "qr" in var):
+        if ("QT_third_m" in var ):
+            data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))*1e9  #g/kg
+        elif ("qt" in var or "ql" in var or "qr" in var):
             try:
                 data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg
             except:
                 data[var] = np.transpose(np.array(les_data["profiles/w_mean" ][:, :])) * 0  #g/kg
         else:
             data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))
+
 
     return data
 
