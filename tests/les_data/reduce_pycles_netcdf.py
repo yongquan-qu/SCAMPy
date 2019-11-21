@@ -343,7 +343,6 @@ def calc_third_m(var, var2, var3, covar, upd_frac):
     B = np.power(var,3.0)
     C = np.add(A,B)
     third_m = np.subtract(var3,C)
-    third_m[np.where(np.multiply(upd_frac,1.0)<1e-6)] = 0.0
     return third_m
 
 if __name__ == '__main__':
