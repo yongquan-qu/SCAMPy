@@ -101,7 +101,7 @@ def read_scm_data(scm_data):
     for var in variables:
         data[var] = []
         if (var=="QT_third_m"):
-            data[var] = np.transpose(np.array(scm_data["profiles/"  + var][:, :]))*1e9  #g/kg
+            data[var] = np.transpose(np.array(scm_data["profiles/"  + var][:, :]))*1e9  #g^3/kg^3
         elif ("qt" in var or "ql" in var or "qr" in var):
             try:
                 data[var] = np.transpose(np.array(scm_data["profiles/"  + var][:, :])) * 1000  #g/kg
@@ -138,7 +138,7 @@ def read_les_data(les_data):
     for var in variables:
         data[var] = []
         if ("QT_third_m" in var ):
-            data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))*1e9  #g/kg
+            data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :]))*1e9  #g^3/kg^3
         elif ("qt" in var or "ql" in var or "qr" in var):
             try:
                 data[var] = np.transpose(np.array(les_data["profiles/"  + var][:, :])) * 1000  #g/kg

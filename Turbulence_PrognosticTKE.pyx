@@ -2256,29 +2256,29 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         return
 
-    cdef void GMV_third_m(self, VariableDiagnostic Gmv_third_m, EDMF_Environment.EnvironmentVariable_2m EnvCovar,
-                           EDMF_Environment.EnvironmentVariable  EnvVar, EDMF_Updrafts.UpdraftVariable  UpdVar):
+    cdef void GMV_third_m(self, VariableDiagnostic Gmv_third_m, EDMF_Environment.EnvironmentVariable_2m env_covar,
+                           EDMF_Environment.EnvironmentVariable  env_mean, EDMF_Updrafts.UpdraftVariable  upd_mean):
         cdef:
             double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
             double [:,:] au = self.UpdVar.Area.values
             double Upd_cubed, GMVv_, GMVcov_
 
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            GMVv_   = ae[k]*EnvVar.values[k]
+            GMVv_   = ae[k]*env_mean.values[k]
             for i in xrange(self.n_updrafts):
-                GMVv_ += au[i,k]*UpdVar.values[i,k]
+                GMVv_ += au[i,k]*upd_mean.values[i,k]
 
-            if EnvCovar.name == 'tke':
+            if env_covar.name == 'tke':
                 Envcov_ = -self.horizontal_KM[i,k]*(self.EnvVar.W.values[k+1]-self.EnvVar.W.values[k-1])/(2.0*self.Gr.dz)
             else:
-                Envcov_ = EnvCovar.values[k]
+                Envcov_ = env_covar.values[k]
 
             Upd_cubed = 0.0
-            GMVcov_ = ae[k]*(Envcov_ + (EnvVar.values[k] - GMVv_)**2.0)
+            GMVcov_ = ae[k]*(Envcov_ + (env_mean.values[k] - GMVv_)**2.0)
             for i in xrange(self.n_updrafts):
-                GMVcov_ += au[i,k]*(UpdVar.values[i,k] - GMVv_)**2.0
-                Upd_cubed += au[i,k]*UpdVar.values[i,k]**3
+                GMVcov_ += au[i,k]*(upd_mean.values[i,k] - GMVv_)**2.0
+                Upd_cubed += au[i,k]*upd_mean.values[i,k]**3
 
-            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(EnvVar.values[k]**3 + 3.0*EnvVar.values[k]*Envcov_) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
+            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(env_mean.values[k]**3 + 3.0*env_mean.values[k]*Envcov_) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
         Gmv_third_m.values[self.Gr.gw] = 0.0 # this is here as first value is biased with BC area fraction
         return
