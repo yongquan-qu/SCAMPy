@@ -2262,21 +2262,23 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
             double [:,:] au = self.UpdVar.Area.values
             double Upd_cubed, GMVv_, GMVcov_
-            double tke_factor = 1.0
 
-        if EnvCovar.name == 'tke':
-            tke_factor = 2.0/3.0
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             GMVv_   = ae[k]*EnvVar.values[k]
             for i in xrange(self.n_updrafts):
                 GMVv_ += au[i,k]*UpdVar.values[i,k]
 
-            GMVcov_ = ae[k]*(EnvCovar.values[k]*tke_factor + (EnvVar.values[k] - GMVv_)**2.0)
+            if EnvCovar.name == 'tke':
+                Envcov_ = -self.horizontal_KM[i,k]*(self.EnvVar.W.values[k+1]-self.EnvVar.W.values[k-1])/(2.0*self.Gr.dz)
+            else:
+                Envcov_ = EnvCovar.values[k]
+
             Upd_cubed = 0.0
+            GMVcov_ = ae[k]*(Envcov_ + (EnvVar.values[k] - GMVv_)**2.0)
             for i in xrange(self.n_updrafts):
                 GMVcov_ += au[i,k]*(UpdVar.values[i,k] - GMVv_)**2.0
                 Upd_cubed += au[i,k]*UpdVar.values[i,k]**3
 
-            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(EnvVar.values[k]**3 + 3.0*EnvVar.values[k]*EnvCovar.values[k]*tke_factor) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
+            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(EnvVar.values[k]**3 + 3.0*EnvVar.values[k]*Envcov_) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
         Gmv_third_m.values[self.Gr.gw] = 0.0 # this is here as first value is biased with BC area fraction
         return
