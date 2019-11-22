@@ -186,7 +186,7 @@ cdef class GridMeanVariables:
 
         if self.calc_scalar_var:
             self.QTvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'qt_var','kg^2/kg^2' )
-            self.QT_third_m = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'qt_third_m','kg^2/kg^2' )
+            self.QT_third_m = VariableDiagnostic(Gr.nzg, 'half', 'scalar','sym', 'qt_third_m','kg^3/kg^3' )
             if namelist['thermodynamics']['thermal_variable'] == 'entropy':
                 self.Hvar = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 's_var', '(J/kg/K)^2')
                 self.H_third_m = VariableDiagnostic(Gr.nzg, 'half', 'scalar', 'sym', 's__third_m', '-')
