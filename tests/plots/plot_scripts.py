@@ -144,10 +144,10 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
         if it == 2:
             plt.plot(np.nanmean(-les_data["updraft_ddz_p_alpha"][:, t0_les : t1_les], axis=1),\
                      les_data["z_half"], '-', color='gray', label='les', lw=3)
-            plt.plot(pz_vars[0], scm_data["z_half"], "--", c="r", lw=3)
-            plt.plot(pz_vars[1], scm_data["z_half"], "--", c="g", lw=3)
-            plt.plot(pz_vars[2], scm_data["z_half"], "--", c="y", lw=3)
-            plt.legend(['LES','SCM','virtual mass','adv','drag'])
+            plt.plot(pz_vars[0], scm_data["z_half"], "--", c="b", lw=3)
+            plt.plot(pz_vars[1], scm_data["z_half"], "--", c="r", lw=3)
+            plt.plot(pz_vars[2], scm_data["z_half"], "--", c="g", lw=3)
+            plt.legend(['SCM','LES','virtual mass','adv','drag'])
 
         if it == 4:
             plt.plot(scm_vars[it], scm_data["z_half"], "-", c="royalblue", lw=3, label="b_upd")
