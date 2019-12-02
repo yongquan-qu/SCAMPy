@@ -39,9 +39,11 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   r'$\bar{b}_{upd} [\mathrm{m/s^2}]$',
                   r'$\bar{q}_{l,upd} [\mathrm{g/kg}]$',
                   r'$\bar{q}_{r,upd} [\mathrm{g/kg}]$',
+                  r'$\bar{RH}_{upd} %$',
                   "updraft area [%]",
                   r'$\bar{q}_{l,env} [\mathrm{g/kg}]$',
                   r'$\bar{q}_{r,env} [\mathrm{g/kg}]$',
+                  r'$\bar{RH}_{env} %$',
                   r'$massflux [\mathrm{kg m^2/s}]$',
                   r'$massflux \; \theta_l [\mathrm{kg K m^2/s}]$',
                   r'$massflux \; qt [\mathrm{g m^2/s}]$',
@@ -56,7 +58,7 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
 
     fig_name  =  ["mean_qt", "mean_ql", "mean_qr", "mean_qv", "mean_thetal",\
                   "mean_TKE", "mean_u", "mean_v", "updraft_w", "updraft_buoyancy",\
-                  "updraft_ql", "updraft_qr", "updraft_area", "env_ql", "env_qr",\
+                  "updraft_ql", "updraft_qr","updraft_RH", "updraft_area", "env_ql", "env_qr","env_RH",\
                   "massflux", "massflux_h", "massflux_qt", "total_flux_h", "total_flux_qt",\
                   "total_flux_u", "total_flux_v", "thetali_third_m", "qt_third_m", "w_third_m"]
 
@@ -64,17 +66,17 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
                   qv_mean_scm, scm_data["thetal_mean"], scm_data["tke_mean"],\
                   scm_data["u_mean"], scm_data["v_mean"], scm_data["updraft_w"],\
                   scm_data["updraft_buoyancy"], scm_data["updraft_ql"],\
-                  scm_data["updraft_qr"], scm_data["updraft_area"], scm_data["env_ql"],\
-                  scm_data["env_qr"], scm_data["massflux"], scm_data["massflux_h"], scm_data["massflux_qt"],\
+                  scm_data["updraft_qr"], scm_data["updraft_RH"], scm_data["updraft_area"], scm_data["env_ql"],\
+                  scm_data["env_qr"], scm_data["env_RH"],  scm_data["massflux"], scm_data["massflux_h"], scm_data["massflux_qt"],\
                   scm_data["total_flux_h"], scm_data["total_flux_qt"],scm_data["diffusive_flux_u"], scm_data["diffusive_flux_v"], scm_data["H_third_m"],scm_data["QT_third_m"], scm_data["W_third_m"]]
 
     plot_x_les = [les_data["qt_mean"], les_data["ql_mean"], les_data["qr_mean"],\
                   qv_mean_les, les_data["thetali_mean"], les_data["tke_mean"],\
                   les_data["u_translational_mean"], les_data["v_translational_mean"],\
                   les_data["updraft_w"], les_data["updraft_buoyancy"],\
-                  les_data["updraft_ql"], les_data["updraft_qr"],\
+                  les_data["updraft_ql"], les_data["updraft_qr"],les_data["updraft_RH"],\
                   les_data["updraft_fraction"], les_data["env_ql"],\
-                  les_data["env_qr"],les_data["massflux"], les_data["massflux_h"], les_data["massflux_qt"],\
+                  les_data["env_qr"],les_data["env_RH"],les_data["massflux"], les_data["massflux_h"], les_data["massflux_qt"],\
                   les_data["total_flux_h"], les_data["total_flux_qt"], les_data["total_flux_u"], les_data["total_flux_v"], les_data["H_third_m"],les_data["QT_third_m"], les_data["W_third_m"]]
 
     plots = []
@@ -123,11 +125,11 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
                            scm_data["updraft_area"][:, t0_scm : t1_scm], axis=1\
                           ) / scm_data["rho_half"][:],\
                 np.nanmean(scm_data["turbulent_entrainment"][:, t0_scm : t1_scm], axis=1),\
-                np.nanmean(scm_data["updraft_buoyancy"][:, t0_scm : t1_scm], axis=1),\
+                np.nanmean(scm_data["updraft_RH"][:, t0_scm : t1_scm], axis=1),\
                 np.nanmean(scm_data["entrainment_sc"][:, t0_scm : t1_scm], axis=1)]
 
     x_lab = ["eddy_diffusivity", "mixing_length [km]", "non hydro pressure [Pa]",\
-             "turbulent_entrainment", "buoyancy [m/s^2]", "entr and detr [1/m]"]
+             "turbulent_entrainment", "RH [m/s^2]", "entr and detr [1/m]"]
 
     for it in range(6):
         plt.subplot(2,3,it+1)
@@ -138,9 +140,9 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
             plt.plot(np.nanmean(-les_data["updraft_ddz_p_alpha"][:, t0_les : t1_les], axis=1),\
                      les_data["z_half"], '-', color='gray', label='les', lw=3)
         if it == 4:
-            plt.plot(scm_vars[it], scm_data["z_half"], "-", c="royalblue", lw=3, label="b_upd")
-            plt.plot(np.nanmean(scm_data["b_mix"][:, t0_scm : t1_scm],axis=1),\
-                     scm_data["z_half"], "-", color="darkorange", label="b_mix", lw=3)
+            plt.plot(scm_vars[it], scm_data["z_half"], "-", c="royalblue", lw=3, label="upd_RH")
+            plt.plot(np.nanmean(scm_data["env_RH"][:, t0_scm : t1_scm],axis=1),\
+                     scm_data["z_half"], "-", color="darkorange", label="env_RH", lw=3)
             plt.legend()
         if it == 5:
 
@@ -687,7 +689,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
 
     les_vars  = ["thetali_mean", "env_thetali", "updraft_thetali",\
                  "ql_mean", "env_ql", "updraft_ql",\
-                 "qr_mean", "env_qr", "updraft_qr",\
+                 "qr_mean", "env_qr","env_RH", "updraft_qr","updraft_RH",\
                  "qt_mean", "env_qt", "updraft_qt",\
                  "env_w", "updraft_w", "u_translational_mean", "v_translational_mean",\
                  "updraft_fraction", "updraft_buoyancy", "tke_mean",\
@@ -696,7 +698,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
 
     scm_vars  = ["thetal_mean", "env_thetal", "updraft_thetal",\
                  "ql_mean", "env_ql", "updraft_ql",\
-                 "qr_mean", "env_qr", "updraft_qr",\
+                 "qr_mean", "env_qr","env_RH", "updraft_qr","updraft_RH",\
                  "qt_mean", "env_qt", "updraft_qt",\
                  "env_w", "updraft_w", "u_mean", "v_mean",\
                  "updraft_area", "updraft_buoyancy", "tke_mean",\
@@ -705,7 +707,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
 
     labels    = ["mean thl [K]", "env thl [K]", "updr thl [K]",\
                  "mean ql [g/kg]", "env ql [g/kg]", "updr ql [g/kg]",\
-                 "mean qr [g/kg]", "env qr [g/kg]", "updr qr [g/kg",\
+                 "mean qr [g/kg]", "env qr [g/kg]","env RH %", "updr qr [g/kg]","updr RH %",\
                  "mean qt [g/kg]", "env qt [g/kg]", "updr qt [g/kg]",\
                  "env w [m/s]", "updr w [m/s]", "u [m/s]", "v [m/s]",\
                  "updr area [%]", "updr buoyancy [m/s^2]", "mean TKE [m2/s2]",\
@@ -714,7 +716,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
 
     fig_name =  ["mean_thl", "env_thl", "upd_thl",\
                  "mean_ql", "env_ql", "upd_ql",\
-                 "mean_qr", "env_qr", "upd_qr",\
+                 "mean_qr", "env_qr","env_RH", "upd_qr","upd_RH",\
                  "mean_qt", "env_qt", "upd_qt",\
                  "env_w", "upd_w", "mean_u", "mean_v",\
                  "upd_area", "upd_buoyancy", "mean_TKE",\
