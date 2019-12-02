@@ -35,8 +35,8 @@ def main():
     paramlist_defaults['meta'] = {}
 
     paramlist_defaults['turbulence'] = {}
-    paramlist_defaults['turbulence']['prandtl_number_0'] = 1.0
     paramlist_defaults['turbulence']['Ri_bulk_crit'] = 0.2
+    paramlist_defaults['turbulence']['prandtl_number_0'] = 0.74
 
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE'] = {}
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.1
@@ -99,7 +99,6 @@ def Bomex(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
     paramlist['meta']['casename'] = 'Bomex'
-    paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 
@@ -145,7 +144,7 @@ def DYCOMS_RF01(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
-    paramlist['turbulence']['prandtl_number_0'] = 0.74
+    # paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 
@@ -154,7 +153,7 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-    paramlist['turbulence']['prandtl_number_0'] = 0.74
+    # paramlist['turbulence']['prandtl_number_0'] = 0.74
     paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
