@@ -144,7 +144,6 @@ def DYCOMS_RF01(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
-    # paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 
@@ -153,7 +152,6 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-    # paramlist['turbulence']['prandtl_number_0'] = 0.74
     paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
