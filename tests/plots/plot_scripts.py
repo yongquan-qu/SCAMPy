@@ -716,7 +716,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
 
     fig_name =  ["mean_thl", "env_thl", "upd_thl",\
                  "mean_ql", "env_ql", "upd_ql",\
-                 "mean_qr", "env_qr","env_RH", "upd_qr","upd_RH",\
+                 "mean_qr", "env_qr", "env_RH", "upd_qr", "upd_RH",\
                  "mean_qt", "env_qt", "upd_qt",\
                  "env_w", "upd_w", "mean_u", "mean_v",\
                  "upd_area", "upd_buoyancy", "mean_TKE",\
