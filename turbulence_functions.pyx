@@ -41,20 +41,14 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det, dw
-        double dbdw_p, dbdw_m
+        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det
 
-    c_det = entr_in.c_det
-    if entr_in.RH_upd<100.0:
-        f_ent = 0.0
-    else:
-        f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-    if entr_in.RH_upd<100.0:
-        f_det = 0.0
-    else:
-        f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
+    f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
+    f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     _ret.sorting_function = f_ent
-
+    c_det = entr_in.c_det
+    if (entr_in.ql_up+entr_in.ql_env)==0.0:
+        c_det = 0.0
     dw2  = fmax((entr_in.w_upd - entr_in.w_env)**2.0, 1e-2)
     db_p = fmax(entr_in.b_upd - entr_in.b_env,0.0)
     db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
