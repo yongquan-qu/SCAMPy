@@ -129,7 +129,7 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
                 np.nanmean(scm_data["entrainment_sc"][:, t0_scm : t1_scm], axis=1)]
 
     x_lab = ["eddy_diffusivity", "mixing_length [km]", "non hydro pressure [Pa]",\
-             "turbulent_entrainment", "RH [m/s^2]", "entr and detr [1/m]"]
+             "turbulent_entrainment", "RH [%]", "entr and detr [1/m]"]
 
     for it in range(6):
         plt.subplot(2,3,it+1)
