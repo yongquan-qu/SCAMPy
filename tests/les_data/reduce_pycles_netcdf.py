@@ -38,8 +38,8 @@ def main():
     rho_ = data.groups['reference'].variables['rho0_half']
     p0_ = data.groups['reference'].variables['p0_half']
 
-    t = np.multiply(data.groups['profiles'].variables['t'], 1.0)
-    z = np.multiply(data.groups['profiles'].variables['z_half'], 1.0)
+    t = np.array(data.groups['profiles'].variables['t'])
+    z = np.array(data.groups['profiles'].variables['z_half'])
 
     # try the TKE diagnostics outputs
     tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
