@@ -60,7 +60,7 @@ def test_plot_DYCOMS_RF01(sim_data):
     f1 = "plots/output/DYCOMS_RF01/"
     f2 = f1 + "all_variables/"
     cn = "DYCOMS_RF01_"
-    t0 = 3
+    t0 = 2
     t1 = 4
     cb_min = [0., 0.]
     cb_max = [0.9, 1.4]

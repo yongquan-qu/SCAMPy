@@ -61,7 +61,7 @@ def test_plot_Soares(sim_data):
     f1 = "plots/output/Soares/"
     f2 = f1 + "all_variables/"
     cn = "Soares_"
-    t0 = 7
+    t0 = 6
     t1 = 8
     cb_min = [0., 0.]
     cb_max = [0.01, 2.5]

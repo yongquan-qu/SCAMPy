@@ -62,7 +62,7 @@ def test_plot_Bomex(sim_data):
     f1 = "plots/output/Bomex/"
     f2 = f1 + "all_variables/"
     cn = "Bomex_"
-    t0 = 5
+    t0 = 4
     t1 = 6
     cb_min = [0., 0.]
     cb_max = [0.021, 4.8]
