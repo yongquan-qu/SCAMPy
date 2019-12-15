@@ -1356,7 +1356,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if self.use_const_plume_spacing:
                 self.pressure_plume_spacing[i] = self.constant_plume_spacing
             else:
-                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 250.0)
+                self.pressure_plume_spacing[i] = fmax(self.aspect_ratio*self.UpdVar.updraft_top[i], 150.0)
         return
 
     cpdef compute_nh_pressure(self):
@@ -1885,6 +1885,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_covariance_interdomain_src(self.UpdVar.Area,self.UpdVar.H,self.UpdVar.QT,self.EnvVar.H, self.EnvVar.QT, self.EnvVar.HQTcov)
             self.compute_covariance_rain(TS, GMV) # need to update this one
 
+            self.GMV_third_m(GMV.H_third_m,  self.EnvVar.Hvar,  self.EnvVar.H,  self.UpdVar.H)
+            self.GMV_third_m(GMV.QT_third_m, self.EnvVar.QTvar, self.EnvVar.QT, self.UpdVar.QT)
+            self.GMV_third_m(GMV.W_third_m,  self.EnvVar.TKE,  self.EnvVar.W,  self.UpdVar.W)
+
         self.reset_surface_covariance(GMV, Case)
         if self.calc_tke:
             self.update_covariance_ED(GMV, Case,TS, GMV.W, GMV.W, GMV.TKE, self.EnvVar.TKE, self.EnvVar.W, self.EnvVar.W, self.UpdVar.W, self.UpdVar.W)
@@ -1952,6 +1956,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     GMV.QTvar.values[k] = 0.0
                 if fabs(GMV.HQTcov.values[k]) < tmp_eps:
                     GMV.HQTcov.values[k] = 0.0
+                if fabs(GMV.W_third_m.values[k]) < tmp_eps:
+                    GMV.W_third_m.values[k] = 0.0
+                if fabs(GMV.H_third_m.values[k]) < tmp_eps:
+                    GMV.H_third_m.values[k] = 0.0
+                if fabs(GMV.QT_third_m.values[k]) < tmp_eps:
+                    GMV.QT_third_m.values[k] = 0.0
                 if self.EnvVar.Hvar.values[k] < tmp_eps:
                     self.EnvVar.Hvar.values[k] = 0.0
                 if self.EnvVar.TKE.values[k] < tmp_eps:
@@ -2245,4 +2255,31 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         self.get_GMV_CoVar(self.UpdVar.Area, UpdVar1, UpdVar2, EnvVar1, EnvVar2, Covar, &GmvVar1.values[0], &GmvVar2.values[0], &GmvCovar.values[0])
 
+        return
+
+    cdef void GMV_third_m(self, VariableDiagnostic Gmv_third_m, EDMF_Environment.EnvironmentVariable_2m env_covar,
+                           EDMF_Environment.EnvironmentVariable  env_mean, EDMF_Updrafts.UpdraftVariable  upd_mean):
+        cdef:
+            double [:] ae = np.subtract(np.ones((self.Gr.nzg,),dtype=np.double, order='c'),self.UpdVar.Area.bulkvalues)
+            double [:,:] au = self.UpdVar.Area.values
+            double Upd_cubed, GMVv_, GMVcov_
+
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            GMVv_   = ae[k]*env_mean.values[k]
+            for i in xrange(self.n_updrafts):
+                GMVv_ += au[i,k]*upd_mean.values[i,k]
+
+            if env_covar.name == 'tke':
+                Envcov_ = -self.horizontal_KM[i,k]*(self.EnvVar.W.values[k+1]-self.EnvVar.W.values[k-1])/(2.0*self.Gr.dz)
+            else:
+                Envcov_ = env_covar.values[k]
+
+            Upd_cubed = 0.0
+            GMVcov_ = ae[k]*(Envcov_ + (env_mean.values[k] - GMVv_)**2.0)
+            for i in xrange(self.n_updrafts):
+                GMVcov_ += au[i,k]*(upd_mean.values[i,k] - GMVv_)**2.0
+                Upd_cubed += au[i,k]*upd_mean.values[i,k]**3
+
+            Gmv_third_m.values[k] = Upd_cubed + ae[k]*(env_mean.values[k]**3 + 3.0*env_mean.values[k]*Envcov_) - GMVv_**3.0- 3.0*GMVcov_*GMVv_
+        Gmv_third_m.values[self.Gr.gw] = 0.0 # this is here as first value is biased with BC area fraction
         return

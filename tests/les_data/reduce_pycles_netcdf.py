@@ -22,6 +22,9 @@ def main():
     temperature_mean_ = data.groups['profiles'].variables['temperature_mean']
     u_mean_ = data.groups['profiles'].variables['u_mean']
     v_mean_ = data.groups['profiles'].variables['v_mean']
+    w_mean_ = data.groups['profiles'].variables['w_mean']
+    w_mean2_ = data.groups['profiles'].variables['w_mean2']
+    w_mean3_ = data.groups['profiles'].variables['w_mean3']
     tke_mean_ = data.groups['profiles'].variables['tke_mean']
     v_translational_mean_ = data.groups['profiles'].variables['v_translational_mean']
     u_translational_mean_ = data.groups['profiles'].variables['u_translational_mean']
@@ -72,12 +75,14 @@ def main():
     try:
         qt_mean_ = data.groups['profiles'].variables['qt_mean']
         qt_mean2_ = data.groups['profiles'].variables['qt_mean2']
+        qt_mean3_ = data.groups['profiles'].variables['qt_mean3']
         env_qt_ = data.groups['profiles'].variables['env_qt']
         env_qt2_ = data.groups['profiles'].variables['env_qt2']
         updraft_qt_ = data.groups['profiles'].variables['updraft_qt']
     except:
         qt_mean_ = np.zeros_like(env_w_)
         qt_mean2_ = np.zeros_like(env_w_)
+        qt_mean3_ = np.zeros_like(env_w_)
         env_qt_ = np.zeros_like(env_w_)
         env_qt2_ = np.zeros_like(env_w_)
         updraft_qt_ = np.zeros_like(env_w_)
@@ -97,9 +102,11 @@ def main():
     try:
         thetali_mean_ = data.groups['profiles'].variables['thetali_mean']
         thetali_mean2_ = data.groups['profiles'].variables['thetali_mean2']
+        thetali_mean3_ = data.groups['profiles'].variables['thetali_mean3']
     except:
         thetali_mean_ = data.groups['profiles'].variables['theta_mean']
         thetali_mean2_ = data.groups['profiles'].variables['theta_mean2']
+        thetali_mean3_ = data.groups['profiles'].variables['theta_mean3']
 
     env_thetali_ = data.groups['profiles'].variables['env_thetali']
     env_thetali2_ = data.groups['profiles'].variables['env_thetali2']
@@ -135,6 +142,7 @@ def main():
     rho_temp = np.tile(rho_,(np.shape(updraft_fraction_)[0],1))
     updraft_buoyancy_ -=buoyancy_mean_
     env_buoyancy_ -=buoyancy_mean_
+    Wvar_mean_ = calc_covar(w_mean2_, w_mean_, w_mean_)
     Hvar_mean_ = calc_covar(thetali_mean2_, thetali_mean_, thetali_mean_)
     QTvar_mean_ = calc_covar(qt_mean2_,       qt_mean_,      qt_mean_)
     env_Hvar_ = calc_covar(env_thetali2_,   env_thetali_,  env_thetali_)
@@ -161,6 +169,10 @@ def main():
     diffusive_flux_u_  = np.subtract(total_flux_u_,massflux_u_)
     diffusive_flux_v_  = np.subtract(total_flux_v_,massflux_v_)
 
+    H_third_m_ = calc_third_m(thetali_mean_, thetali_mean2_, thetali_mean3_, Hvar_mean_, updraft_fraction_)
+    QT_third_m_ = calc_third_m(qt_mean_, qt_mean2_, qt_mean3_, QTvar_mean_, updraft_fraction_)
+    W_third_m_ = calc_third_m(w_mean_, w_mean2_, w_mean3_, Wvar_mean_, updraft_fraction_)
+
     output = nc.Dataset(fname, "w", format="NETCDF4")
     output.createDimension('z', len(z_half_))
     output.createDimension('t', len(t_))
@@ -180,6 +192,9 @@ def main():
     env_Hvar = profiles_grp.createVariable('env_Hvar','f4',('t','z'))
     env_QTvar = profiles_grp.createVariable('env_QTvar','f4',('t','z'))
     env_HQTcov = profiles_grp.createVariable('env_HQTcov','f4',('t','z'))
+    W_third_m = profiles_grp.createVariable('W_third_m','f4',('t','z'))
+    H_third_m = profiles_grp.createVariable('H_third_m','f4',('t','z'))
+    QT_third_m = profiles_grp.createVariable('QT_third_m','f4',('t','z'))
     massflux = profiles_grp.createVariable('massflux','f4',('t','z'))
     massflux_h = profiles_grp.createVariable('massflux_h','f4',('t','z'))
     massflux_qt = profiles_grp.createVariable('massflux_qt','f4',('t','z'))
@@ -247,6 +262,9 @@ def main():
     p0[:] = p0_[:]
     Hvar_mean[:,:] = Hvar_mean_[:,:]
     QTvar_mean[:,:] = QTvar_mean_[:,:]
+    W_third_m[:,:] = W_third_m_[:,:]
+    H_third_m[:,:] = H_third_m_[:,:]
+    QT_third_m[:,:] = QT_third_m_[:,:]
     env_Hvar[:,:] = env_Hvar_[:,:]
     env_QTvar[:,:] = env_QTvar_[:,:]
     env_HQTcov[:,:] = env_HQTcov_[:,:]
@@ -319,6 +337,13 @@ def calc_covar(var_sq, var1, var2):
 
     covar = np.subtract(var_sq,np.multiply(var1,var2))
     return covar
+
+def calc_third_m(var, var2, var3, covar, upd_frac):
+    A = np.multiply(3.0,np.multiply(var,covar))
+    B = np.power(var,3.0)
+    C = np.add(A,B)
+    third_m = np.subtract(var3,C)
+    return third_m
 
 if __name__ == '__main__':
     main()
