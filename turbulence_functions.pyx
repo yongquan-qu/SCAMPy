@@ -293,10 +293,10 @@ cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) 
     # TODO: need to test whehter the updraft_top or rd is a better length scale used in the drag term -> for now rd is used being consistent with tan18
 
     # # H based calc:  using the vertical length scale of the plume
-    # _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 2000)
+    _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 500.0)
 
-    # rd based calc:  using the horizontal length scale of the plume -> as in tan18
-    _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * sqrt(press_in.a_kfull) * sqrt(press_in.a_kfull) * press_in.beta2*press_in.w_kfull**2/press_in.rd
+    # TODO: shrink the limit on H to dz or maybe 5*dz?
+    # _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2*press_in.w_kfull**2/fmax(press_in.updraft_top, 2.0*press_in.dz)
 
     return _ret
 
