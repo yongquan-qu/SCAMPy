@@ -82,6 +82,7 @@ cdef struct pressure_in_struct:
     double w_kphalf
     double w_kenv
     double dzi
+    double dz
     double z_full
     double drag_sign
     double asp_ratio
