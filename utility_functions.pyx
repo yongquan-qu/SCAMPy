@@ -90,7 +90,7 @@ cdef double auto_smooth_minimum( const double [:] x, double f):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double lamb_smooth_minimum( const double [:] x, double eps):
+cdef double lamb_smooth_minimum( const double [:] x, double eps, double dz):
     cdef:
       unsigned int i = 0
       double num, den
@@ -105,7 +105,7 @@ cdef double lamb_smooth_minimum( const double [:] x, double eps):
       i += 1
 
     xmin = min(x_)
-    lambda0 = xmin*eps/np.real(lambertw(2.0/np.e))
+    lambda0 = max(xmin*eps/np.real(lambertw(2.0/np.e)), dz)
 
     i = 0
     num = 0.0; den = 0.0;

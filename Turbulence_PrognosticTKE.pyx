@@ -833,7 +833,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 else:
                     l1 = 1.0e6
 
-                l[0]=l2; l[1]=l1; l[2]=l3;
+                l[0]=l1; l[1]=l3; l[2]=l2;
 
                 j = 0
                 while(j<len(l)):
@@ -945,7 +945,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 else:
                     l1 = 1.0e6
 
-                l[0]=l2; l[1]=l1; l[2]=l3;
+                l[0]=l1; l[1]=l3; l[2]=l2;
 
                 j = 0
                 while(j<len(l)):
@@ -954,7 +954,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     j += 1
 
                 self.mls[k] = np.argmin(l)
-                self.mixing_length[k] = lamb_smooth_minimum(l, 0.1)
+                self.mixing_length[k] = lamb_smooth_minimum(l, 0.1, 1.5)
                 self.ml_ratio[k] = self.mixing_length[k]/l[int(self.mls[k])]
 
         else:
