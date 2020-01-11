@@ -134,14 +134,14 @@ def Rico(namelist_defaults):
 
     namelist = copy.deepcopy(namelist_defaults)
 
-    namelist['grid']['nz'] = 100
+    namelist['grid']['nz'] = 150
     namelist['grid']['dz'] = 40.0
 
     namelist['time_stepping']['dt'] = 20.0
     namelist['time_stepping']['t_max'] = 86400.0
 
-    namelist['microphysics']['rain_model'] = 'cutoff'
-    # namelist['microphysics']['rain_model'] = 'clima_1m'
+    # namelist['microphysics']['rain_model'] = 'cutoff'
+    namelist['microphysics']['rain_model'] = 'clima_1m'
 
     namelist['meta']['simname'] = 'Rico'
     namelist['meta']['casename'] = 'Rico'
