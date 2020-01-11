@@ -821,24 +821,15 @@ cdef class TRMM_LBA(CasesBase):
         if TS.t<600.0: # first 10 min use the radiative forcing of t=10min (as in the paper)
             for k in xrange(self.Fo.Gr.nzg):
                 self.Fo.dTdt[k] = self.rad[0,k]
-        elif TS.t>18900.0:
-            for k in xrange(self.Fo.Gr.nzg):
-                self.Fo.dTdt[k] = (self.rad[31,k]-self.rad[30,k])/(self.rad_time[31]-self.rad_time[30])\
-                                      *(18900.0/60.0-self.rad_time[30])+self.rad[30,k]
-
         else:
             if TS.t%600.0 == 0:
                 for k in xrange(self.Fo.Gr.nzg):
                     self.Fo.dTdt[k] = self.rad[ind1,k]
             else: # in all other cases - interpolate
                 for k in xrange(self.Fo.Gr.nzg):
-                    if self.Fo.Gr.z_half[k] < 22699.48:
-                        self.Fo.dTdt[k]    = (self.rad[ind2,k]-self.rad[ind1,k])\
-                                                 /(self.rad_time[ind2]-self.rad_time[ind1])\
-                                                 *(TS.t/60.0-self.rad_time[ind1])+self.rad[ind1,k]
-                    else:
-                        self.Fo.dTdt[k] = 0.0
-
+                    self.Fo.dTdt[k]    = (self.rad[ind2,k]-self.rad[ind1,k])\
+                                        /(self.rad_time[ind2]-self.rad_time[ind1])\
+                                        *(TS.t - self.rad_time[ind1])+self.rad[ind1,k]
         self.Fo.update(GMV)
 
         return
