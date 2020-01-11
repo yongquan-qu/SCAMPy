@@ -1303,10 +1303,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.c_det = self.detrainment_factor
                     input.rd = self.pressure_plume_spacing[i]
                     input.nh_pressure = self.nh_pressure[i,k]
-                    input.nh_pressure_b_coeff = self.pressure_buoy_coeff
                     input.RH_upd = self.UpdVar.RH.values[i,k]
                     input.RH_env = self.EnvVar.RH.values[k]
-                    input.turb_entr = (2.0/self.pressure_plume_spacing[i]**2.0) * self.horizontal_KH[i,k]/fmax(self.UpdVar.W.values[i,k], 1e-6)
 
                     if self.calc_tke:
                             input.tke = self.EnvVar.TKE.values[k]
