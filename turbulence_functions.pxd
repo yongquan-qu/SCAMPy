@@ -57,8 +57,6 @@ cdef struct entr_in_struct:
     double dw2dz
     double L
     double zbl
-    double nh_pressure_b_coeff
-    double turb_entr
     double poisson
     long quadrature_order
 
