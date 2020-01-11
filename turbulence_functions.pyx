@@ -41,66 +41,24 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, dw,dw_p,dw_m, db_p, db_m,db_a, c_det, bmix
-        double lambda_ij, lambda_ji, lambda_, a_limit
+        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det
 
     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     _ret.sorting_function = f_ent
+
     c_det = entr_in.c_det
     if (entr_in.ql_up+entr_in.ql_env)==0.0:
         c_det = 0.0
-    bmix = (entr_in.b_upd + entr_in.b_env)
-    w_min = 2.220446049250313e-16
 
-    if entr_in.w_upd - entr_in.w_env>0.0:
-        dw = entr_in.w_upd - entr_in.w_env + w_min
-    else:
-        dw = entr_in.w_upd - entr_in.w_env - w_min
-
-    lambda_ij = fmax( bmix/dw,0.0)/dw
-    lambda_ji = fmax(-bmix/dw,0.0)/dw
-    lambda_   = fabs( bmix/dw)/dw
-    a_limit = ( 1.0 - exp(-entr_in.a_upd/w_min))* ( 1.0 - exp(-(1-entr_in.a_upd)/w_min) )
-
-    _ret.entr_sc = (entr_in.c_ent*lambda_ij + c_det*f_det*lambda_)*a_limit
-    _ret.detr_sc = ((1.0 - entr_in.nh_pressure_b_coeff)*lambda_ji + c_det*f_ent*lambda_ij)*a_limit
+    dw2  = fmax((entr_in.w_upd - entr_in.w_env)**2.0, 1e-2)
+    db_p = fmax(entr_in.b_upd - entr_in.b_env,0.0)
+    db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
+    db_a = fabs(entr_in.b_env - entr_in.b_upd)
+    _ret.entr_sc = entr_in.c_ent*db_p/dw2 + c_det*f_det*db_a/dw2
+    _ret.detr_sc = entr_in.c_ent*db_m/dw2 + c_det*f_ent*db_a/dw2
 
     return _ret
-
-# cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
-#     cdef:
-#         entr_struct _ret
-#         double f_ent, f_det, dw,dw_p,dw_m, db_p, db_m,db_a, c_det, bmix
-#         double lambda_ij, lambda_ji, lambda_, w_min, a_limit
-
-#     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-#     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-#     _ret.sorting_function = f_ent
-#     c_det = entr_in.c_det
-#     if (entr_in.ql_up+entr_in.ql_env)==0.0:
-#         c_det = 0.0
-#     bmix = (entr_in.b_upd + entr_in.b_env) + entr_in.nh_pressure
-#     w_min = 2.220446049250313e-16
-
-#     if entr_in.w_upd - entr_in.w_env>0.0:
-#         dw = entr_in.w_upd - entr_in.w_env + w_min
-#     else:
-#         dw = entr_in.w_upd - entr_in.w_env - w_min
-
-#     lambda_ij = fmax( bmix/dw,0.0)/dw
-#     lambda_ji = fmax(-bmix/dw,0.0)/dw + entr_in.turb_entr
-#     lambda_   = fabs( bmix/dw)/dw
-#     a_limit = ( 1.0 - exp(-entr_in.a_upd/0.01))* ( 1.0 - exp(-(1-entr_in.a_upd)/0.01) )
-#     _ret.entr_sc = (entr_in.c_ent*lambda_ij +c_det * f_det * lambda_ji) * a_limit
-#     _ret.detr_sc = (0.8*(1.0 - entr_in.nh_pressure_b_coeff)*(lambda_ji) + c_det * f_ent * lambda_ij) * a_limit
-
-#     # if bmix<=0.0:
-#     # _ret.entr_sc = entr_in.c_ent*lambda_ij * ( 1.0 - exp(-(entr_in.w_upd - entr_in.w_env)**2.0/w_min**2.0) )
-#     # _ret.detr_sc = c_det*f_ent*lambda_
-#     #     _ret.detr_sc = 0.8*(1.0 - entr_in.nh_pressure_b_coeff)*(lambda_ji)  * ( 1.0 - exp(-entr_in.a_upd/0.01) )
-
-#     return _ret
 
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
