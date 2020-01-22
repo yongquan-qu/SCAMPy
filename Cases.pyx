@@ -822,15 +822,9 @@ cdef class TRMM_LBA(CasesBase):
             for k in xrange(self.Fo.Gr.nzg):
                 if self.Fo.Gr.z_half[k] < 22699.48:
                     self.Fo.dTdt[k] = self.rad[0,k]
-                else:
-                        self.Fo.dTdt[k] = 0.0
-        elif TS.t>18900.0:
-            for k in xrange(self.Fo.Gr.nzg):
-                self.Fo.dTdt[k] = (self.rad[31,k]-self.rad[30,k])/(self.rad_time[31]-self.rad_time[30])\
-                                      *(18900.0/60.0-self.rad_time[30])+self.rad[30,k]
 
         else:
-            if TS.t%600.0 == 0:
+            if TS.t%600.0 == 0 or ind1 == ind2:
                 for k in xrange(self.Fo.Gr.nzg):
                     if self.Fo.Gr.z_half[k] < 22699.48:
                         self.Fo.dTdt[k] = self.rad[ind1,k]
@@ -845,6 +839,10 @@ cdef class TRMM_LBA(CasesBase):
                     else:
                         self.Fo.dTdt[k] = 0.0
 
+        # elif TS.t>18900.0:
+        #     for k in xrange(self.Fo.Gr.nzg):
+        #         self.Fo.dTdt[k] = (self.rad[31,k]-self.rad[30,k])/(self.rad_time[31]-self.rad_time[30])\
+        #                               *(18900.0/60.0-self.rad_time[30])+self.rad[30,k]
         self.Fo.update(GMV)
 
         return
