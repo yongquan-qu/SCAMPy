@@ -663,7 +663,7 @@ cdef class TRMM_LBA(CasesBase):
         self.Fo.Ref = Ref
         self.Fo.initialize(GMV)
         self.Fo.dTdt = np.zeros(Gr.nzg, dtype=np.double)
-        self.rad_time = np.linspace(10,360,36)*60
+        self.rad_time = np.linspace(10,360,37)*60
         z_in         = np.array([42.5, 200.92, 456.28, 743, 1061.08, 1410.52, 1791.32, 2203.48, 2647,3121.88, 3628.12,
                                  4165.72, 4734.68, 5335, 5966.68, 6629.72, 7324.12,
                                  8049.88, 8807, 9595.48, 10415.32, 11266.52, 12149.08, 13063, 14008.28,
@@ -782,8 +782,9 @@ cdef class TRMM_LBA(CasesBase):
         A = np.interp(Gr.z_half,z_in,rad_in[0,:])
         for tt in xrange(1,36):
             A = np.vstack((A, np.interp(Gr.z_half,z_in,rad_in[tt,:])))
-        self.rad = np.multiply(A,1.0) # store matrix in self
-
+        # add one more line of the same as the last one in the data
+        A = np.vstack((A, np.interp(Gr.z_half,z_in,rad_in[tt,:])))
+        self.rad = A # store matrix in self
         ind1 = int(mt.trunc(10.0/600.0))
         ind2 = int(mt.ceil(10.0/600.0))
         for k in xrange(Gr.nzg):
@@ -792,8 +793,6 @@ cdef class TRMM_LBA(CasesBase):
             else:
                 self.Fo.dTdt[k]    = (self.rad[ind2,k]-self.rad[ind1,k])/\
                                       (self.rad_time[ind2]-self.rad_time[ind1])*(10.0)+self.rad[ind1,k]
-
-
         return
 
 
@@ -812,37 +811,28 @@ cdef class TRMM_LBA(CasesBase):
         self.Sur.rho_uflux = 0.0
         self.Sur.rho_vflux = 0.0
         return
+
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
         cdef:
             Py_ssize_t k, ind1, ind2
 
         ind2 = int(mt.ceil(TS.t/600.0))
         ind1 = int(mt.trunc(TS.t/600.0))
-        if TS.t<600.0: # first 10 min use the radiative forcing of t=10min (as in the paper)
-            for k in xrange(self.Fo.Gr.nzg):
-                if self.Fo.Gr.z_half[k] < 22699.48:
+        for k in xrange(self.Fo.Gr.nzg):
+            if self.Fo.Gr.z_half[k] >= 22699.48:
+                self.Fo.dTdt[k] = 0.0
+            else:
+                if TS.t<600.0: # first 10 min use the radiative forcing of t=10min (as in the paper)
                     self.Fo.dTdt[k] = self.rad[0,k]
-
-        else:
-            if TS.t%600.0 == 0 or ind1 == ind2:
-                for k in xrange(self.Fo.Gr.nzg):
-                    if self.Fo.Gr.z_half[k] < 22699.48:
+                elif TS.t<21600.0:
+                    if TS.t%600.0 == 0:
                         self.Fo.dTdt[k] = self.rad[ind1,k]
                     else:
-                        self.Fo.dTdt[k] = 0.0
-            else: # in all other cases - interpolate
-                for k in xrange(self.Fo.Gr.nzg):
-                    if self.Fo.Gr.z_half[k] < 22699.48:
-                        self.Fo.dTdt[k]    = (self.rad[ind2,k]-self.rad[ind1,k])\
+                        self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
                                                  /(self.rad_time[ind2]-self.rad_time[ind1])\
                                                  *(TS.t-self.rad_time[ind1])+self.rad[ind1,k]
-                    else:
-                        self.Fo.dTdt[k] = 0.0
-
-        # elif TS.t>18900.0:
-        #     for k in xrange(self.Fo.Gr.nzg):
-        #         self.Fo.dTdt[k] = (self.rad[31,k]-self.rad[30,k])/(self.rad_time[31]-self.rad_time[30])\
-        #                               *(18900.0/60.0-self.rad_time[30])+self.rad[30,k]
+                else:
+                    self.Fo.dTdt[k] = self.rad[35,k]
         self.Fo.update(GMV)
 
         return
