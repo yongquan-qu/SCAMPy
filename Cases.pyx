@@ -72,7 +72,9 @@ cdef class CasesBase:
 
 
 cdef class Soares(CasesBase):
-# Case based on (Soares et al, 2004): An EDMF parameterization for dry and shallow cumulus convection
+#Soares, P.M.M., Miranda, P.M.A., Siebesma, A.P. and Teixeira, J. (2004),
+#An eddy‐diffusivity/mass‐flux parametrization for dry and shallow cumulus convection.
+#Q.J.R. Meteorol. Soc., 130: 3365-3383. doi:10.1256/qj.03.223
     def __init__(self, paramlist):
         self.casename = 'Soares2004'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
@@ -163,7 +165,9 @@ cdef class Soares(CasesBase):
         return
 
 cdef class Nieuwstadt(CasesBase):
-# Case based on (Nieuwstadt et al, 1993): LES of the CBL: A comparison of 4 codes
+# "Nieuwstadt, F. T., Mason, P. J., Moeng, C. H., & Schumann, U. (1993).
+#Large-eddy simulation of the convective boundary layer: A comparison of
+#four computer codes. In Turbulent shear flows 8 (pp. 343-367). Springer, Berlin, Heidelberg."
     def __init__(self, paramlist):
         self.casename = 'Nieuwstadt'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
