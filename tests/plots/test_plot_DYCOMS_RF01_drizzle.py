@@ -40,7 +40,7 @@ def sim_data(request):
     request.addfinalizer(cmn.removing_files)
 
     return sim_data
-
+@pytest.mark.skip(reason="GATE not working yet")
 def test_plot_DYCOMS_RF01_drizzle(sim_data):
     """
     plot drizzling DYCOMS_RF01 timeseries

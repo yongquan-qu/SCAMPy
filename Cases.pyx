@@ -79,8 +79,8 @@ cdef class Soares(CasesBase):
         self.Fo.apply_subsidence = False
         return
     cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
-        Ref.Pg = 1000.0 * 100.0
-        Ref.qtg = 4.5e-3
+        Ref.Pg = 1.0e5
+        Ref.qtg = 5.0e-3
         Ref.Tg = 300.0
         Ref.initialize(Gr, Stats)
         return
@@ -826,7 +826,10 @@ cdef class TRMM_LBA(CasesBase):
                     if TS.t%600.0 == 0:
                         self.Fo.dTdt[k] = self.rad[ind1,k]
                     else:
-                        self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
+                        if ind2>35:
+                            self.Fo.dTdt[k] = self.rad[ind1,k]
+                        else:
+                            self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
                                                  /(self.rad_time[ind2]-self.rad_time[ind1])\
                                                  *(TS.t-self.rad_time[ind1])+self.rad[ind1,k]
                 else:
