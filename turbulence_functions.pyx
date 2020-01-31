@@ -59,14 +59,11 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     db_p = fmax(entr_in.b_upd - entr_in.b_env,0.0)
     db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
     db_a = fabs(entr_in.b_env - entr_in.b_upd)
-    xi=0.20
+    xi=0.25
     bmix = (entr_in.b_upd - entr_in.b_env)*(xi*(1.0-entr_in.a_upd) - (1.0-xi)*entr_in.a_upd)
     _ret.b_mix = bmix
     _ret.entr_sc = (entr_in.c_ent*fmax( bmix,0.0)/dw**2.0 + c_det*f_det*fabs(bmix)/dw**2.0)
     _ret.detr_sc = (entr_in.c_ent*fmax(-bmix,0.0)/dw**2.0 + c_det*f_ent*fabs(bmix)/dw**2.0)
-
-    # _ret.entr_sc = entr_in.c_ent*db_p/dw2 + c_det*f_det*db_a/dw2
-    # _ret.detr_sc = entr_in.c_ent*db_m/dw2 + c_det*f_ent*db_a/dw2
 
     return _ret
 

@@ -45,10 +45,10 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['static_stab_coeff'] = 0.4
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['lambda_stab'] = 0.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.8
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.5 #0.5
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 2.5 #2.5
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.5
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 2.5
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.06
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0 #2.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.2
     # This constant_plume_spacing corresponds to plume_spacing/alpha_d in the Tan et al paper,
     #with values plume_spacing=500.0, alpha_d = 0.375
@@ -65,6 +65,8 @@ def main():
 
     if case_name == 'Soares':
         paramlist = Soares(paramlist_defaults)
+    elif case_name == 'Nieuwstadt':
+        paramlist = Nieuwstadt(paramlist_defaults)
     elif case_name == 'Bomex':
         paramlist = Bomex(paramlist_defaults)
     elif case_name == 'life_cycle_Tan2018':
@@ -96,6 +98,13 @@ def Soares(paramlist_defaults):
 
     return paramlist
 
+def Nieuwstadt(paramlist_defaults):
+
+    paramlist = copy.deepcopy(paramlist_defaults)
+    paramlist['meta']['casename'] = 'Nieuwstadt'
+
+    return paramlist
+    
 def Bomex(paramlist_defaults):
 
     paramlist = copy.deepcopy(paramlist_defaults)
