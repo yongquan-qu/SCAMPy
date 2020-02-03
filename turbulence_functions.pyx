@@ -41,7 +41,7 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, dw2, db_p, db_m, db_abs, c_det, bmix, x_up, area_regulator
+        double f_ent, f_det, c_det, bmix, x_up, area_regulator
 
     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
@@ -55,13 +55,11 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
         dw -= 0.01
     else:
         dw += 0.01
-    x_up=0.25
 
+    x_up=0.25
     area_regulator = (-4.0+5.0/(1.0+exp(-100.0*(x_up*(1.0-entr_in.a_upd) - (1.0-x_up)*entr_in.a_upd))))
     bmix = (entr_in.b_upd - entr_in.b_env)*area_regulator
-
     _ret.b_mix = bmix
-
 
     _ret.entr_sc = (entr_in.c_ent*fmax( bmix/dw,0.0)/dw +c_det*f_det*fabs(bmix)/dw**2.0)
     _ret.detr_sc = (entr_in.c_ent*fmax(-bmix/dw,0.0)/dw+ c_det*f_ent*fabs(bmix)/dw**2.0)
