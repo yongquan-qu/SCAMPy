@@ -19,8 +19,9 @@ import plot_scripts as pls
 @pytest.fixture(scope="module")
 def sim_data(request):
 
+    # remove netcdf file from previous failed test
+    request.addfinalizer(cmn.removing_files)
     # generate namelists and paramlists
-    cmn.removing_files
     setup = cmn.simulation_setup('DYCOMS_RF01')
 
     # run scampy

@@ -11,11 +11,10 @@ from netCDF4 import Dataset
 
 import pytest
 import numpy as np
-
+import subprocess
 import main as scampy
 import common as cmn
 import plot_scripts as pls
-import pprint as pp
 
 @pytest.fixture(scope="module")
 def sim_data(request):
@@ -23,7 +22,7 @@ def sim_data(request):
     # remove netcdf file from previous failed test
     request.addfinalizer(cmn.removing_files)
     # generate namelists and paramlists
-    setup = cmn.simulation_setup('Rico')
+    setup = cmn.simulation_setup('Nieuwstadt')
 
     # run scampy
     subprocess.call("python setup.py build_ext --inplace", shell=True, cwd='../')
@@ -37,46 +36,47 @@ def sim_data(request):
 
     return sim_data
 
-def test_plot_Rico(sim_data):
+
+def test_plot_Nieuwstadt(sim_data):
     """
-    plot Rico timeseries
+    plot Nieuwstadt timeseries
     """
     # make directory
     localpath = os.getcwd()
     try:
-        os.mkdir(localpath + "/plots/output/Rico/")
+        os.mkdir(localpath + "/plots/output/Nieuwstadt/")
     except:
-        print('Rico folder exists')
+        print('Nieuwstadt folder exists')
     try:
-        os.mkdir(localpath + "/plots/output/Rico/all_variables/")
+        os.mkdir(localpath + "/plots/output/Nieuwstadt/all_variables/")
     except:
-        print('Rico/all_variables folder exists')
+        print('Nieuwstadt/all_variables folder exists')
 
-    if (os.path.exists(localpath + "/les_data/Rico.nc")):
-        les_data = Dataset(localpath + "/les_data/Rico.nc", 'r')
+    if (os.path.exists(localpath + "/les_data/Nieuwstadt.nc")):
+        les_data = Dataset(localpath + "/les_data/Nieuwstadt.nc", 'r')
     else:
-        url_ = "https://www.dropbox.com/s/c2bvey47y8xryuc/Rico.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Rico.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Rico.nc", 'r')
+        url_ = "https://www.dropbox.com/s/wkfy1mcbbo9iyx7/Nieuwstadt.nc?dl=0"
+        os.system("wget -O "+localpath+"/les_data/Nieuwstadt.nc "+url_)
+        les_data = Dataset(localpath + "/les_data/Nieuwstadt.nc", 'r')
 
-    f1 = "plots/output/Rico/"
+    f1 = "plots/output/Nieuwstadt/"
     f2 = f1 + "all_variables/"
-    cn = "Rico_"
-    t0 = 22
-    t1 = 24
+    cn = "Nieuwstadt_"
+    t0 = 6
+    t1 = 8
     cb_min = [0., 0.]
-    cb_max = [0.05, 5]
+    cb_max = [0.01, 2.5]
     fixed_cbar = True
-    cb_min_t = [296, 296, 297, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 9,\
-                -0.2, 0, -10, -7,\
-                 0, -0.05, 0,\
-                -0.2, -0.05, -0.2,\
-                 0., -0.3, -1e-4]
-    cb_max_t = [330, 330, 308, 0.04, 0.02, 1.5, 0.05, 0.03, 100, 3, 100, 18, 18, 18,\
-                0, 4, 3, -3,\
-                0.24, 0.03, 1.5,\
-                0.04, 0.05, 0.04,\
-                0.3, 0.05, 4e-4]
+    cb_min_t = [300, 300, 300, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 4.5,\
+                -0.4, 0, -0.7, -0.45,\
+                0, -0.03, 0,\
+                -0.045, -0.06, 0,\
+                0, 0, -0.04]
+    cb_max_t = [305, 305, 302, 1, 1, 1, 1, 1, 100, 1, 100, 5, 5, 5,\
+                0, 2.4, 0.7, 0.45,\
+                0.28, 0.01, 1.6,\
+                0.06, 0.045, 0.1,\
+                0.01, 0.1, 0.08]
 
     scm_dict = cmn.read_scm_data(sim_data)
     les_dict = cmn.read_les_data(les_data)
@@ -101,4 +101,3 @@ def test_plot_Rico(sim_data):
                   cn+"main_timeseries.pdf", cb_min, cb_max, folder=f1)
 
     pls.plot_1D(scm_dict_t, les_dict_t, cn, folder=f2)
-
