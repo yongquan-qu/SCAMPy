@@ -60,7 +60,8 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
     db_a = fabs(entr_in.b_env - entr_in.b_upd)
     xi=0.25
-    aa = (xi*(1.0-entr_in.a_upd) - (1.0-xi)*entr_in.a_upd)
+    # aa = (xi*(1.0-entr_in.a_upd) - (1.0-xi)*entr_in.a_upd)
+    aa = (xi-entr_in.a_upd)
     fa = (-4.0+5.0/(1.0+exp(-100.0*aa)))
     # if entr_in.a_upd<0.25:
     #     fa = 1.0
