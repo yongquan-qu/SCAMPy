@@ -41,7 +41,7 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det, bmix, xi
+        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det, bmix, xi,aa, fa
 
     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
@@ -52,18 +52,29 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
 
     dw   = entr_in.w_upd - entr_in.w_env
     if dw < 0.0:
-        dw -= 0.001
+        dw -= 0.01
     else:
-        dw += 0.001
+        dw += 0.01
     dw2  = fmax((entr_in.w_upd - entr_in.w_env)**2.0, 1e-2)
     db_p = fmax(entr_in.b_upd - entr_in.b_env,0.0)
     db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
     db_a = fabs(entr_in.b_env - entr_in.b_upd)
     xi=0.25
-    bmix = (entr_in.b_upd - entr_in.b_env)*(xi*(1.0-entr_in.a_upd) - (1.0-xi)*entr_in.a_upd)
+    aa = (xi*(1.0-entr_in.a_upd) - (1.0-xi)*entr_in.a_upd)
+    fa = (-4.0+5.0/(1.0+exp(-100.0*aa)))
+    # if entr_in.a_upd<0.25:
+    #     fa = 1.0
+    bmix = (entr_in.b_upd - entr_in.b_env)*fa
+
     _ret.b_mix = bmix
-    _ret.entr_sc = (entr_in.c_ent*fmax( bmix,0.0)/dw**2.0 + c_det*f_det*fabs(bmix)/dw**2.0)
+
+
+    _ret.entr_sc = (entr_in.c_ent*fmax( bmix,0.0)/dw**2.0 )#+ c_det*f_det*fabs(bmix)/dw**2.0
     _ret.detr_sc = (entr_in.c_ent*fmax(-bmix,0.0)/dw**2.0 + c_det*f_ent*fabs(bmix)/dw**2.0)
+
+    # _ret.entr_sc = (entr_in.c_ent*db_p/dw2 + c_det*f_det*db_a/dw2)*fmax( fa,0.0)
+    # _ret.detr_sc = (entr_in.c_ent*db_m/dw2 + c_det*f_ent*db_a/dw2)*fmax(-fa,0.0)
+
 
     return _ret
 
