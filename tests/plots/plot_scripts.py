@@ -9,7 +9,7 @@ mpl.use('Agg')  # To allow plotting when display is off
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
-def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
+def plot_mean_prof(scm_data, les_data, tmin, tmax, zmin, zmax, folder="plots/output/"):
     """
     Plots mean profiles from Scampy
     Input:
@@ -84,10 +84,11 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
         fig = plt.figure(fig_name[plot_it])
         plt.xlabel(x_labels[plot_it])
         plt.ylabel('height [km]')
-        plt.ylim([0,\
-                  scm_data["z_half"][-1] +\
-                  (scm_data["z_half"][1] - scm_data["z_half"][0]) * 0.5\
-                 ])
+        # plt.ylim([0,\
+        #           scm_data["z_half"][-1] +\
+        #           (scm_data["z_half"][1] - scm_data["z_half"][0]) * 0.5\
+        #          ])
+        plt.ylim([zmin,zmax])
         plt.grid(True)
         plt.plot(np.nanmean(plot_x_les[plot_it][:, t0_les:t1_les],axis=1), les_data["z_half"],     '-', color='k', label='les', linewidth = 2)
         plt.plot(np.nanmean(plot_x_scm[plot_it][:, t0_scm:t1_scm],axis=1), scm_data["z_half"], '-', color = '#157CC7', label='scm', linewidth = 2)
@@ -97,7 +98,7 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, folder="plots/output/"):
         plt.savefig(folder + "profile_" + fig_name[plot_it]+".pdf")
         plt.clf()
 
-def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_closures(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -173,13 +174,14 @@ def plot_closures(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
 
         plt.xlabel(x_lab[it])
         plt.ylabel("z [km]")
+        plt.ylim([zmin,zmax])
         plt.grid(True)
 
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_tke_comp(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -234,14 +236,14 @@ def plot_tke_comp(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
                                 scm_data["z_half"], "-", color="darkorange", label="tke detr", lw=3)
             plots[plot_it].set_xlabel('tke entr detr [1/m]')
             plots[plot_it].set_xlim([-1e-4, xmax])
-            plots[plot_it].set_ylim([0, np.max(scm_data["z_half"])])
+            plots[plot_it].set_ylim([zmin,zmax])
             plots[plot_it].legend()
 
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_spec_hum(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -288,12 +290,14 @@ def plot_spec_hum(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
                  scm_data["z_half"], "-", color="royalblue", label='les', lw=3)
         if it in [0,3,6]:
             plt.ylabel("z [km]")
+        plt.ylim([zmin,zmax])
+
 
     plt.tight_layout()
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_upd_prop(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -334,6 +338,7 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
         plt.plot(np.nanmean(scm_data[scm_var[it]][:, t0_scm:t1_scm], axis=1),\
                  scm_data["z_half"], "-", color="royalblue", label='scm', lw=3)
         plt.xlabel(lab[it])
+        plt.ylim([zmin,zmax])
         if it in [0,3]:
             plt.ylabel("z [km]")
         if it == 3:
@@ -346,7 +351,7 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, title, folder="plots/output/")
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_fluxes(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_fluxes(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -387,11 +392,12 @@ def plot_fluxes(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
         plt.xlabel(lab[it])
         if it in [0,3]:
             plt.ylabel("z [km]")
+        plt.ylim([zmin,zmax])
 
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_tke_break(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots updraft and environment profiles from Scampy
     Input:
@@ -427,7 +433,7 @@ def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
         plt.plot(np.nanmean(scm_data[scm_var[it]][:, t0_scm:t1_scm], axis=1),\
                  scm_data["z_half"], "-", color=col[it],  label=scm_var[it],\
                  lw=3)
-    plt.ylim([0, np.max(scm_data["z_half"])])
+    plt.ylim([zmin,zmax])
     plt.xlabel('tke componenets scm')
     plt.ylabel('height [km]')
     plt.legend()
@@ -444,7 +450,7 @@ def plot_tke_break(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"):
+def plot_cvar_mean(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots variance and covariance profiles from Scampy
     Input:
@@ -476,10 +482,7 @@ def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
                                #(rows, columns, number)
         plots[plot_it].set_xlabel(x_lab[plot_it])
         plots[plot_it].set_ylabel('height [km]')
-        plots[plot_it].set_ylim([0,\
-                                 scm_data["z_half"][-1] +\
-                                 (scm_data["z_half"][1] - scm_data["z_half"][0]) * 0.5\
-                                ])
+        plots[plot_it].set_ylim([zmin,zmax])
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
@@ -495,7 +498,7 @@ def plot_cvar_mean(scm_data, les_data, tmin, tmax, title, folder="plots/output/"
     plt.savefig(folder + title)
     plt.clf()
 
-def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
+def plot_cvar_comp(scm_data, tmin, tmax, zmin, zmax, title, folder="plots/output/"):
     """
     Plots variance and covariance components profiles from Scampy
     Input:
@@ -528,10 +531,7 @@ def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
                                #(rows, columns, number)
         plots[plot_it].set_xlabel(x_lab[plot_it])
         plots[plot_it].set_ylabel('height [km]')
-        plots[plot_it].set_ylim([0,\
-                                 scm_data["z_half"][-1] +\
-                                 (scm_data["z_half"][1] - scm_data["z_half"][0]) * 0.5\
-                                ])
+        plots[plot_it].set_ylim([zmin,zmax])
         plots[plot_it].grid(True)
         plots[plot_it].xaxis.set_major_locator(ticker.MaxNLocator(2))
 
@@ -545,7 +545,7 @@ def plot_cvar_comp(scm_data, tmin, tmax, title, folder="plots/output/"):
     plt.clf()
 
 def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
-              cb_min, cb_max, folder="plots/output/"):
+              cb_min, cb_max, zmin, zmax, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
     Input:
@@ -580,7 +580,7 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
         cntrf = plt.contourf(les_time, les_z_half, les_data[les_var[it]],\
                              cmap=cmap, levels=levels, vmin=cb_min[it], vmax=cb_max[it])
         cbar = plt.colorbar(cntrf)
-        plt.ylim([0, np.max(scm_z_half)])
+        plt.ylim([zmin,zmax])
         plt.ylabel('height [km]')
         plt.title(les_tit[it])
 
@@ -592,7 +592,7 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
         cntrf = plt.contourf(scm_time, scm_z_half, scm_data[scm_var[it]],\
                              cmap=cmap, levels=levels, vmin=cb_min[it], vmax=cb_max[it])
         cbar = plt.colorbar(cntrf)
-        plt.ylim([0, np.max(scm_z_half)])
+        plt.ylim([zmin,zmax])
         plt.xlabel('time [h]')
         plt.ylabel('height [km]')
         plt.title(scm_tit[it])
@@ -685,7 +685,7 @@ def plot_1D(scm_data, les_data, case, folder="plots/output/"):
     plt.savefig(folder + case + "plume_separation_radius.pdf")
     plt.clf()
 
-def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="plots/output/"):
+def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, zmin, zmax, folder="plots/output/"):
     """
     Plots the time series of Scampy simulations
     Input:
@@ -773,7 +773,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
         else:
             plt.contourf(les_time, les_z_half, les_field, cmap=cmap)
             plt.colorbar()
-        plt.ylim([0,np.max(scm_data["z_half"])])
+        plt.ylim([zmin,zmax])
         plt.ylabel('height [km]')
         plt.grid(True)
 
@@ -787,7 +787,7 @@ def plot_contour_t(scm_data, les_data, fixed_cbar, cb_min_t, cb_max_t, folder="p
         else:
             plt.contourf(scm_time, scm_z_half, scm_field, cmap=cmap)
             plt.colorbar()
-        plt.ylim([0,np.max(scm_data["z_half"])])
+        plt.ylim([zmin,zmax])
         plt.xlabel('time [h]')
         plt.ylabel('height [km]')
         plt.grid(True)

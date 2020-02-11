@@ -48,6 +48,8 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.5
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.06
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_mu'] = 0.25
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_sigma'] = 0.05
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.2
     # This constant_plume_spacing corresponds to plume_spacing/alpha_d in the Tan et al paper,

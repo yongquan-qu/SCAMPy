@@ -23,6 +23,8 @@ cdef struct entr_in_struct:
     double z
     double sort_pow
     double c_det
+    double sigma
+    double mu
     double dz
     double w_upd
     double dw
@@ -33,6 +35,7 @@ cdef struct entr_in_struct:
     double b_mean
     double b_env
     double a_upd
+    double a_env
     double tke
     double RH_upd
     double RH_env

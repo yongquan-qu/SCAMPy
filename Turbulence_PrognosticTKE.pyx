@@ -151,6 +151,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.surface_area = paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area']
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
+        self.entrainment_erf_mu = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_mu']
+        self.entrainment_erf_sigma = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_erf_sigma']
         self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
         self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
         self.sorting_power = paramlist['turbulence']['EDMF_PrognosticTKE']['sorting_power']
@@ -1270,15 +1272,21 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         input.dz = self.Gr.dz
         input.zbl = self.compute_zbl_qt_grad(GMV)
+        input.sort_pow = self.sorting_power
+        input.c_ent = self.entrainment_factor
+        input.c_det = self.detrainment_factor
+        input.sigma = self.entrainment_erf_sigma
+        input.mu = self.entrainment_erf_mu
+        input.quadrature_order = quadrature_order
         for i in xrange(self.n_updrafts):
             input.zi = self.UpdVar.cloud_base[i]
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 if self.UpdVar.Area.values[i,k]>0.0:
-                    input.quadrature_order = quadrature_order
                     input.b_upd = self.UpdVar.B.values[i,k]
                     input.w_upd = interp2pt(self.UpdVar.W.values[i,k],self.UpdVar.W.values[i,k-1])
                     input.z = self.Gr.z_half[k]
                     input.a_upd = self.UpdVar.Area.values[i,k]
+                    input.a_env = 1.0-self.UpdVar.Area.bulkvalues[k]
                     input.tke = self.EnvVar.TKE.values[k]
                     input.ml = self.mixing_length[k]
                     input.qt_env = self.EnvVar.QT.values[k]
@@ -1298,9 +1306,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.env_Hvar = self.EnvVar.Hvar.values[k]
                     input.env_QTvar = self.EnvVar.QTvar.values[k]
                     input.env_HQTcov = self.EnvVar.HQTcov.values[k]
-                    input.c_ent = self.entrainment_factor
-                    input.sort_pow = self.sorting_power
-                    input.c_det = self.detrainment_factor
                     input.rd = self.pressure_plume_spacing[i]
                     input.nh_pressure = self.nh_pressure[i,k]
                     input.RH_upd = self.UpdVar.RH.values[i,k]
@@ -1310,7 +1315,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                             input.tke = self.EnvVar.TKE.values[k]
 
                     input.T_mean = (self.EnvVar.T.values[k]+self.UpdVar.T.values[i,k])/2
-                    input.L = 20000.0 # need to define the scale of the GCM grid resolution
                     ## Ignacio
                     if input.zbl-self.UpdVar.cloud_base[i] > 0.0:
                         input.poisson = np.random.poisson(self.Gr.dz/((input.zbl-self.UpdVar.cloud_base[i])/10.0))

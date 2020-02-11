@@ -65,6 +65,8 @@ def test_plot_Bomex(sim_data):
     cn = "Bomex_"
     t0 = 4
     t1 = 6
+    zmin = 0.0
+    zmax = 2.2
     cb_min = [0., 0.]
     cb_max = [0.021, 4.8]
     fixed_cbar = True
@@ -85,20 +87,21 @@ def test_plot_Bomex(sim_data):
     scm_dict_t = cmn.read_scm_data_timeseries(sim_data)
     les_dict_t = cmn.read_les_data_timeseries(les_data)
 
-    pls.plot_closures(scm_dict, les_dict, t0, t1, cn+"closures.pdf", folder=f1)
-    pls.plot_spec_hum(scm_dict, les_dict, t0, t1, cn+"humidities.pdf", folder=f1)
-    pls.plot_upd_prop(scm_dict, les_dict, t0, t1, cn+"updraft_properties.pdf", folder=f1)
-    pls.plot_fluxes(scm_dict, les_dict, t0, t1, cn+"mean_fluxes.pdf", folder=f1)
-    pls.plot_tke_comp(scm_dict, les_dict, t0, t1, cn+"tke_components.pdf", folder=f1)
+    pls.plot_closures(scm_dict, les_dict, t0, t1, zmin, zmax, cn+"closures.pdf", folder=f1)
+    pls.plot_spec_hum(scm_dict, les_dict, t0, t1, zmin, zmax,  cn+"humidities.pdf", folder=f1)
+    pls.plot_upd_prop(scm_dict, les_dict, t0, t1, zmin, zmax,  cn+"updraft_properties.pdf", folder=f1)
+    pls.plot_fluxes(scm_dict, les_dict, t0, t1, zmin, zmax,  cn+"mean_fluxes.pdf", folder=f1)
+    pls.plot_tke_comp(scm_dict, les_dict, t0, t1, zmin, zmax,  cn+"tke_components.pdf", folder=f1)
 
-    pls.plot_cvar_mean(scm_dict, les_dict, t0, t1, cn+"var_covar_mean.pdf", folder=f2)
-    pls.plot_cvar_comp(scm_dict, t0, t1, cn+"var_covar_components.pdf", folder=f2)
-    pls.plot_tke_break(scm_dict, les_dict, t0, t1,  cn+"tke_breakdown.pdf", folder=f2)
+    pls.plot_cvar_mean(scm_dict, les_dict, t0, t1, zmin, zmax,  cn+"var_covar_mean.pdf", folder=f2)
+    pls.plot_cvar_comp(scm_dict, t0, t1, zmin, zmax,  cn+"var_covar_components.pdf", folder=f2)
+    pls.plot_tke_break(scm_dict, les_dict, t0, t1, zmin, zmax, cn+"tke_breakdown.pdf",folder=f2)
 
-    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, folder=f2)
-    pls.plot_mean_prof(scm_dict, les_dict, t0, t1, folder=f2)
+    pls.plot_contour_t(scm_dict, les_dict, fixed_cbar, cb_min_t, cb_max_t, zmin, zmax, folder=f2)
+    pls.plot_mean_prof(scm_dict, les_dict, t0, t1,  zmin, zmax, folder=f2)
 
     pls.plot_main(scm_dict_t, les_dict_t, scm_dict, les_dict,
-                  cn+"main_timeseries.pdf", cb_min, cb_max, folder=f1)
+                  cn+"main_timeseries.pdf", cb_min, cb_max, zmin, zmax, folder=f1)
 
     pls.plot_1D(scm_dict_t, les_dict_t, cn, folder=f2)
+
