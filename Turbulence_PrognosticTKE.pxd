@@ -44,7 +44,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double entrainment_factor
         double detrainment_factor
         double entrainment_erf_sigma
-        double entrainment_erf_mu
+        double updraft_mixing_frac
         double sorting_power
         double turbulent_entrainment_factor
         double vel_pressure_coeff # used by diagnostic plume option; now calc'ed from Tan et al 2018 coefficient set

@@ -41,7 +41,7 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, c_det, bmix, x_up, area_regulator,f_p, chi, sigma
+        double f_ent, f_det, c_det, bmix, x_up, area_regulator,f_p, chi, sigma, db ,sigma_tau ,mu_tau
 
     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
@@ -56,14 +56,45 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     else:
         dw += 0.001
 
-    chi = erf((entr_in.mu-entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))/sqrt(2.0*entr_in.sigma**2.0))
-    bmix = (entr_in.b_upd - entr_in.b_env)*chi
-    _ret.b_mix = bmix
-
-    _ret.entr_sc = (entr_in.c_ent*fmax( bmix/dw,0.0)/dw + c_det*f_det*fabs(bmix)/dw**2.0)
-    _ret.detr_sc = (entr_in.c_det*fmax(-bmix/dw,0.0)/dw + c_det*f_ent*fabs(bmix)/dw**2.0)
-
+    db = (entr_in.b_upd - entr_in.b_env)
+    mu = db/dw*(entr_in.mu-entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))
+    # sigma = (fmax(fabs(db/dw),1e-6)*entr_in.sigma) # entr_in.sigma=0.05
+    sigma = entr_in.sigma
+    # tau_e = 0.5*(1.0+erf(mu/sqrt(2.0*sigma**2.0)))
+    # tau_d = 0.5*(1.0-erf(mu/sqrt(2.0*sigma**2.0)))
+    tau_e = 1.0/(1.0+exp(-mu/sigma))
+    tau_d = 1.0/(1.0+exp( mu/sigma))
+    _ret.entr_sc = fabs(db/dw)/dw*(entr_in.c_ent*tau_e + c_det*f_det)
+    _ret.detr_sc = fabs(db/dw)/dw*(entr_in.c_ent*tau_d + c_det*f_ent)
     return _ret
+
+
+# cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
+#     cdef:
+#         entr_struct _ret
+#         double f_ent, f_det, c_det, bmix, x_up, area_regulator,f_p, chi, sigma
+
+#     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
+#     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
+#     _ret.sorting_function = f_ent
+#     c_det = entr_in.c_det
+#     if (entr_in.ql_up+entr_in.ql_env)==0.0:
+#         c_det = 0.0
+
+#     dw   = entr_in.w_upd - entr_in.w_env
+#     if dw < 0.0:
+#         dw -= 0.001
+#     else:
+#         dw += 0.001
+
+#     chi = erf((entr_in.mu-entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))/sqrt(2.0*entr_in.sigma**2.0))
+#     bmix = (entr_in.b_upd - entr_in.b_env)*chi
+#     _ret.b_mix = bmix
+
+#     _ret.entr_sc = (entr_in.c_ent*fmax( bmix/dw,0.0)/dw + c_det*f_det*fabs(bmix)/dw**2.0)
+#     _ret.detr_sc = (entr_in.c_det*fmax(-bmix/dw,0.0)/dw + c_det*f_ent*fabs(bmix)/dw**2.0)
+
+#     return _ret
 
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 

@@ -65,7 +65,7 @@ def test_plot_Soares(sim_data):
     t0 = 6
     t1 = 8
     zmin = 0.0
-    zmax = 2.5
+    zmax = 3.0
     cb_min = [0., 0.]
     cb_max = [0.01, 2.5]
     fixed_cbar = True
