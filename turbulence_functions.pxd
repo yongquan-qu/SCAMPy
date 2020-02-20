@@ -23,11 +23,12 @@ cdef struct entr_in_struct:
     double z
     double sort_pow
     double c_det
-    double sigma
+    double chi_upd
     double mu
+    double mu0
     double dz
     double w_upd
-    double dw
+    double dwdz
     double b_upd
     double rd
     double c_ent
