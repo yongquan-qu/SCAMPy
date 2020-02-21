@@ -45,7 +45,7 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
 
     moisture_deficit_d = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     moisture_deficit_e = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-    _ret.sorting_function = f_ent
+    _ret.sorting_function = moisture_deficit_e
     c_det = entr_in.c_det
     if (entr_in.ql_up+entr_in.ql_env)==0.0:
         c_det = 0.0
