@@ -152,7 +152,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
         self.updraft_mixing_frac = paramlist['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac']
-        self.entrainment_mu = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_mu']
+        self.entrainment_sigma = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma']
         self.entrainment_scale = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_scale']
         self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
         self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
@@ -1276,8 +1276,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         input.sort_pow = self.sorting_power
         input.c_ent = self.entrainment_factor
         input.c_det = self.detrainment_factor
-        input.mu = self.entrainment_mu
-        input.mu0 = self.entrainment_scale
+        input.c_mu = self.entrainment_sigma
+        input.c_mu0 = self.entrainment_scale
         input.chi_upd = self.updraft_mixing_frac
         input.quadrature_order = quadrature_order
         for i in xrange(self.n_updrafts):

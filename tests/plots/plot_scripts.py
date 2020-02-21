@@ -84,10 +84,6 @@ def plot_mean_prof(scm_data, les_data, tmin, tmax, zmin, zmax, folder="plots/out
         fig = plt.figure(fig_name[plot_it])
         plt.xlabel(x_labels[plot_it])
         plt.ylabel('height [km]')
-        # plt.ylim([0,\
-        #           scm_data["z_half"][-1] +\
-        #           (scm_data["z_half"][1] - scm_data["z_half"][0]) * 0.5\
-        #          ])
         plt.ylim([zmin,zmax])
         plt.grid(True)
         plt.plot(np.nanmean(plot_x_les[plot_it][:, t0_les:t1_les],axis=1), les_data["z_half"],     '-', color='k', label='les', linewidth = 2)

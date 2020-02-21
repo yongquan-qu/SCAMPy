@@ -24,8 +24,8 @@ cdef struct entr_in_struct:
     double sort_pow
     double c_det
     double chi_upd
-    double mu
-    double mu0
+    double c_mu
+    double c_mu0
     double dz
     double w_upd
     double dwdz
