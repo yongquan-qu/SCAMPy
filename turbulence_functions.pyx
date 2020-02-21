@@ -41,7 +41,7 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, c_det, mu, db, dw, sigmoid_e, sigmoid_d
+        double f_ent, f_det, c_det, mu, db, dw, logistic_e, logistic_d
 
     f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
     f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
@@ -59,11 +59,11 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     db = (entr_in.b_upd - entr_in.b_env)
     mu = entr_in.c_mu/entr_in.c_mu0
 
-    sigmoid_e = 1.0/(1.0+exp(-mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
-    sigmoid_d = 1.0/(1.0+exp( mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
+    logistic_e = 1.0/(1.0+exp(-mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
+    logistic_d = 1.0/(1.0+exp( mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
 
-    _ret.entr_sc = fabs(db/dw)/dw*(entr_in.c_ent*sigmoid_e + c_det*f_det)
-    _ret.detr_sc = fabs(db/dw)/dw*(entr_in.c_ent*sigmoid_d + c_det*f_ent)
+    _ret.entr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_e + c_det*f_det)
+    _ret.detr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_d + c_det*f_ent)
     return _ret
 
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
