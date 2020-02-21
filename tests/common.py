@@ -123,7 +123,7 @@ def read_les_data(les_data):
                  "u_mean", "v_mean", "tke_mean","v_translational_mean", "u_translational_mean",\
                  "updraft_buoyancy", "updraft_fraction", "env_thetali", "updraft_thetali",\
                  "env_qt", "updraft_qt","env_RH", "updraft_RH", "env_ql", "updraft_ql",\
-                 "diffusive_flux_u", "diffusive_flux_v","massflux_u", "massflux_v","total_flux_u", "total_flux_v",\
+                 "diffusive_flux_u", "diffusive_flux_v","massflux","massflux_u", "massflux_v","total_flux_u", "total_flux_v",\
                  "qr_mean", "env_qr", "updraft_qr", "updraft_w", "env_w",  "env_buoyancy", "updraft_ddz_p_alpha",\
                  "thetali_mean2", "qt_mean2", "env_thetali2", "env_qt2", "env_qt_thetali",\
                  "tke_prod_A" ,"tke_prod_B" ,"tke_prod_D" ,"tke_prod_P" ,"tke_prod_T" ,"tke_prod_S",\

@@ -313,7 +313,6 @@ def plot_upd_prop(scm_data, les_data, tmin, tmax, zmin, zmax, title, folder="plo
     t1_scm = int(np.where(np.array(tmax<= scm_data["t"]))[0][0])
     t1_les = int(np.where(np.array(tmax<= les_data["t"]))[0][0])
 
-    les_data["massflux"]  = np.multiply(les_data["updraft_fraction"], les_data["updraft_w"])
 
     fig = plt.figure(1)
     fig.set_figheight(12)

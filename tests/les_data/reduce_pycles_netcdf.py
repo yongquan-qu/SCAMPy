@@ -35,6 +35,7 @@ def main():
     total_flux_v_ = data.groups['profiles'].variables['resolved_y_vel_flux']
 
     updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
+
     rho_ = data.groups['reference'].variables['rho0_half']
     p0_ = data.groups['reference'].variables['p0_half']
 
@@ -152,9 +153,9 @@ def main():
 
 
     # flux diagnosis (diffusive_flux = total_flux - massflux, diffusive_flux is weighted by env_fraction as in scampy TubrbProgTKE line 1723)
-    a_1_a = np.multiply(updraft_fraction_, np.subtract(1.0,updraft_fraction_))
     rho_temp = np.tile(rho_,(np.shape(updraft_fraction_)[0],1))
     p0_temp = np.tile(p0_,(np.shape(updraft_fraction_)[0],1))
+    a_1_a = np.multiply(rho_temp, np.multiply(updraft_fraction_, np.subtract(1.0,updraft_fraction_)))
     updraft_buoyancy_ -=buoyancy_mean_
     env_buoyancy_ -=buoyancy_mean_
     Wvar_mean_ = calc_covar(w_mean2_, w_mean_, w_mean_)
