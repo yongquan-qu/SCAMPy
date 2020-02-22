@@ -1962,14 +1962,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         GMV.QTvar.values[k]  = 0.0
                         GMV.HQTcov.values[k] = 0.0
 
-            elif Case.casename =='Bomex':
-                with nogil:
-                    for k in xrange(self.Gr.nzg):
-                        z = self.Gr.z_half[k]
-                        if (z<=2500.0):
-                            GMV.Hvar.values[k]   = 1.0 - z/3000.0
-                            GMV.QTvar.values[k]  = 1.0 - z/3000.0
-                            GMV.HQTcov.values[k] = 1.0 - z/3000.0
+            # elif Case.casename =='Bomex':
+            #     with nogil:
+            #         for k in xrange(self.Gr.nzg):
+            #             z = self.Gr.z_half[k]
+            #             if (z<=2500.0):
+            #                 GMV.Hvar.values[k]   = 1.0 - z/3000.0
+            #                 GMV.QTvar.values[k]  = 1.0 - z/3000.0
+            #                 GMV.HQTcov.values[k] = 1.0 - z/3000.0
 
             elif Case.casename =='Soares' or Case.casename =='Nieuwstadt':
                 with nogil:
