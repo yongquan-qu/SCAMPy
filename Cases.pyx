@@ -932,14 +932,11 @@ cdef class TRMM_LBA(CasesBase):
             else:
                 if TS.t<600.0: # first 10 min use the radiative forcing of t=10min (as in the paper)
                     self.Fo.dTdt[k] = self.rad[0,k]
-                elif TS.t<21600.0:
+                elif TS.t<21600.0 and ind2<36:
                     if TS.t%600.0 == 0:
                         self.Fo.dTdt[k] = self.rad[ind1,k]
                     else:
-                        if ind2>35:
-                            self.Fo.dTdt[k] = self.rad[ind1,k]
-                        else:
-                            self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
+                        self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
                                                  /(self.rad_time[ind2]-self.rad_time[ind1])\
                                                  *(TS.t-self.rad_time[ind1])+self.rad[ind1,k]
                 else:
