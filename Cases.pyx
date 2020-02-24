@@ -941,6 +941,7 @@ cdef class TRMM_LBA(CasesBase):
                                                  *(TS.t-self.rad_time[ind1])+self.rad[ind1,k]
                 else:
                     self.Fo.dTdt[k] = self.rad[35,k]
+
         self.Fo.update(GMV)
 
         return
