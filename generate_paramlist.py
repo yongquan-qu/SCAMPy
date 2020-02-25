@@ -48,6 +48,9 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.5
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.06
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac'] = 0.25
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma'] = 10.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_scale'] = 0.004
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['sorting_power'] = 2.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['aspect_ratio'] = 0.2
     # This constant_plume_spacing corresponds to plume_spacing/alpha_d in the Tan et al paper,
@@ -154,7 +157,6 @@ def DYCOMS_RF01(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'DYCOMS_RF01'
-    # paramlist['turbulence']['prandtl_number_0'] = 0.74
 
     return  paramlist
 
@@ -163,7 +165,6 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-    # paramlist['turbulence']['prandtl_number_0'] = 0.74
     paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
