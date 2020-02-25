@@ -41,25 +41,30 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double f_ent, f_det, dw2, db_p, db_m,db_a, c_det
+        double moisture_deficit_e, moisture_deficit_d, c_det, mu, db, dw, logistic_e, logistic_d
 
-    f_ent = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-    f_det = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1/entr_in.sort_pow)
-    _ret.sorting_function = f_ent
-
+    moisture_deficit_d = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1.0/entr_in.sort_pow)
+    moisture_deficit_e = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1.0/entr_in.sort_pow)
+    _ret.sorting_function = moisture_deficit_e
     c_det = entr_in.c_det
     if (entr_in.ql_up+entr_in.ql_env)==0.0:
         c_det = 0.0
 
-    dw2  = fmax((entr_in.w_upd - entr_in.w_env)**2.0, 1e-2)
-    db_p = fmax(entr_in.b_upd - entr_in.b_env,0.0)
-    db_m = fmax(entr_in.b_env - entr_in.b_upd,0.0)
-    db_a = fabs(entr_in.b_env - entr_in.b_upd)
-    _ret.entr_sc = entr_in.c_ent*db_p/dw2 + c_det*f_det*db_a/dw2
-    _ret.detr_sc = entr_in.c_ent*db_m/dw2 + c_det*f_ent*db_a/dw2
+    dw   = entr_in.w_upd - entr_in.w_env
+    if dw < 0.0:
+        dw -= 0.001
+    else:
+        dw += 0.001
 
+    db = (entr_in.b_upd - entr_in.b_env)
+    mu = entr_in.c_mu/entr_in.c_mu0
+
+    logistic_e = 1.0/(1.0+exp(-mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
+    logistic_d = 1.0/(1.0+exp( mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
+
+    _ret.entr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_e + c_det*moisture_deficit_e)
+    _ret.detr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_d + c_det*moisture_deficit_d)
     return _ret
-
 
 cdef entr_struct entr_detr_buoyancy_sorting(entr_in_struct entr_in) nogil:
 
