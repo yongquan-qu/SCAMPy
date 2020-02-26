@@ -405,7 +405,6 @@ cdef class EnvironmentThermodynamics:
                     corr = fmax(fmin(EnvVar.HQTcov.values[k]/sqrt(EnvVar.Hvar.values[k]*EnvVar.QTvar.values[k]),1.0),-1.0)
                     sd2_hq = log(corr*sqrt(EnvVar.Hvar.values[k]*EnvVar.QTvar.values[k])
                         /EnvVar.H.values[k]/EnvVar.QT.values[k] + 1.0)
-
                     sd_cond_h_q = sqrt(fmax(sd_h*sd_h - sd2_hq*sd2_hq/sd_q/sd_q, 0.0))
                     mu_q = log(EnvVar.QT.values[k]*EnvVar.QT.values[k]/sqrt(
                         EnvVar.QT.values[k]*EnvVar.QT.values[k] + EnvVar.QTvar.values[k]))
