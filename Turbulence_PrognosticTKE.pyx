@@ -2093,9 +2093,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                     w_u = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
                     dynamic_entr   = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * self.detr_sc[i,k] * (updvar1 - envvar1) * (updvar2 - envvar2)
-                    turbulent_entr = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * self.frac_turb_entr[i,k] *((envvar1-gmvvar1)*(updvar2-envvar2)+(envvar2-gmvvar2)*(updvar1-envvar1))
+                    turbulent_entr = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * eps_turb *((envvar1-gmvvar1)*(updvar2-envvar2)+(envvar2-gmvvar2)*(updvar1-envvar1))
                     Covar.entr_gain[k]  += dynamic_entr + turbulent_entr
-                    Covar.detr_loss[k]  += tke_factor*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k] * Covar.values[k]
+                    Covar.detr_loss[k]  += tke_factor*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)* (self.entr_sc[i,k]+eps_turb) * Covar.values[k]
 
         return
 
