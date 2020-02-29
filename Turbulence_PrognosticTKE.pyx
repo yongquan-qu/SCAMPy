@@ -2058,14 +2058,58 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 Covar.interdomain[k] += tke_factor*au.values[i,k] * (1.0-au.values[i,k]) * phi_diff * psi_diff
         return
 
+    # cdef void compute_covariance_entr(self, EDMF_Environment.EnvironmentVariable_2m Covar, EDMF_Updrafts.UpdraftVariable UpdVar1,
+    #             EDMF_Updrafts.UpdraftVariable UpdVar2, EDMF_Environment.EnvironmentVariable EnvVar1, EDMF_Environment.EnvironmentVariable EnvVar2,
+    #             VariablePrognostic GmvVar1, VariablePrognostic GmvVar2):
+    #     cdef:
+    #         Py_ssize_t i, k
+    #         double tke_factor
+    #         double updvar1, updvar2, envvar1, envvar2, gmvvar1, gmvvar2, dynamic_entr ,turbulent_entr
+
+    #     for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+    #         Covar.entr_gain[k] = 0.0
+    #         Covar.detr_loss[k] = 0.0
+    #         for i in xrange(self.n_updrafts):
+    #             if self.UpdVar.Area.values[i,k] > self.minimum_area:
+    #                 R_up = self.pressure_plume_spacing[i]
+    #                 if Covar.name =='tke':
+    #                     tke_factor = 0.5
+    #                     updvar1 = interp2pt(UpdVar1.values[i,k], UpdVar1.values[i,k-1])
+    #                     updvar2 = interp2pt(UpdVar2.values[i,k], UpdVar2.values[i,k-1])
+    #                     envvar1 = interp2pt(EnvVar1.values[k], EnvVar1.values[k-1])
+    #                     envvar2 = interp2pt(EnvVar2.values[k], EnvVar2.values[k-1])
+    #                     gmvvar1 = interp2pt(GmvVar1.values[k], GmvVar1.values[k-1])
+    #                     gmvvar2 = interp2pt(GmvVar2.values[k], GmvVar2.values[k-1])
+    #                     eps_turb = interp2pt(self.frac_turb_entr_full[i,k],self.frac_turb_entr_full[i,k-1])
+    #                 else:
+    #                     tke_factor = 1.0
+    #                     updvar1 = UpdVar1.values[i,k]
+    #                     updvar2 = UpdVar2.values[i,k]
+    #                     envvar1 = EnvVar1.values[k]
+    #                     envvar2 = EnvVar2.values[k]
+    #                     gmvvar1 = GmvVar1.values[k]
+    #                     gmvvar2 = GmvVar2.values[k]
+    #                     eps_turb = self.frac_turb_entr[i,k]
+
+    #                 w_u = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
+    #                 dynamic_entr   = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * self.detr_sc[i,k] * (updvar1 - envvar1) * (updvar2 - envvar2)
+    #                 turbulent_entr = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * eps_turb *((envvar1-gmvvar1)*(updvar2-envvar2)+(envvar2-gmvvar2)*(updvar1-envvar1))
+    #                 Covar.entr_gain[k]  += dynamic_entr + turbulent_entr
+    #                 Covar.detr_loss[k]  += tke_factor*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)* (self.entr_sc[i,k]+eps_turb) * Covar.values[k]
+
+    #     return
+
+
     cdef void compute_covariance_entr(self, EDMF_Environment.EnvironmentVariable_2m Covar, EDMF_Updrafts.UpdraftVariable UpdVar1,
                 EDMF_Updrafts.UpdraftVariable UpdVar2, EDMF_Environment.EnvironmentVariable EnvVar1, EDMF_Environment.EnvironmentVariable EnvVar2,
                 VariablePrognostic GmvVar1, VariablePrognostic GmvVar2):
         cdef:
             Py_ssize_t i, k
             double tke_factor
-            double updvar1, updvar2, envvar1, envvar2, gmvvar1, gmvvar2, dynamic_entr ,turbulent_entr
+            double updvar1, updvar2, envvar1, envvar2, combined_entr, combined_detr, K_hrz
 
+        # here the diffusive componenet of trhe turbulent entrainment is added to the dynamic entr and detrainment
+        #with nogil:
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             Covar.entr_gain[k] = 0.0
             Covar.detr_loss[k] = 0.0
@@ -2073,31 +2117,29 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 if self.UpdVar.Area.values[i,k] > self.minimum_area:
                     R_up = self.pressure_plume_spacing[i]
                     if Covar.name =='tke':
-                        tke_factor = 0.5
                         updvar1 = interp2pt(UpdVar1.values[i,k], UpdVar1.values[i,k-1])
                         updvar2 = interp2pt(UpdVar2.values[i,k], UpdVar2.values[i,k-1])
                         envvar1 = interp2pt(EnvVar1.values[k], EnvVar1.values[k-1])
                         envvar2 = interp2pt(EnvVar2.values[k], EnvVar2.values[k-1])
-                        gmvvar1 = interp2pt(GmvVar1.values[k], GmvVar1.values[k-1])
-                        gmvvar2 = interp2pt(GmvVar2.values[k], GmvVar2.values[k-1])
-                        eps_turb = interp2pt(self.frac_turb_entr_full[i,k],self.frac_turb_entr_full[i,k-1])
+                        tke_factor = 0.5
+                        K_hrz = self.horizontal_KM[i,k]
                     else:
-                        tke_factor = 1.0
                         updvar1 = UpdVar1.values[i,k]
                         updvar2 = UpdVar2.values[i,k]
                         envvar1 = EnvVar1.values[k]
                         envvar2 = EnvVar2.values[k]
-                        gmvvar1 = GmvVar1.values[k]
-                        gmvvar2 = GmvVar2.values[k]
-                        eps_turb = self.frac_turb_entr[i,k]
-
+                        tke_factor = 1.0
+                        K_hrz = self.horizontal_KH[i,k]
                     w_u = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
-                    dynamic_entr   = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * self.detr_sc[i,k] * (updvar1 - envvar1) * (updvar2 - envvar2)
-                    turbulent_entr = tke_factor * self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * fabs(w_u) * eps_turb *((envvar1-gmvvar1)*(updvar2-envvar2)+(envvar2-gmvvar2)*(updvar1-envvar1))
-                    Covar.entr_gain[k]  += dynamic_entr + turbulent_entr
-                    Covar.detr_loss[k]  += tke_factor*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)* (self.entr_sc[i,k]+eps_turb) * Covar.values[k]
+                    combined_entr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.detr_sc[i,k]\
+                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K_hrz
+                    combined_detr = self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k] * fabs(w_u)*self.entr_sc[i,k]\
+                                     + 4.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K_hrz
 
+                    Covar.entr_gain[k]  += tke_factor * combined_entr * (updvar1 - envvar1) * (updvar2 - envvar2)
+                    Covar.detr_loss[k]  += combined_detr * Covar.values[k]
         return
+
 
 
     cdef void compute_covariance_detr(self, EDMF_Environment.EnvironmentVariable_2m Covar):
@@ -2235,16 +2277,30 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 D_env = 0.0
 
                 for i in xrange(self.n_updrafts):
+                    # if self.UpdVar.Area.values[i,k]>self.minimum_area:
+                    #     with gil:
+                    #         if Covar.name == 'tke':
+                    #             turb_entr = interp2pt(self.frac_turb_entr_full[i,k-1], self.frac_turb_entr_full[i,k])
+                    #         else:
+                    #             turb_entr = self.frac_turb_entr[i,k]
+
+                    #         R_up = self.pressure_plume_spacing[i]
+                    #         wu_half = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
+                    #         D_env += self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * wu_half * (self.entr_sc[i,k]+ turb_entr)
+                    # else:
+                    #     D_env = 0.0
+                        
                     if self.UpdVar.Area.values[i,k]>self.minimum_area:
                         with gil:
                             if Covar.name == 'tke':
-                                turb_entr = interp2pt(self.frac_turb_entr_full[i,k-1], self.frac_turb_entr_full[i,k])
+                                K = self.horizontal_KM[i,k]
                             else:
-                                turb_entr = self.frac_turb_entr[i,k]
+                                K = self.horizontal_KH[i,k]
 
                             R_up = self.pressure_plume_spacing[i]
                             wu_half = interp2pt(self.UpdVar.W.values[i,k-1], self.UpdVar.W.values[i,k])
-                            D_env += self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * wu_half * (self.entr_sc[i,k]+ turb_entr)
+                            D_env += self.Ref.rho0_half[k] * self.UpdVar.Area.values[i,k] * wu_half * self.entr_sc[i,k]\
+                                     + 2.0/(R_up**2.0)*self.Ref.rho0_half[k]*self.UpdVar.Area.values[i,k]*K
                     else:
                         D_env = 0.0
 
