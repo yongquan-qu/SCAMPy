@@ -25,16 +25,20 @@ def main():
     w_mean_ = data.groups['profiles'].variables['w_mean']
     w_mean2_ = data.groups['profiles'].variables['w_mean2']
     w_mean3_ = data.groups['profiles'].variables['w_mean3']
-    tke_mean_ = data.groups['profiles'].variables['tke_mean']
+    # tke_mean_ = data.groups['profiles'].variables['tke_mean']
+    tke_mean_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
     v_translational_mean_ = data.groups['profiles'].variables['v_translational_mean']
     u_translational_mean_ = data.groups['profiles'].variables['u_translational_mean']
     updraft_buoyancy_ = data.groups['profiles'].variables['updraft_b']
     updraft_fraction_ = data.groups['profiles'].variables['updraft_fraction']
 
-    total_flux_u_ = data.groups['profiles'].variables['resolved_x_vel_flux']
-    total_flux_v_ = data.groups['profiles'].variables['resolved_y_vel_flux']
+    total_flux_u_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    total_flux_v_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    # total_flux_u_ = data.groups['profiles'].variables['resolved_x_vel_flux']
+    # total_flux_v_ = data.groups['profiles'].variables['resolved_y_vel_flux']
 
-    updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
+    updraft_ddz_p_alpha_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    # updraft_ddz_p_alpha_ = data.groups['profiles'].variables['updraft_ddz_p_alpha']
 
     rho_ = data.groups['reference'].variables['rho0_half']
     p0_ = data.groups['reference'].variables['p0_half']
@@ -43,21 +47,31 @@ def main():
     z = np.array(data.groups['profiles'].variables['z_half'])
 
     # try the TKE diagnostics outputs
-    tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
-    tke_prod_B_ = data.groups['profiles'].variables['tke_prod_B']
-    tke_prod_D_ = data.groups['profiles'].variables['tke_prod_D']
-    tke_prod_P_ = data.groups['profiles'].variables['tke_prod_P']
-    tke_prod_T_ = data.groups['profiles'].variables['tke_prod_T']
-    tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
-    tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
+    tke_prod_A_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_prod_B_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_prod_D_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_prod_P_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_prod_T_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_prod_S_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+    tke_nd_mean_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+
+    # tke_prod_A_ = data.groups['profiles'].variables['tke_prod_A']
+    # tke_prod_B_ = data.groups['profiles'].variables['tke_prod_B']
+    # tke_prod_D_ = data.groups['profiles'].variables['tke_prod_D']
+    # tke_prod_P_ = data.groups['profiles'].variables['tke_prod_P']
+    # tke_prod_T_ = data.groups['profiles'].variables['tke_prod_T']
+    # tke_prod_S_ = data.groups['profiles'].variables['tke_prod_S']
+    # tke_nd_mean_ = data.groups['profiles'].variables['tke_nd_mean']
     try:
         resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_thetali']
         resolved_z_flux_qt_ = data.groups['profiles'].variables['resolved_z_flux_qt']
         sgs_z_flux_thetali_ = data.groups['profiles'].variables['sgs_z_flux_thetali']
         sgs_z_flux_qt_ = data.groups['profiles'].variables['sgs_z_flux_qt']
     except:
-        resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_theta']
-        sgs_z_flux_thetali_ = data.groups['profiles'].variables['sgs_z_flux_theta']
+        # resolved_z_flux_thetali_ = data.groups['profiles'].variables['resolved_z_flux_theta']
+        resolved_z_flux_thetali_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+        sgs_z_flux_thetali_ = np.multiply(data.groups['profiles'].variables['w_mean'],0.0)
+        # sgs_z_flux_thetali_ = data.groups['profiles'].variables['sgs_z_flux_theta']
         sgs_z_flux_qt_ = np.zeros_like(env_w_)
         resolved_z_flux_qt_ = np.zeros_like(env_w_)
     try:
