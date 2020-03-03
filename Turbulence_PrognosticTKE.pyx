@@ -760,7 +760,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double thv, grad_qt, grad_qt_low, grad_thv_low, grad_thv
             double grad_b_thl, grad_b_qt
             double m_eps = 1.0e-9 # Epsilon to avoid zero
-            double a, c_neg, wc_upd_nn, wc_env
+            double a, c_neg, wc_upd_nn, wc_env, frac_turb_entr_half
 
         if (self.mixing_scheme == 'sbl'):
             for k in xrange(gw, self.Gr.nzg-gw):
@@ -923,8 +923,10 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 for nn in xrange(self.n_updrafts):
                     wc_upd_nn = (self.UpdVar.W.values[nn,k] + self.UpdVar.W.values[nn,k-1])/2.0
                     wc_env = (self.EnvVar.W.values[k] + self.EnvVar.W.values[k-1])/2.0
+                    frac_turb_entr_half = interp2pt(self.frac_turb_entr_full[nn,k],self.frac_turb_entr_full[nn,k-1])
                     self.b[k] += self.UpdVar.Area.values[nn,k]*wc_upd_nn*self.detr_sc[nn,k]/(1.0-self.UpdVar.Area.bulkvalues[k])*(
-                        (wc_upd_nn-wc_env)*(wc_upd_nn-wc_env)/2.0-self.EnvVar.TKE.values[k])
+                        (wc_upd_nn-wc_env)*(wc_upd_nn-wc_env)/2.0-self.EnvVar.TKE.values[k]) - self.UpdVar.Area.values[nn,k]*wc_upd_nn*(
+                        wc_upd_nn-wc_env)*frac_turb_entr_half*wc_env/(1.0-self.UpdVar.Area.bulkvalues[k])
 
                 if abs(a) > m_eps and 4.0*a*c_neg > - self.b[k]*self.b[k]:
                     self.l_entdet[k] = fmax( -self.b[k]/2.0/a + sqrt( self.b[k]*self.b[k] + 4.0*a*c_neg )/2.0/a, 0.0)
