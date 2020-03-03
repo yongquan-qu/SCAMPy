@@ -25,7 +25,7 @@ def main():
     namelist_defaults['thermodynamics']['thermal_variable'] = 'thetal'
     namelist_defaults['thermodynamics']['sgs'] = 'quadrature'
     namelist_defaults['thermodynamics']['quadrature_order'] = 3
-    namelist_defaults['thermodynamics']['quadrature_type'] = 'gaussian'#'log-normal' # 
+    namelist_defaults['thermodynamics']['quadrature_type'] = 'log-normal' # 'gaussian'#
 
     namelist_defaults['time_stepping'] = {}
 
