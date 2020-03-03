@@ -164,7 +164,7 @@ def main():
     env_Hvar_ = calc_covar(env_thetali2_,   env_thetali_,  env_thetali_)
     env_QTvar_ = calc_covar(env_qt2_,        env_qt_,       env_qt_)
     env_HQTcov_ = calc_covar(env_qt_thetali_, env_qt_,       env_thetali_)
-    massflux_          = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_w_, env_w_)))
+    massflux_          = np.multiply(updraft_fraction_,np.multiply(rho_,updraft_w_))
     massflux_h_        = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_thetali_, env_thetali_)))
     massflux_qt_       = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_qt_, env_qt_)))
     massflux_u_        = np.multiply(a_1_a,np.multiply(np.subtract(updraft_w_, env_w_), np.subtract(updraft_u_, env_u_)))
