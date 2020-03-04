@@ -25,7 +25,7 @@ def main():
     namelist_defaults['thermodynamics']['thermal_variable'] = 'thetal'
     namelist_defaults['thermodynamics']['sgs'] = 'quadrature'
     namelist_defaults['thermodynamics']['quadrature_order'] = 3
-    namelist_defaults['thermodynamics']['quadrature_type'] = 'gaussian'#'log-normal' # 
+    namelist_defaults['thermodynamics']['quadrature_type'] = "log-normal" #'gaussian' or 'log-normal'
 
     namelist_defaults['time_stepping'] = {}
 
@@ -119,7 +119,7 @@ def Nieuwstadt(namelist_defaults):
     namelist['meta']['casename'] = 'Nieuwstadt'
 
     return namelist
-    
+
 def Bomex(namelist_defaults):
 
     namelist = copy.deepcopy(namelist_defaults)
