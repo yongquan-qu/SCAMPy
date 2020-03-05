@@ -165,7 +165,7 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-    # paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
+    paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
 # Not fully implemented yet - Ignacio
