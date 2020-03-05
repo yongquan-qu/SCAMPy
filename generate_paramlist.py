@@ -45,9 +45,9 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['static_stab_coeff'] = 0.4
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['lambda_stab'] = 0.9
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area_factor'] = 9.0
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.13
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.6
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.07
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.165
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.55
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.08
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac'] = 0.25
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma'] = 6.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_scale'] = 0.004
@@ -61,10 +61,10 @@ def main():
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
 
 
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.4
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff2'] = 0.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff'] = 0.4
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] = 6.0
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] = 7.0
 
     if case_name == 'Soares':
         paramlist = Soares(paramlist_defaults)
@@ -165,7 +165,7 @@ def GABLS(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
 
     paramlist['meta']['casename'] = 'GABLS'
-    paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
+    # paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area'] = 0.02
     return  paramlist
 
 # Not fully implemented yet - Ignacio
