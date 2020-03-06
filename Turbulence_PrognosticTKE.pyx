@@ -149,7 +149,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         # Get values from paramlist
         # set defaults at some point?
         self.surface_area = paramlist['turbulence']['EDMF_PrognosticTKE']['surface_area']
-        self.max_area_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area_factor']
+        self.max_area = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
         self.updraft_mixing_frac = paramlist['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac']
         self.entrainment_sigma = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma']
@@ -701,7 +701,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef double au_lim
         with nogil:
             for i in xrange(self.n_updrafts):
-                au_lim = self.max_area_factor * self.area_surface_bc[i]
+                au_lim = self.max_area
                 self.UpdVar.Area.values[i,gw] = self.area_surface_bc[i]
                 w_mid = 0.5* (self.UpdVar.W.values[i,gw])
                 for k in xrange(gw+1, self.Gr.nzg):
@@ -1033,6 +1033,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         cdef:
             Py_ssize_t i, gw = self.Gr.gw
+            double dzi = self.Gr.dzi
             double zLL = self.Gr.z_half[gw]
             double ustar = Case.Sur.ustar, oblength = Case.Sur.obukhov_length
             double alpha0LL  = self.Ref.alpha0_half[gw]
@@ -1041,15 +1042,24 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double h_var = get_surface_variance(Case.Sur.rho_hflux*alpha0LL,
                                                  Case.Sur.rho_hflux*alpha0LL, ustar, zLL, oblength)
 
-            double a_ = self.surface_area/self.n_updrafts
-            double surface_scalar_coeff
+            # double a_ = self.surface_area/self.n_updrafts
+            double surface_scalar_coeff, a_total, a_
 
         # with nogil:
-        for i in xrange(self.n_updrafts):
-            surface_scalar_coeff= percentile_bounds_mean_norm(1.0-self.surface_area+i*a_,
-                                                                   1.0-self.surface_area + (i+1)*a_ , 1000)
+        if Case.Sur.bflux>0.0:
+            a_total = self.surface_area
+            self.entr_surface_bc = 2.0 * dzi
+            self.detr_surface_bc = 0.0
+        else:
+            # a_total = self.surface_area
+            a_total = self.minimum_area*0.9
+            self.entr_surface_bc = 0.0
+            self.detr_surface_bc = 2.0 * dzi
 
-            self.area_surface_bc[i] = self.surface_area/self.n_updrafts
+        a_ = a_total/self.n_updrafts
+        for i in xrange(self.n_updrafts):
+            surface_scalar_coeff= percentile_bounds_mean_norm(1.0-a_total+i*a_, 1.0-a_total + (i+1)*a_ , 1000)
+            self.area_surface_bc[i] = a_
             self.w_surface_bc[i] = 0.0
             self.h_surface_bc[i] = (GMV.H.values[gw] + surface_scalar_coeff * sqrt(h_var))
             self.qt_surface_bc[i] = (GMV.QT.values[gw] + surface_scalar_coeff * sqrt(qt_var))
@@ -1491,11 +1501,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
         with nogil:
             for i in xrange(self.n_updrafts):
-                self.entr_sc[i,gw] = 2.0 * dzi # 0.0 ?
-                self.detr_sc[i,gw] = 0.0
+                self.entr_sc[i,gw] = self.entr_surface_bc
+                self.detr_sc[i,gw] = self.detr_surface_bc
                 self.UpdVar.W.new[i,gw-1] = self.w_surface_bc[i]
                 self.UpdVar.Area.new[i,gw] = self.area_surface_bc[i]
-                au_lim = self.area_surface_bc[i] * self.max_area_factor
+                au_lim = self.max_area
 
                 for k in range(gw, self.Gr.nzg-gw):
 
@@ -1560,8 +1570,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             for i in xrange(self.n_updrafts):
 
                 # at the surface:
-                self.UpdVar.H.new[i,gw] = self.h_surface_bc[i]
-                self.UpdVar.QT.new[i,gw] = self.qt_surface_bc[i]
+                if self.UpdVar.Area.new[i,gw] >= self.minimum_area:
+                    self.UpdVar.H.new[i,gw] = self.h_surface_bc[i]
+                    self.UpdVar.QT.new[i,gw] = self.qt_surface_bc[i]
+                else:
+                    self.UpdVar.H.new[i,gw]  = GMV.H.values[gw]
+                    self.UpdVar.QT.new[i,gw] = GMV.QT.values[gw]
 
                 # saturation adjustment
                 sa = eos(
