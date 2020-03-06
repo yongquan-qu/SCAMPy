@@ -190,6 +190,9 @@ def DryBubble(paramlist_defaults):
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.05
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.3
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.01
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma'] = 5.0
+
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['max_area'] = 0.5
 
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff'] = 0.5
