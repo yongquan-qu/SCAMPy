@@ -298,8 +298,6 @@ cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) 
     # drag as w_dif and account for downdrafts
     _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2 * (press_in.w_kfull -
                             press_in.w_kenv)*fabs(press_in.w_kfull - press_in.w_kenv)/fmax(press_in.updraft_top, 500.0)
-    # _ret.nh_pressure_drag = -(1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2 * (press_in.w_kfull)
-    #                             *fabs(press_in.w_kfull)/fmax(press_in.updraft_top, 500.0))
 
     return _ret
 
