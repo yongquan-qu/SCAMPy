@@ -25,6 +25,8 @@ from utility_functions cimport *
 from libc.math cimport fmax, sqrt, exp, pow, cbrt, fmin, fabs
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 
+import matplotlib.pyplot as plt
+
 cdef class EDMF_PrognosticTKE(ParameterizationBase):
     # Initialize the class
     def __init__(self, namelist, paramlist, Grid Gr, ReferenceState Ref):
@@ -278,8 +280,15 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.b = np.zeros((Gr.nzg,),dtype=np.double, order='c')
         return
 
-    cpdef initialize(self, GridMeanVariables GMV):
-        self.UpdVar.initialize(GMV)
+    cpdef initialize(self, CasesBase Case, GridMeanVariables GMV, ReferenceState Ref):
+        if Case.casename == 'SaturatedBubble':
+            print 'updraft initialized for saturated bubble'
+            self.UpdVar.initialize_bubble(GMV, Ref)
+        elif Case.casename == 'DryBubble':
+            print 'updraft initialized for dry bubble'
+            self.UpdVar.initialize_drybubble(GMV, Ref)
+        else:
+            self.UpdVar.initialize(GMV)
         return
 
     # Initialize the IO pertaining to this class
@@ -518,8 +527,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.compute_pressure_plume_spacing(GMV, Case)
         self.wstar = get_wstar(Case.Sur.bflux, self.zi)
         if TS.nstep == 0:
+
             self.decompose_environment(GMV, 'values')
-            self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
+            self.EnvThermo.saturation_adjustment(self.EnvVar)
+            self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
+            self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
+            # self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
             self.initialize_covariance(GMV, Case)
 
             with nogil:
@@ -530,11 +543,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.EnvVar.Hvar.values[k] = GMV.Hvar.values[k]
                         self.EnvVar.QTvar.values[k] = GMV.QTvar.values[k]
                         self.EnvVar.HQTcov.values[k] = GMV.HQTcov.values[k]
+
         self.decompose_environment(GMV, 'values')
         if self.use_steady_updrafts:
             self.compute_diagnostic_updrafts(GMV, Case)
         else:
             self.compute_prognostic_updrafts(GMV, Case, TS)
+
         # TODO -maybe not needed? - both diagnostic and prognostic updrafts end with decompose_environment
         # But in general ok here without thermodynamics because MF doesnt depend directly on buoyancy
         self.decompose_environment(GMV, 'values')
@@ -545,7 +560,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         #   - the buoyancy of updrafts and environment is up to date with the most recent decomposition,
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
-        self.decompose_environment(GMV, 'mf_update')
+        # self.decompose_environment(GMV, 'mf_update')
         self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt) # saturation adjustment + rain creation
         # Sink of environmental QT and H due to rain creation is applied in tridiagonal solver
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
@@ -579,6 +594,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         # Back out the tendencies of the grid mean variables for the whole timestep
         # by differencing GMV.new and GMV.values
         ParameterizationBase.update(self, GMV, Case, TS)
+
         return
 
     cpdef compute_prognostic_updrafts(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS):
@@ -605,6 +621,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.solve_updraft_velocity_area()
             self.solve_updraft_scalars(GMV)
             self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
+
             self.UpdVar.set_values_with_new()
             self.zero_area_fraction_cleanup(GMV)
             time_elapsed += self.dt_upd
@@ -761,6 +778,9 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double grad_b_thl, grad_b_qt
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env, frac_turb_entr_half
+
+        if self.EnvVar.TKE.values[self.Gr.gw]<1e-4:
+            self.EnvVar.TKE.values[self.Gr.gw] = 1e-4
 
         if (self.mixing_scheme == 'sbl'):
             for k in xrange(gw, self.Gr.nzg-gw):
@@ -1489,6 +1509,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double anew_k, a_k, a_km, entr_w, detr_w, B_k, entr_term, detr_term, rho_ratio
             double adv, buoy, exch # groupings of terms in velocity discrete equation
 
+            double [:] adv_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+            double [:] entr_term_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+            double [:] detr_term_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+            double [:] a_old_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+            double [:] a_new_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+            double [:] a_oldtdc_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
+
         with nogil:
             for i in xrange(self.n_updrafts):
                 self.entr_sc[i,gw] = 2.0 * dzi # 0.0 ?
@@ -1496,6 +1523,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.UpdVar.W.new[i,gw-1] = self.w_surface_bc[i]
                 self.UpdVar.Area.new[i,gw] = self.area_surface_bc[i]
                 au_lim = self.area_surface_bc[i] * self.max_area_factor
+                # au_lim = 0.5
 
                 for k in range(gw, self.Gr.nzg-gw):
 
@@ -1507,8 +1535,15 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     entr_term = self.UpdVar.Area.values[i,k+1] * whalf_kp * (self.entr_sc[i,k+1] )
                     detr_term = self.UpdVar.Area.values[i,k+1] * whalf_kp * (- self.detr_sc[i,k+1])
 
+                    adv_[k-gw] = adv
+                    entr_term_[k-gw] = entr_term
+                    detr_term_[k-gw] = detr_term
+                    a_oldtdc_[k-gw] = dt_ * (adv + entr_term + detr_term) + self.UpdVar.Area.values[i,k+1]
 
                     self.UpdVar.Area.new[i,k+1]  = fmax(dt_ * (adv + entr_term + detr_term) + self.UpdVar.Area.values[i,k+1], 0.0)
+
+                    # with gil:
+                    #     print dt_
                     if self.UpdVar.Area.new[i,k+1] > au_lim:
                         self.UpdVar.Area.new[i,k+1] = au_lim
                         if self.UpdVar.Area.values[i,k+1] > 0.0:
@@ -1520,12 +1555,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     # Now solve for updraft velocity at k
                     rho_ratio = self.Ref.rho0[k-1]/self.Ref.rho0[k]
                     anew_k = interp2pt(self.UpdVar.Area.new[i,k], self.UpdVar.Area.new[i,k+1])
+
                     if anew_k >= self.minimum_area:
                         a_k = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
                         a_km = interp2pt(self.UpdVar.Area.values[i,k-1], self.UpdVar.Area.values[i,k])
                         entr_w = interp2pt(self.entr_sc[i,k], self.entr_sc[i,k+1])
                         detr_w = interp2pt(self.detr_sc[i,k], self.detr_sc[i,k+1])
                         B_k = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
+
                         adv = (self.Ref.rho0[k] * a_k * self.UpdVar.W.values[i,k] * self.UpdVar.W.values[i,k] * dzi
                                - self.Ref.rho0[k-1] * a_km * self.UpdVar.W.values[i,k-1] * self.UpdVar.W.values[i,k-1] * dzi)
                         exch = (self.Ref.rho0[k] * a_k * self.UpdVar.W.values[i,k]
@@ -1543,6 +1580,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.UpdVar.Area.new[i,k+1] = 0.0
                         # keep this in mind if we modify updraft top treatment!
                         #break
+
+
         return
 
     cpdef solve_updraft_scalars(self, GridMeanVariables GMV):

@@ -1,0 +1,31 @@
+{
+    "meta": {
+        "casename": "DryBubble"
+    },
+    "turbulence": {
+        "EDMF_PrognosticTKE": {
+            "aspect_ratio": 0.2,
+            "constant_plume_spacing": 1333.0,
+            "detrainment_factor": 0.3,
+            "entrainment_factor": 0.1,
+            "entrainment_scale": 0.004,
+            "entrainment_sigma": 5.0,
+            "lambda_stab": 0.9,
+            "max_area_factor": 90.0,
+            "pressure_buoy_coeff": 0.3333333333333333,
+            "pressure_normalmode_adv_coeff": 0.5,
+            "pressure_normalmode_buoy_coeff1": 0.1,
+            "pressure_normalmode_buoy_coeff2": 0.0,
+            "pressure_normalmode_drag_coeff": 0.1,
+            "sorting_power": 2.0,
+            "static_stab_coeff": 0.4,
+            "surface_area": 0.01,
+            "tke_diss_coeff": 0.26,
+            "tke_ed_coeff": 0.18,
+            "turbulent_entrainment_factor": 0.01,
+            "updraft_mixing_frac": 0.25
+        },
+        "Ri_bulk_crit": 0.2,
+        "prandtl_number_0": 0.74
+    }
+}

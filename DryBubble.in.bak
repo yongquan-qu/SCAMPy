@@ -1,0 +1,52 @@
+{
+    "grid": {
+        "dims": 1,
+        "dz": 50.0,
+        "gw": 2,
+        "nz": 200
+    },
+    "meta": {
+        "casename": "DryBubble",
+        "simname": "DryBubble",
+        "uuid": "9c5b27a0-eb8e-4b53-90c2-d607671----b"
+    },
+    "microphysics": {
+        "rain_model": "None"
+    },
+    "output": {
+        "output_root": "/Users/jiahe/Documents/scampy_ana/test_DryBubble/"
+    },
+    "stats_io": {
+        "frequency": 10.0,
+        "stats_dir": "stats"
+    },
+    "thermodynamics": {
+        "quadrature_order": 3,
+        "quadrature_type": "log-normal",
+        "sgs": "quadrature",
+        "thermal_variable": "thetal"
+    },
+    "time_stepping": {
+        "dt": 1.0,
+        "t_max": 1000.0
+    },
+    "turbulence": {
+        "EDMF_PrognosticTKE": {
+            "calc_scalar_var": true,
+            "calculate_tke": true,
+            "constant_area": false,
+            "entrainment": "moisture_deficit",
+            "extrapolate_buoyancy": true,
+            "mixing_length": "sbtd_eq",
+            "pressure_closure_asp_label": "const",
+            "pressure_closure_buoy": "normalmode",
+            "pressure_closure_drag": "normalmode",
+            "updraft_number": 1,
+            "use_constant_plume_spacing": false,
+            "use_local_micro": true,
+            "use_similarity_diffusivity": false,
+            "use_steady_updrafts": false
+        },
+        "scheme": "EDMF_PrognosticTKE"
+    }
+}
