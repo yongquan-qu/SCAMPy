@@ -4,7 +4,6 @@ import cython
 
 from Grid cimport Grid
 from Variables cimport GridMeanVariables
-# from EDMF_Updrafts cimport UpdraftVariables
 from ReferenceState cimport ReferenceState
 from TimeStepping cimport  TimeStepping
 cimport Surface
