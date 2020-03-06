@@ -12,7 +12,6 @@ from NetCDFIO cimport NetCDFIO_Stats
 from thermodynamic_functions cimport *
 import math as mt
 from libc.math cimport sqrt, log, fabs,atan, exp, fmax
-# cimport EDMF_Updrafts
 
 def CasesFactory(namelist, paramlist):
     if namelist['meta']['casename'] == 'Soares':
