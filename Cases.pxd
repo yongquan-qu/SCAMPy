@@ -5,9 +5,6 @@ from Surface cimport SurfaceBase
 from Forcing cimport ForcingBase
 from NetCDFIO cimport  NetCDFIO_Stats
 from TimeStepping cimport  TimeStepping
-# cimport EDMF_Updrafts
-from EDMF_Updrafts cimport UpdraftVariables
-
 
 cdef class CasesBase:
     cdef:
