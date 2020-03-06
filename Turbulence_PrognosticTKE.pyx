@@ -25,8 +25,6 @@ from utility_functions cimport *
 from libc.math cimport fmax, sqrt, exp, pow, cbrt, fmin, fabs
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 
-import matplotlib.pyplot as plt
-
 cdef class EDMF_PrognosticTKE(ParameterizationBase):
     # Initialize the class
     def __init__(self, namelist, paramlist, Grid Gr, ReferenceState Ref):
@@ -779,8 +777,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env, frac_turb_entr_half
 
-        if self.EnvVar.TKE.values[self.Gr.gw]<1e-4:
-            self.EnvVar.TKE.values[self.Gr.gw] = 1e-4
+        # if self.EnvVar.TKE.values[self.Gr.gw]<1e-4:
+        #     self.EnvVar.TKE.values[self.Gr.gw] = 1e-4
 
         if (self.mixing_scheme == 'sbl'):
             for k in xrange(gw, self.Gr.nzg-gw):
@@ -881,7 +879,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
                      (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
                 else: # neutral or stable
-                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
+                    l2 = vkb * z_ /(sqrt(fmax(self.EnvVar.TKE.values[self.Gr.gw],1e-4)/ustar/ustar)*self.tke_ed_coeff)
+                    # l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
 
                 # Buoyancy-shear-subdomain exchange-dissipation TKE equilibrium scale
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -1519,12 +1518,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double anew_k, a_k, a_km, entr_w, detr_w, B_k, entr_term, detr_term, rho_ratio
             double adv, buoy, exch # groupings of terms in velocity discrete equation
 
-            double [:] adv_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
-            double [:] entr_term_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
-            double [:] detr_term_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
-            double [:] a_old_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
-            double [:] a_new_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
-            double [:] a_oldtdc_ = np.zeros((self.Gr.nz,),dtype=np.double, order='c')
 
         with nogil:
             for i in xrange(self.n_updrafts):
@@ -1544,15 +1537,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     entr_term = self.UpdVar.Area.values[i,k+1] * whalf_kp * (self.entr_sc[i,k+1] )
                     detr_term = self.UpdVar.Area.values[i,k+1] * whalf_kp * (- self.detr_sc[i,k+1])
 
-                    adv_[k-gw] = adv
-                    entr_term_[k-gw] = entr_term
-                    detr_term_[k-gw] = detr_term
-                    a_oldtdc_[k-gw] = dt_ * (adv + entr_term + detr_term) + self.UpdVar.Area.values[i,k+1]
-
                     self.UpdVar.Area.new[i,k+1]  = fmax(dt_ * (adv + entr_term + detr_term) + self.UpdVar.Area.values[i,k+1], 0.0)
 
-                    # with gil:
-                    #     print dt_
                     if self.UpdVar.Area.new[i,k+1] > au_lim:
                         self.UpdVar.Area.new[i,k+1] = au_lim
                         if self.UpdVar.Area.values[i,k+1] > 0.0:

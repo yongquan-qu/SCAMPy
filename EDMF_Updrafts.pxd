@@ -5,7 +5,6 @@ from NetCDFIO cimport NetCDFIO_Stats
 from EDMF_Environment cimport EnvironmentVariables
 from EDMF_Rain cimport RainVariables
 
-
 cdef class UpdraftVariable:
     cdef:
         double [:,:] values
