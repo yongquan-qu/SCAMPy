@@ -4,6 +4,7 @@ import cython
 
 from Grid cimport Grid
 from Variables cimport GridMeanVariables
+from EDMF_Updrafts cimport UpdraftVariables
 from ReferenceState cimport ReferenceState
 from TimeStepping cimport  TimeStepping
 cimport Surface
@@ -12,6 +13,7 @@ from NetCDFIO cimport NetCDFIO_Stats
 from thermodynamic_functions cimport *
 import math as mt
 from libc.math cimport sqrt, log, fabs,atan, exp, fmax
+cimport EDMF_Updrafts
 
 def CasesFactory(namelist, paramlist):
     if namelist['meta']['casename'] == 'Soares':
@@ -36,6 +38,11 @@ def CasesFactory(namelist, paramlist):
         return GABLS(paramlist)
     elif namelist['meta']['casename'] == 'SP':
         return SP(paramlist)
+    elif namelist['meta']['casename'] == 'SaturatedBubble':
+        return SaturatedBubble(paramlist)
+
+    elif namelist['meta']['casename'] == 'DryBubble':
+        return DryBubble(paramlist)
 
     else:
         print('case not recognized')
@@ -1588,6 +1595,285 @@ cdef class SP(CasesBase):
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self,Stats)
+        return
+
+    cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Sur.update(GMV)
+        return
+
+    cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Fo.update(GMV)
+        return
+
+cdef class SaturatedBubble(CasesBase):
+    def __init__(self, paramlist):
+        self.casename = 'SaturatedBubble'
+        self.Sur = Surface.SurfaceNone()
+        self.Fo = Forcing.ForcingNone()
+        self.inversion_option = 'critical_Ri'
+        self.Fo.apply_coriolis = False
+        self.Fo.apply_subsidence = False
+        return
+
+    def theta_to_T(self, p0_, thetas_, qt_, qtg):
+        T1 = Tt
+        T2 = Tt + 1
+        pv1 = pv_star(T1)
+        pv2 = pv_star(T2)
+        qs1 = qv_star_c(p0_,qtg,pv1)
+        ql1 = np.max([0.0,qt_ - qs1])
+        L1 = latent_heat(T1)
+        f1 = thetas_ - thetas_t_c(p0_,T1,qt_,qt_-ql1,ql1,L1)
+        delta = np.abs(T1 - T2)
+        while delta >= 1e-12:
+            L2 = latent_heat(T2)
+            pv2 = pv_star(T2)
+            qs2 = qv_star_c(p0_,qtg, pv2)
+            ql2 = np.max([0.0,qt_ - qs2])
+            f2 = thetas_ - thetas_t_c(p0_,T2,qt_,qt_-ql2,ql2,L2)
+            Tnew = T2 - f2 * (T2 - T1)/(f2 - f1)
+            T1 = T2
+            T2 = Tnew
+            f1 = f2
+            delta = np.abs(T1 - T2)
+        return T2
+
+
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+        Ref.Pg = 1.0e5  #Pressure at ground
+        Ref.qtg = 0.02
+        # theta_ref = 320 thruout the column, need to compute sfc_T
+        # function directly adopted from pycles initialization of SaturatedBubble
+        # TODO: check and merge with eos in thermodynamic_functions
+
+        Ref.Tg = self.theta_to_T(Ref.Pg,320.0,0.0196,Ref.qtg)
+        Ref.initialize(Gr, Stats)
+        return
+
+    cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
+        n_updrafts = 1
+        # initialize Grid Mean Profiles of thetali and qt
+        z_in = np.array([
+                        25.,   75.,  125.,  175.,  225.,  275.,  325.,  375.,  425.,
+                        475.,  525.,  575.,  625.,  675.,  725.,  775.,  825.,  875.,
+                        925.,  975., 1025., 1075., 1125., 1175., 1225., 1275., 1325.,
+                        1375., 1425., 1475., 1525., 1575., 1625., 1675., 1725., 1775.,
+                        1825., 1875., 1925., 1975., 2025., 2075., 2125., 2175., 2225.,
+                        2275., 2325., 2375., 2425., 2475., 2525., 2575., 2625., 2675.,
+                        2725., 2775., 2825., 2875., 2925., 2975., 3025., 3075., 3125.,
+                        3175., 3225., 3275., 3325., 3375., 3425., 3475., 3525., 3575.,
+                        3625., 3675., 3725., 3775., 3825., 3875., 3925., 3975., 4025.,
+                        4075., 4125., 4175., 4225., 4275., 4325., 4375., 4425., 4475.,
+                        4525., 4575., 4625., 4675., 4725., 4775., 4825., 4875., 4925.,
+                        4975., 5025., 5075., 5125., 5175., 5225., 5275., 5325., 5375.,
+                        5425., 5475., 5525., 5575., 5625., 5675., 5725., 5775., 5825.,
+                        5875., 5925., 5975., 6025., 6075., 6125., 6175., 6225., 6275.,
+                        6325., 6375., 6425., 6475., 6525., 6575., 6625., 6675., 6725.,
+                        6775., 6825., 6875., 6925., 6975., 7025., 7075., 7125., 7175.,
+                        7225., 7275., 7325., 7375., 7425., 7475., 7525., 7575., 7625.,
+                        7675., 7725., 7775., 7825., 7875., 7925., 7975., 8025., 8075.,
+                        8125., 8175., 8225., 8275., 8325., 8375., 8425., 8475., 8525.,
+                        8575., 8625., 8675., 8725., 8775., 8825., 8875., 8925., 8975.,
+                        9025., 9075., 9125., 9175., 9225., 9275., 9325., 9375., 9425.,
+                        9475., 9525., 9575., 9625., 9675., 9725., 9775., 9825., 9875.,
+                        9925., 9975.
+        ])
+        thetali_in = np.array([
+                        295.6481, 295.6397, 295.6327, 295.6236, 295.6171, 295.609 ,
+                        295.6031, 295.5961, 295.5921, 295.5849, 295.5799, 295.5753,
+                        295.5713, 295.5674, 295.564 , 295.5609, 295.5577, 295.5552,
+                        295.5524, 295.5496, 295.5475, 295.5446, 295.5414, 295.5393,
+                        295.5358, 295.533 , 295.5289, 295.524 , 295.5205, 295.5146,
+                        295.5109, 295.5031, 295.498 , 295.4905, 295.4824, 295.4735,
+                        295.4637, 295.4533, 295.4418, 295.4296, 295.4165, 295.4023,
+                        295.3877, 295.372 , 295.3554, 295.3382, 295.32  , 295.3012,
+                        295.2816, 295.2612, 295.2405, 295.219 , 295.1969, 295.1745,
+                        295.1511, 295.1282, 295.1045, 295.0804, 295.0565, 295.0321,
+                        295.0078, 294.9836, 294.9589, 294.9351, 294.9109, 294.8869,
+                        294.8634, 294.8395, 294.8169, 294.7941, 294.7715, 294.7497,
+                        294.7275, 294.7067, 294.6853, 294.665 , 294.645 , 294.6245,
+                        294.6052, 294.5849, 294.5658, 294.5461, 294.5257, 294.5059,
+                        294.4849, 294.4647, 294.444 , 294.4227, 294.4017, 294.3798,
+                        294.3586, 294.336 , 294.3144, 294.2922, 294.2694, 294.2469,
+                        294.2235, 294.2007, 294.1766, 294.1534, 294.1294, 294.1052,
+                        294.0809, 294.056 , 294.0314, 294.0058, 293.9808, 293.9546,
+                        293.9291, 293.9028, 293.8765, 293.8497, 293.8227, 293.7955,
+                        293.7678, 293.7402, 293.7118, 293.6837, 293.6547, 293.6261,
+                        293.5965, 293.5673, 293.5373, 293.5073, 293.4767, 293.4461,
+                        293.4149, 293.3836, 293.3519, 293.3199, 293.2875, 293.2548,
+                        293.2218, 293.1884, 293.1547, 293.1207, 293.0863, 293.0516,
+                        293.0165, 292.981 , 292.9452, 292.909 , 292.8725, 292.8356,
+                        292.7983, 292.7606, 292.7225, 292.6841, 292.6452, 292.606 ,
+                        292.5662, 292.5263, 292.4856, 292.445 , 292.4034, 292.3612,
+                        292.3189, 292.2765, 292.2337, 292.1901, 292.1465, 292.1019,
+                        292.0574, 292.0118, 291.9665, 291.9198, 291.8737, 291.8265,
+                        291.779 , 291.7309, 291.6822, 291.6334, 291.5834, 291.5338,
+                        291.483 , 291.4321, 291.3805, 291.3282, 291.2758, 291.2223,
+                        291.1689, 291.1147, 291.0598, 291.0047, 290.9484, 290.8924,
+                        290.8354, 290.7777, 290.7199, 290.6609, 290.6019, 290.5422,
+                        290.4814, 290.4209, 290.3596, 290.2974, 290.2349, 290.171 ,
+                        290.1074, 290.0429
+        ])
+                           #LES temperature_mean in K
+        thetali = np.zeros(Gr.nzg)
+        thetali[Gr.gw:Gr.nzg-Gr.gw] = np.interp(Gr.z_half[Gr.gw:Gr.nzg-Gr.gw],z_in,thetali_in)
+        GMV.THL.values = thetali
+        GMV.H.values = thetali
+        for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
+            GMV.QT.values[k] = 0.0196
+
+        GMV.QT.set_bcs(Gr)
+        GMV.H.set_bcs(Gr)
+        GMV.satadjust()
+
+        return
+
+    cpdef initialize_surface(self, Grid Gr,  ReferenceState Ref ):
+        self.Sur.Gr = Gr
+        self.Sur.Ref = Ref
+        self.Sur.qsurface = 0.0196
+        self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
+        self.Sur.initialize()
+        return
+
+    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV ):
+        self.Fo.Gr = Gr
+        self.Fo.Ref = Ref
+        self.Fo.initialize(GMV)
+        return
+
+    cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        CasesBase.initialize_io(self, Stats)
+        return
+
+    cpdef io(self, NetCDFIO_Stats Stats):
+        CasesBase.io(self, Stats)
+        return
+
+    cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Sur.update(GMV)
+        return
+
+    cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Fo.update(GMV)
+        return
+
+
+cdef class DryBubble(CasesBase):
+    def __init__(self, paramlist):
+        self.casename = 'DryBubble'
+        self.Sur = Surface.SurfaceNone()
+        self.Fo = Forcing.ForcingNone()
+        self.inversion_option = 'critical_Ri'
+        self.Fo.apply_coriolis = False
+        self.Fo.apply_subsidence = False
+        return
+
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+        Ref.Pg = 1.0e5  #Pressure at ground
+        Ref.qtg = 1.0e-5
+        Ref.Tg = 296
+        Ref.initialize(Gr, Stats)
+        return
+
+    cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
+        n_updrafts = 1
+        # initialize Grid Mean Profiles of thetali and qt
+        z_in = np.array([
+                          25.,   75.,  125.,  175.,  225.,  275.,  325.,  375.,  425.,
+                         475.,  525.,  575.,  625.,  675.,  725.,  775.,  825.,  875.,
+                         925.,  975., 1025., 1075., 1125., 1175., 1225., 1275., 1325.,
+                        1375., 1425., 1475., 1525., 1575., 1625., 1675., 1725., 1775.,
+                        1825., 1875., 1925., 1975., 2025., 2075., 2125., 2175., 2225.,
+                        2275., 2325., 2375., 2425., 2475., 2525., 2575., 2625., 2675.,
+                        2725., 2775., 2825., 2875., 2925., 2975., 3025., 3075., 3125.,
+                        3175., 3225., 3275., 3325., 3375., 3425., 3475., 3525., 3575.,
+                        3625., 3675., 3725., 3775., 3825., 3875., 3925., 3975., 4025.,
+                        4075., 4125., 4175., 4225., 4275., 4325., 4375., 4425., 4475.,
+                        4525., 4575., 4625., 4675., 4725., 4775., 4825., 4875., 4925.,
+                        4975., 5025., 5075., 5125., 5175., 5225., 5275., 5325., 5375.,
+                        5425., 5475., 5525., 5575., 5625., 5675., 5725., 5775., 5825.,
+                        5875., 5925., 5975., 6025., 6075., 6125., 6175., 6225., 6275.,
+                        6325., 6375., 6425., 6475., 6525., 6575., 6625., 6675., 6725.,
+                        6775., 6825., 6875., 6925., 6975., 7025., 7075., 7125., 7175.,
+                        7225., 7275., 7325., 7375., 7425., 7475., 7525., 7575., 7625.,
+                        7675., 7725., 7775., 7825., 7875., 7925., 7975., 8025., 8075.,
+                        8125., 8175., 8225., 8275., 8325., 8375., 8425., 8475., 8525.,
+                        8575., 8625., 8675., 8725., 8775., 8825., 8875., 8925., 8975.,
+                        9025., 9075., 9125., 9175., 9225., 9275., 9325., 9375., 9425.,
+                        9475., 9525., 9575., 9625., 9675., 9725., 9775., 9825., 9875.,
+                        9925., 9975.
+        ])
+        thetali_in = np.array([
+                        299.9834, 299.9836, 299.9841, 299.985 , 299.9864, 299.9883,
+                        299.9907, 299.9936, 299.9972, 300.0012, 300.0058, 300.011 ,
+                        300.0166, 300.0228, 300.0293, 300.0363, 300.0436, 300.0512,
+                        300.0591, 300.0672, 300.0755, 300.0838, 300.0921, 300.1004,
+                        300.1086, 300.1167, 300.1245, 300.132 , 300.1393, 300.1461,
+                        300.1525, 300.1583, 300.1637, 300.1685, 300.1726, 300.1762,
+                        300.179 , 300.1812, 300.1826, 300.1833, 300.1833, 300.1826,
+                        300.1812, 300.179 , 300.1762, 300.1727, 300.1685, 300.1637,
+                        300.1584, 300.1525, 300.1461, 300.1393, 300.1321, 300.1245,
+                        300.1167, 300.1087, 300.1005, 300.0922, 300.0838, 300.0755,
+                        300.0673, 300.0592, 300.0513, 300.0437, 300.0364, 300.0294,
+                        300.0228, 300.0167, 300.0111, 300.0059, 300.0013, 299.9972,
+                        299.9937, 299.9908, 299.9884, 299.9865, 299.9851, 299.9842,
+                        299.9837, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9835, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9835, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9835, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9835, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9835, 299.9835, 299.9835, 299.9835, 299.9835, 299.9835,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9836, 299.9836,
+                        299.9836, 299.9836, 299.9836, 299.9836, 299.9837, 299.9837,
+                        299.9837, 299.9837, 299.9837, 299.9837, 299.9837, 299.9837,
+                        299.9837, 299.9837, 299.9837, 299.9837, 299.9837, 299.9837,
+                        299.9837, 299.9837, 299.9837, 299.9837, 299.9837, 299.9837,
+                        299.9837, 299.9837
+        ])
+                           #LES temperature_mean in K
+        thetali = np.zeros(Gr.nzg)
+        thetali[Gr.gw:Gr.nzg-Gr.gw] = np.interp(Gr.z_half[Gr.gw:Gr.nzg-Gr.gw],z_in,thetali_in)
+        GMV.THL.values = thetali
+        GMV.H.values = thetali
+        for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
+            GMV.QT.values[k] = 1.0e-5
+
+        GMV.QT.set_bcs(Gr)
+        GMV.H.set_bcs(Gr)
+        GMV.satadjust()
+
+        return
+
+    cpdef initialize_surface(self, Grid Gr,  ReferenceState Ref ):
+        self.Sur.Gr = Gr
+        self.Sur.Ref = Ref
+        self.Sur.qsurface = 1.0e-5
+        self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
+        self.Sur.initialize()
+        return
+
+    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV ):
+        self.Fo.Gr = Gr
+        self.Fo.Ref = Ref
+        self.Fo.initialize(GMV)
+        return
+
+    cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        CasesBase.initialize_io(self, Stats)
+        return
+
+    cpdef io(self, NetCDFIO_Stats Stats):
+        CasesBase.io(self, Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
