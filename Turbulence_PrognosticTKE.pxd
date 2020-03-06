@@ -81,6 +81,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] h_surface_bc
         double [:] qt_surface_bc
         double [:] w_surface_bc
+        double entr_surface_bc
+        double detr_surface_bc
         double [:,:] m # mass flux
         double [:] massflux_h
         double [:] massflux_qt
@@ -102,7 +104,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double [:] tke_pressure
         double [:] tke_transport
         double [:] tke_advection
-        double max_area_factor
+        double max_area
         double tke_ed_coeff
         double tke_diss_coeff
         double static_stab_coeff
@@ -137,7 +139,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef initialize(self, GridMeanVariables GMV)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
-    cpdef io(self, NetCDFIO_Stats Stats)
+    cpdef io(self, NetCDFIO_Stats Stats, TimeStepping TS)
     cpdef update(self,GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_prognostic_updrafts(self, GridMeanVariables GMV, CasesBase Case, TimeStepping TS)
     cpdef compute_diagnostic_updrafts(self, GridMeanVariables GMV, CasesBase Case)
