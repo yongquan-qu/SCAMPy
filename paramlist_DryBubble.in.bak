@@ -7,7 +7,7 @@
             "aspect_ratio": 0.2,
             "constant_plume_spacing": 1333.0,
             "detrainment_factor": 0.3,
-            "entrainment_factor": 0.1,
+            "entrainment_factor": 0.05,
             "entrainment_scale": 0.004,
             "entrainment_sigma": 5.0,
             "lambda_stab": 0.9,
