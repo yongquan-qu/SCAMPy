@@ -13,8 +13,6 @@ from Cases cimport  CasesBase
 from NetCDFIO cimport NetCDFIO_Stats
 cimport TimeStepping
 
-import matplotlib.pyplot as plt
-
 class Simulation1d:
 
     def __init__(self, namelist, paramlist):
