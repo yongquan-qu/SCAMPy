@@ -618,7 +618,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.compute_nh_pressure()
             self.solve_updraft_velocity_area()
             self.solve_updraft_scalars(GMV)
-            self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
+            self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt) # causes division error in dry bubble first time step
 
             self.UpdVar.set_values_with_new()
             self.zero_area_fraction_cleanup(GMV)
