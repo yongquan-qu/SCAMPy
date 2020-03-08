@@ -525,12 +525,14 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.compute_pressure_plume_spacing(GMV, Case)
         self.wstar = get_wstar(Case.Sur.bflux, self.zi)
         if TS.nstep == 0:
-
             self.decompose_environment(GMV, 'values')
-            self.EnvThermo.saturation_adjustment(self.EnvVar)
-            self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
-            self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
-            # self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
+
+            if Case.casename == 'DryBubble':
+                self.EnvThermo.saturation_adjustment(self.EnvVar)
+                # self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
+                self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
+                
+            self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
             self.initialize_covariance(GMV, Case)
 
             with nogil:
