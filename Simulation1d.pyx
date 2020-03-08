@@ -2,7 +2,6 @@ import time
 import numpy as np
 cimport numpy as np
 from Variables cimport GridMeanVariables
-from EDMF_Updrafts cimport UpdraftVariables
 from Turbulence import ParameterizationFactory
 from Cases import CasesFactory
 cimport Grid
@@ -19,7 +18,6 @@ class Simulation1d:
         self.Gr = Grid.Grid(namelist)
         self.Ref = ReferenceState.ReferenceState(self.Gr)
         self.GMV = GridMeanVariables(namelist, self.Gr, self.Ref)
-        # self.UpdVar = UpdraftVariables(self.n_updrafts, namelist, paramlist, self.Gr)
         self.Case = CasesFactory(namelist, paramlist)
         self.Turb = ParameterizationFactory(namelist,paramlist, self.Gr, self.Ref)
         self.TS = TimeStepping.TimeStepping(namelist)
