@@ -195,6 +195,22 @@ cdef class UpdraftVariables:
                         0.1294, 0.1302, 0.1271, 0.1264, 0.1269, 0.1256
         ])
 
+        T_in = np.array([
+                        299.2557, 298.775 , 298.2969, 297.8227, 297.3536, 296.8843,
+                        296.421 , 295.9603, 295.502 , 295.0456, 294.5994, 294.1468,
+                        293.6951, 293.2556, 292.8054, 292.3549, 291.9188, 291.4677,
+                        291.0325, 290.5978, 290.1434, 289.7073, 289.2706, 288.81  ,
+                        288.3698, 287.928 , 287.4842, 287.0118, 286.5622, 286.1099,
+                        285.6544, 285.1957, 284.7335, 284.2379, 283.7677, 283.2937,
+                        282.8157, 282.3337, 281.8476, 281.3574, 280.8631, 280.3649,
+                        279.8626, 279.3565, 278.8467, 278.362 , 277.8447, 277.3241,
+                        276.8006, 276.2742, 275.7454, 275.2388, 274.705 , 274.1694,
+                        273.6327, 273.1155, 272.576 , 272.0363, 271.514 , 270.9736,
+                        270.4339, 269.9094, 269.3711, 268.8465, 268.311 , 267.7877,
+                        267.2649, 266.7432, 266.2159, 265.698 , 265.1821, 264.6685,
+                        264.1574, 263.6518, 263.1461, 262.6451, 262.1476, 261.6524
+        ])
+
         QT_in = np.array([
                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
@@ -216,22 +232,21 @@ cdef class UpdraftVariables:
                 if self.Gr.z_half[k+self.Gr.gw]<=z_in.max():
                     self.W.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,W_in)
                     # self.W.values[i,k] = 0.0
-                    # Simple treatment for now, revise when multiple updraft closures
-                    # become more well defined
                     self.Area.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,Area_in) #self.updraft_fraction/self.n_updrafts
                     self.QT.values[i,k] = 1.0e-5
                     self.H.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,thetal_in)
                     self.QL.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,QL_in)
 
-                    sa = eos(
-                        t_to_thetali_c,
-                        eos_first_guess_thetal,
-                        Ref.p0_half[k],
-                        self.QT.values[i,k],
-                        self.H.values[i,k]
-                    )
-                    self.QL.values[i,k] = sa.ql
-                    self.T.values[i,k] = sa.T
+                    self.T.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,T_in)
+
+                    # sa = eos(
+                    #     t_to_thetali_c,
+                    #     eos_first_guess_thetal,
+                    #     Ref.p0_half[k],
+                    #     self.QT.values[i,k],
+                    #     self.H.values[i,k]
+                    # )
+                    # self.T.values[i,k] = sa.T
 
         self.QT.set_bcs(self.Gr)
         self.H.set_bcs(self.Gr)
