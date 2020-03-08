@@ -279,13 +279,11 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         return
 
     cpdef initialize(self, CasesBase Case, GridMeanVariables GMV, ReferenceState Ref):
-        if Case.casename == 'SaturatedBubble':
-            print 'updraft initialized for saturated bubble'
-            self.UpdVar.initialize_SaturatedBubble(GMV, Ref)
-        elif Case.casename == 'DryBubble':
-            print 'updraft initialized for dry bubble'
+        if Case.casename == 'DryBubble':
+            print 'updraft initialized for Dry Bubble'
             self.UpdVar.initialize_DryBubble(GMV, Ref)
         else:
+            print 'updraft initialized for '+Case.casename
             self.UpdVar.initialize(GMV)
         return
 
