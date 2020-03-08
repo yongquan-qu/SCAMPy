@@ -211,33 +211,18 @@ cdef class UpdraftVariables:
                         264.1574, 263.6518, 263.1461, 262.6451, 262.1476, 261.6524
         ])
 
-        QT_in = np.array([
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
-        ])
-
-        QL_in = np.array([
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
-        ])
-
         for i in xrange(self.n_updrafts):
             for k in xrange(self.Gr.nzg):
                 if self.Gr.z_half[k+self.Gr.gw]<=z_in.max():
                     self.W.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,W_in)
                     # self.W.values[i,k] = 0.0
                     self.Area.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,Area_in) #self.updraft_fraction/self.n_updrafts
-                    self.QT.values[i,k] = 1.0e-5
                     self.H.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,thetal_in)
-                    self.QL.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,QL_in)
+                    self.QT.values[i,k] = 0.0
+                    self.QL.values[i,k] = 0.0
 
                     self.T.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,T_in)
+                    # for now temperature is provided as diagnostics from LES
 
                     # sa = eos(
                     #     t_to_thetali_c,
