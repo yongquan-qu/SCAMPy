@@ -531,7 +531,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.EnvThermo.saturation_adjustment(self.EnvVar)
                 # self.UpdThermo.microphysics(self.UpdVar, self.Rain, TS.dt)
                 self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
-                
+
             self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt)
             self.initialize_covariance(GMV, Case)
 
@@ -560,7 +560,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         #   - the buoyancy of updrafts and environment is up to date with the most recent decomposition,
         #   - the buoyancy of updrafts and environment is updated such that
         #     the mean buoyancy with repect to reference state alpha_0 is zero.
-        self.decompose_environment(GMV, 'mf_update')
+        # self.decompose_environment(GMV, 'mf_update')
         self.EnvThermo.microphysics(self.EnvVar, self.Rain, TS.dt) # saturation adjustment + rain creation
         # Sink of environmental QT and H due to rain creation is applied in tridiagonal solver
         self.UpdThermo.buoyancy(self.UpdVar, self.EnvVar, GMV, self.extrapolate_buoyancy)
