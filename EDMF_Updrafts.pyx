@@ -52,15 +52,11 @@ cdef class UpdraftVariable:
         else:
             for k in xrange(Gr.gw):
                 for i in xrange(n_updrafts):
-                    # if self.name == 'temperature':
-                    #     print 'temperature=======  k:' + str(k)
-                    #     print 'T: '+str(self.values[i,start_high + k +1])
-                    #     print 'T: '+str(self.values[i,start_high - k])
-
                     self.values[i,start_high + k +1] = self.values[i,start_high  - k]
                     self.values[i,start_low - k] = self.values[i,start_low + 1 + k]
 
         return
+
 
 cdef class UpdraftVariables:
     def __init__(self, nu, namelist, paramlist, Grid.Grid Gr):
@@ -222,7 +218,7 @@ cdef class UpdraftVariables:
 
         for i in xrange(self.n_updrafts):
             for k in xrange(self.Gr.nzg):
-                if self.Gr.z_half[k]<=z_in.max():
+                if z_in.min()<=self.Gr.z_half[k]<=z_in.max():
                     self.W.values[i,k] = 0.0
                     self.Area.values[i,k] = Area_in[k] #self.updraft_fraction/self.n_updrafts
                     self.H.values[i,k] = thetal_in[k]
@@ -242,8 +238,8 @@ cdef class UpdraftVariables:
                     # self.T.values[i,k] = sa.T
                 else:
                     self.Area.values[i,k] = 0.0 #self.updraft_fraction/self.n_updrafts
-                    self.H.values[i,k] = 0.0
-                    self.T.values[i,k] = 0.0
+                    self.H.values[i,k] = GMV.THL.values[k]
+                    self.T.values[i,k] = GMV.T.values[k]
 
         self.QT.set_bcs(self.Gr)
         self.H.set_bcs(self.Gr)

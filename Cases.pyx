@@ -1605,7 +1605,7 @@ cdef class DryBubble(CasesBase):
         self.casename = 'DryBubble'
         self.Sur = Surface.SurfaceNone()
         self.Fo = Forcing.ForcingNone()
-        self.inversion_option = 'critical_Ri'
+        self.inversion_option = 'theta_rho'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
@@ -1618,6 +1618,12 @@ cdef class DryBubble(CasesBase):
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
+        cdef:
+            Py_ssize_t k
+
+        for k in xrange(Gr.nzg):
+            GMV.U.values[k] = 0.01
+
         n_updrafts = 1
         # initialize Grid Mean Profiles of thetali and qt
         z_in = np.array([
@@ -1687,7 +1693,7 @@ cdef class DryBubble(CasesBase):
         GMV.THL.values = thetali
         GMV.H.values = thetali
         for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
-            GMV.QT.values[k] = 1.0e-5
+            GMV.QT.values[k] = 0.0
 
         GMV.QT.set_bcs(Gr)
         GMV.H.set_bcs(Gr)
