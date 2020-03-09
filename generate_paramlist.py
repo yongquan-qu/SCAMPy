@@ -180,7 +180,7 @@ def SP(paramlist_defaults):
 def DryBubble(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
     paramlist['meta']['casename'] = 'DryBubble'
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.05
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_factor'] = 0.2
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['detrainment_factor'] = 0.3
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['turbulent_entrainment_factor'] = 0.01
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma'] = 5.0

@@ -214,8 +214,7 @@ cdef class UpdraftVariables:
         for i in xrange(self.n_updrafts):
             for k in xrange(self.Gr.nzg):
                 if self.Gr.z_half[k+self.Gr.gw]<=z_in.max():
-                    self.W.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,W_in)
-                    # self.W.values[i,k] = 0.0
+                    self.W.values[i,k] = 0.0
                     self.Area.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,Area_in) #self.updraft_fraction/self.n_updrafts
                     self.H.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,thetal_in)
                     self.QT.values[i,k] = 0.0
