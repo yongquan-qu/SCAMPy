@@ -52,6 +52,11 @@ cdef class UpdraftVariable:
         else:
             for k in xrange(Gr.gw):
                 for i in xrange(n_updrafts):
+                    # if self.name == 'temperature':
+                    #     print 'temperature=======  k:' + str(k)
+                    #     print 'T: '+str(self.values[i,start_high + k +1])
+                    #     print 'T: '+str(self.values[i,start_high - k])
+
                     self.values[i,start_high + k +1] = self.values[i,start_high  - k]
                     self.values[i,start_low - k] = self.values[i,start_low + 1 + k]
 
@@ -211,16 +216,20 @@ cdef class UpdraftVariables:
                         264.1574, 263.6518, 263.1461, 262.6451, 262.1476, 261.6524
         ])
 
+        Area_in = np.interp(self.Gr.z_half,z_in,Area_in)
+        thetal_in = np.interp(self.Gr.z_half,z_in,thetal_in)
+        T_in = np.interp(self.Gr.z_half,z_in,T_in)
+
         for i in xrange(self.n_updrafts):
             for k in xrange(self.Gr.nzg):
-                if self.Gr.z_half[k+self.Gr.gw]<=z_in.max():
+                if self.Gr.z_half[k]<=z_in.max():
                     self.W.values[i,k] = 0.0
-                    self.Area.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,Area_in) #self.updraft_fraction/self.n_updrafts
-                    self.H.values[i,k] = np.interp(self.Gr.z_half[k+gw],z_in,thetal_in)
+                    self.Area.values[i,k] = Area_in[k] #self.updraft_fraction/self.n_updrafts
+                    self.H.values[i,k] = thetal_in[k]
                     self.QT.values[i,k] = 0.0
                     self.QL.values[i,k] = 0.0
 
-                    self.T.values[i,k] = np.interp(self.Gr.z_half[k+self.Gr.gw],z_in,T_in)
+                    self.T.values[i,k] = T_in[k]
                     # for now temperature is provided as diagnostics from LES
 
                     # sa = eos(
@@ -231,10 +240,15 @@ cdef class UpdraftVariables:
                     #     self.H.values[i,k]
                     # )
                     # self.T.values[i,k] = sa.T
+                else:
+                    self.Area.values[i,k] = 0.0 #self.updraft_fraction/self.n_updrafts
+                    self.H.values[i,k] = 0.0
+                    self.T.values[i,k] = 0.0
 
         self.QT.set_bcs(self.Gr)
         self.H.set_bcs(self.Gr)
         self.W.set_bcs(self.Gr)
+        self.T.set_bcs(self.Gr)
 
         self.set_means(GMV)
 
