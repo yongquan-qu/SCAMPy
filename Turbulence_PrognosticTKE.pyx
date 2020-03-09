@@ -777,8 +777,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double m_eps = 1.0e-9 # Epsilon to avoid zero
             double a, c_neg, wc_upd_nn, wc_env, frac_turb_entr_half
 
-        # if self.EnvVar.TKE.values[self.Gr.gw]<1e-4:
-        #     self.EnvVar.TKE.values[self.Gr.gw] = 1e-4
 
         if (self.mixing_scheme == 'sbl'):
             for k in xrange(gw, self.Gr.nzg-gw):
@@ -879,6 +877,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
                      (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
                 else: # neutral or stable
+                    # DryBubble experiment, initial condition: EnvVar.TKE == 0
                     l2 = vkb * z_ /(sqrt(fmax(self.EnvVar.TKE.values[self.Gr.gw],1e-4)/ustar/ustar)*self.tke_ed_coeff)
                     # l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
 
