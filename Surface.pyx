@@ -48,7 +48,7 @@ cdef class SurfaceNone(SurfaceBase):
 
     cpdef initialize(self):
         return
-    cpdef update(self, GridMeanVariables GMV, ):
+    cpdef update(self, GridMeanVariables GMV):
         # JH: assigning small fluxed so that simulation won't crash when computing mixing length
         cdef:
             Py_ssize_t k, gw = self.Gr.gw

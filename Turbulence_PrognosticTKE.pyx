@@ -523,7 +523,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.compute_pressure_plume_spacing(GMV, Case)
         self.wstar = get_wstar(Case.Sur.bflux, self.zi)
         if TS.nstep == 0:
-            self.set_subdomain_bcs()
             self.decompose_environment(GMV, 'values')
 
             if Case.casename == 'DryBubble':
