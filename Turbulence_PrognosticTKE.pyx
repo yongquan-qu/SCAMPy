@@ -283,7 +283,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             print 'updraft initialized for Dry Bubble'
             self.UpdVar.initialize_DryBubble(GMV, Ref)
         else:
-            print 'updraft initialized for '+Case.casename
             self.UpdVar.initialize(GMV)
         return
 
