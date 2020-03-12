@@ -330,7 +330,8 @@ cdef class GridMeanVariables:
                 qv = qt - sa.ql
                 self.THL.values[k] = t_to_thetali_c(p0, sa.T, qt, sa.ql,0.0)
                 alpha = alpha_c(p0, sa.T, qt, qv)
-                self.B.values[k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                # self.B.values[k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
+                self.B.values[k] = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
                 self.RH.values[k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, self.T.values[k])
 
         return

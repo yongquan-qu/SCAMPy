@@ -359,7 +359,8 @@ cdef class UpdraftThermodynamics:
                         if UpdVar.Area.values[i,k] > 0.0:
                             qv = UpdVar.QT.values[i,k] - UpdVar.QL.values[i,k]
                             alpha = alpha_c(self.Ref.p0_half[k], UpdVar.T.values[i,k], UpdVar.QT.values[i,k], qv)
-                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) #- GMV.B.values[k]
+                            # UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
+                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
                         else:
                             UpdVar.B.values[i,k] = EnvVar.B.values[k]
                         UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], UpdVar.QT.values[i,k],
@@ -374,7 +375,8 @@ cdef class UpdraftThermodynamics:
                             h = UpdVar.H.values[i,k]
                             t = UpdVar.T.values[i,k]
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
-                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                            # UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
+                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
                             UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, t)
 
                         elif UpdVar.Area.values[i,k-1] > 0.0 and k>self.Gr.gw:
@@ -384,7 +386,8 @@ cdef class UpdraftThermodynamics:
                             qv = qt
                             t = sa.T
                             alpha = alpha_c(self.Ref.p0_half[k], t, qt, qv)
-                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha)
+                            # UpdVar.B.values[i,k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
+                            UpdVar.B.values[i,k] = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
                             UpdVar.RH.values[i,k] = relative_humidity_c(self.Ref.p0_half[k], qt, qt-qv, 0.0, t)
                         else:
                             UpdVar.B.values[i,k] = EnvVar.B.values[k]
