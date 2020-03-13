@@ -316,7 +316,7 @@ cdef class GridMeanVariables:
         cdef:
             Py_ssize_t k
             eos_struct sa
-            double alpha, qv, qt, h, p0
+            double rho, qv, qt, h, p0
 
         with nogil:
             for k in xrange(self.Gr.nzg):
