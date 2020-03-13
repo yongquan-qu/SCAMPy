@@ -462,7 +462,7 @@ cdef class UpdraftThermodynamics:
                    GridMeanVariables GMV, bint extrap):
         cdef:
             Py_ssize_t k, i
-            double alpha, qv, qt, t, h
+            double rho, qv, qt, t, h
             Py_ssize_t gw = self.Gr.gw
 
         UpdVar.Area.bulkvalues = np.sum(UpdVar.Area.values,axis=0)

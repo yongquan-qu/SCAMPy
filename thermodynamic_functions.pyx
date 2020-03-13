@@ -80,7 +80,7 @@ cdef  double thetas_t_c(double p0, double T, double qt, double qv, double qc, do
 cdef double entropy_from_thetas_c(double thetas, double qt)  nogil :
     return cpm_c(qt) * log(thetas/T_tilde) + (1.0 - qt)*sd_tilde + qt * sv_tilde
 
-# cdef  double buoyancy_c(double alpha0, double alpha)nogil  :YAIR
+# cdef  double buoyancy_c(double alpha0, double alpha)nogil  :
 #     return g * (alpha - alpha0)/alpha0
 
 cdef  double buoyancy_c(double rho0, double rho)nogil  :
