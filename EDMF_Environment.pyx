@@ -259,7 +259,8 @@ cdef class EnvironmentThermodynamics:
         EnvVar.QT.values[k]  = qt
         EnvVar.QL.values[k]  = ql
         # EnvVar.B.values[k]   = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
-        EnvVar.B.values[k]   = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
+        rho = 
+        EnvVar.B.values[k]   = buoyancy_c(self.Ref.rho0_half[k], rho)
         EnvVar.RH.values[k] = relative_humidity_c(self.Ref.p0_half[k], qt , ql , 0.0, T)
         return
 
@@ -304,12 +305,11 @@ cdef class EnvironmentThermodynamics:
 
                 EnvVar.T.values[k]   = sa.T
                 EnvVar.QL.values[k]  = sa.ql
-                alpha = alpha_c(self.Ref.p0_half[k], EnvVar.T.values[k],
+                rho = rho_c(self.Ref.p0_half[k], EnvVar.T.values[k],
                                 EnvVar.QT.values[k],
                                 EnvVar.QT.values[k] - EnvVar.QL.values[k]
                                )
-                # EnvVar.B.values[k] = buoyancy_c(self.Ref.alpha0_half[k], alpha) YAIR
-                EnvVar.B.values[k] = buoyancy_c(self.Ref.rho0_half[k], 1.0/alpha)
+                EnvVar.B.values[k] = buoyancy_c(self.Ref.rho0_half[k], rho)
 
                 self.update_cloud_dry(k, EnvVar,
                                       EnvVar.T.values[k], EnvVar.THL.values[k],
