@@ -596,9 +596,9 @@ def plot_main(scm_srs, les_srs, scm_data, les_data, title,\
     lab = ["lwp", "rwp"]
     for it in range(2):
         plt.subplot(3,2,it+5)
-        plt.plot(les_srs["t"][1:],        les_srs[var[it]][1:], '-', c="gray", lw=3)
-        plt.plot(scm_srs["t"][1:], scm_srs[var[it]][1:], '-', c="royalblue", lw=3)
-        plt.xlim([0, scm_srs["t"][-1]])
+        plt.plot(les_srs["t"][1:]/3600.0, les_srs[var[it]][1:], '-', c="gray", lw=3)
+        plt.plot(scm_srs["t"][1:]/3600.0, scm_srs[var[it]][1:], '-', c="royalblue", lw=3)
+        plt.xlim([0, scm_srs["t"][-1]/3600.0])
         plt.xlabel('time [h]')
         plt.ylabel(lab[it])
         plt.grid(True)
