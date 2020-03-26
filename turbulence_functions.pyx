@@ -292,8 +292,8 @@ cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) 
     cdef:
         pressure_drag_struct _ret
 
-    _ret.nh_pressure_adv = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kphalf
-                          -press_in.w_khalf)*press_in.dzi
+    _ret.nh_pressure_adv = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kfull
+                          -press_in.w_kmfull)*press_in.dzi
 
     # drag as w_dif and account for downdrafts
     _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2 * (press_in.w_kfull -

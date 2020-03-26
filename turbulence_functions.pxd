@@ -80,8 +80,7 @@ cdef struct pressure_in_struct:
     double beta2
     double rd
     double w_kfull
-    double w_khalf
-    double w_kphalf
+    double w_kmfull
     double w_kenv
     double dzi
     double dz
