@@ -93,9 +93,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'tan18':
                 self.pressure_func_buoy = pressure_tan18_buoy
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode':
-                self.pressure_func_buoy = pressure_normalmode_buoy
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode_buoysin':
-                self.pressure_func_buoy = pressure_normalmode_buoysin
+                self.pressure_func_buoy = pressure_normalmode_buoy            
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
         except:
@@ -1411,8 +1409,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.dz = self.Gr.dz
                     input.z_full = self.Gr.z[k]
 
-                    input.a_khalf = self.UpdVar.Area.values[i,k]
-                    input.a_kphalf = self.UpdVar.Area.values[i,k+1]
                     input.b_kfull = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
                     input.rho0_kfull = self.Ref.rho0[k]
                     input.bcoeff_tan18 = self.pressure_buoy_coeff
