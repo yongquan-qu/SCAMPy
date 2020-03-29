@@ -28,7 +28,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         entr_struct (*entr_detr_fp) (entr_in_struct entr_in) nogil
 
         pressure_buoy_struct (*pressure_func_buoy) (pressure_in_struct press_in) nogil
-        pressure_buoy_struct (*pressure_func_buoysin) (pressure_in_struct press_in) nogil
         pressure_drag_struct (*pressure_func_drag) (pressure_in_struct press_in) nogil
 
         bint use_const_plume_spacing
