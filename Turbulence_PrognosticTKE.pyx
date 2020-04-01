@@ -1254,7 +1254,8 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef:
             Py_ssize_t k
             double tau =  get_mixing_tau(self.zi, self.wstar)
-            double a, a_full, K, K_full, R_up, R_up_full, wu_half, we_half, ed_mf_ratio
+            double a, a_full, K, K_full, R_up, R_up_full, wu_half, we_half
+            double ed_mf_ratio, b_upd_full, b_env_full, env_tke_full
 
         with nogil:
             for i in xrange(self.n_updrafts):
@@ -1283,9 +1284,18 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                     if a_full*self.UpdVar.W.values[i,k] > 0.0:
                         K_full = interp2pt(self.horizontal_KM[i,k],self.horizontal_KM[i,k-1])
+                        b_upd_full = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k-1])
+                        b_env_full = interp2pt(self.EnvVar.B.values[k], self.EnvVar.B.values[k-1])
+                        env_tke_full = interp2pt(self.EnvVar.TKE.buoy[k], self.EnvVar.TKE.buoy[k-1])
+
+                        ed_mf_ratio = fabs(env_tke_full)/(fabs(a_full*(1.0-a_full)*
+                            (self.UpdVar.W.values[i,k]-self.EnvVar.W.values[k])*(b_upd_full - b_env_full))+1e-8)
+
                         self.turb_entr_W[i,k]  = (2.0/R_up_full**2.0)*self.Ref.rho0[k] * a_full * K_full  * \
-                                                    (self.EnvVar.W.values[k]-self.UpdVar.W.values[i,k])
-                        self.frac_turb_entr_full[i,k] = (2.0/R_up_full**2.0) * K_full / self.UpdVar.W.values[i,k]/a_full
+                                                    (self.EnvVar.W.values[k]-self.UpdVar.W.values[i,k]) * \
+                                                    (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))
+                        self.frac_turb_entr_full[i,k] = (2.0/R_up_full**2.0) * K_full / self.UpdVar.W.values[i,k] * \
+                                                    (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))/a_full
                     else:
                         self.turb_entr_W[i,k] = 0.0
 
