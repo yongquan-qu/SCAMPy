@@ -279,21 +279,12 @@ cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) 
 
     return _ret
 
-cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_in) nogil:
-    cdef:
-        pressure_buoy_struct _ret
-
-    _ret.b_coeff = press_in.alpha1 / ( 1+press_in.alpha2*press_in.asp_ratio**2 )
-    _ret.nh_pressure_b = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.b_kfull * _ret.b_coeff * sin(3.14*press_in.z_full/press_in.updraft_top)
-
-    return _ret
-
 cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil:
     cdef:
         pressure_drag_struct _ret
 
-    _ret.nh_pressure_adv = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kphalf
-                          -press_in.w_khalf)*press_in.dzi
+    _ret.nh_pressure_adv = press_in.rho0_kfull * press_in.a_kfull * press_in.beta1*press_in.w_kfull*(press_in.w_kfull
+                          -press_in.w_kmfull)*press_in.dzi
 
     # drag as w_dif and account for downdrafts
     _ret.nh_pressure_drag = -1.0 * press_in.rho0_kfull * press_in.a_kfull * press_in.beta2 * (press_in.w_kfull -

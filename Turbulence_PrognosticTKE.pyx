@@ -93,9 +93,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'tan18':
                 self.pressure_func_buoy = pressure_tan18_buoy
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode':
-                self.pressure_func_buoy = pressure_normalmode_buoy
-            elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode_buoysin':
-                self.pressure_func_buoy = pressure_normalmode_buoysin
+                self.pressure_func_buoy = pressure_normalmode_buoy            
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
         except:
@@ -1406,44 +1404,49 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             input.a_med = np.median(self.UpdVar.Area.values[i,self.Gr.gw:self.Gr.nzg-self.Gr.gw][:alen])
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 input.a_kfull = interp2pt(self.UpdVar.Area.values[i,k], self.UpdVar.Area.values[i,k+1])
-                input.dzi = self.Gr.dzi
-                input.dz = self.Gr.dz
-                input.z_full = self.Gr.z[k]
+                if input.a_kfull >= self.minimum_area:
+                    input.dzi = self.Gr.dzi
+                    input.dz = self.Gr.dz
+                    input.z_full = self.Gr.z[k]
 
-                input.a_khalf = self.UpdVar.Area.values[i,k]
-                input.a_kphalf = self.UpdVar.Area.values[i,k+1]
-                input.b_kfull = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
-                input.rho0_kfull = self.Ref.rho0[k]
-                input.bcoeff_tan18 = self.pressure_buoy_coeff
-                input.alpha1 = self.pressure_normalmode_buoy_coeff1
-                input.alpha2 = self.pressure_normalmode_buoy_coeff2
-                input.beta1 = self.pressure_normalmode_adv_coeff
-                input.beta2 = self.pressure_normalmode_drag_coeff
-                input.rd = self.pressure_plume_spacing[i]
-                input.w_kfull = self.UpdVar.W.values[i,k]
-                input.w_khalf = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
-                input.w_kphalf = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k+1])
-                input.w_kenv = self.EnvVar.W.values[k]
-                input.drag_sign = self.drag_sign
+                    input.b_kfull = interp2pt(self.UpdVar.B.values[i,k], self.UpdVar.B.values[i,k+1])
+                    input.rho0_kfull = self.Ref.rho0[k]
+                    input.bcoeff_tan18 = self.pressure_buoy_coeff
+                    input.alpha1 = self.pressure_normalmode_buoy_coeff1
+                    input.alpha2 = self.pressure_normalmode_buoy_coeff2
+                    input.beta1 = self.pressure_normalmode_adv_coeff
+                    input.beta2 = self.pressure_normalmode_drag_coeff
+                    input.rd = self.pressure_plume_spacing[i]
+                    input.w_kfull = self.UpdVar.W.values[i,k]
+                    input.w_kmfull = self.UpdVar.W.values[i,k-1]
+                    input.w_kenv = self.EnvVar.W.values[k]
+                    input.drag_sign = self.drag_sign
 
-                if self.asp_label == 'z_dependent':
-                    input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_kfull)/input.rd
-                elif self.asp_label == 'median':
-                    input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_med)/input.rd
-                elif self.asp_label == 'const':
-                    # _ret.asp_ratio = 1.72
-                    input.asp_ratio = 1.0
+                    if self.asp_label == 'z_dependent':
+                        input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_kfull)/input.rd
+                    elif self.asp_label == 'median':
+                        input.asp_ratio = input.updraft_top/2.0/sqrt(input.a_med)/input.rd
+                    elif self.asp_label == 'const':
+                        # _ret.asp_ratio = 1.72
+                        input.asp_ratio = 1.0
 
-                if input.a_kfull>0.0:
-                    ret_b = self.pressure_func_buoy(input)
-                    ret_w = self.pressure_func_drag(input)
-                    self.nh_pressure_b[i,k] = ret_b.nh_pressure_b
-                    self.nh_pressure_adv[i,k] = ret_w.nh_pressure_adv
-                    self.nh_pressure_drag[i,k] = ret_w.nh_pressure_drag
+                    if input.a_kfull>0.0:
+                        ret_b = self.pressure_func_buoy(input)
+                        ret_w = self.pressure_func_drag(input)
+                        self.nh_pressure_b[i,k] = ret_b.nh_pressure_b
+                        self.nh_pressure_adv[i,k] = ret_w.nh_pressure_adv
+                        self.nh_pressure_drag[i,k] = ret_w.nh_pressure_drag
 
-                    self.b_coeff[i,k] = ret_b.b_coeff
-                    self.asp_ratio[i,k] = input.asp_ratio
+                        self.b_coeff[i,k] = ret_b.b_coeff
+                        self.asp_ratio[i,k] = input.asp_ratio
 
+                    else:
+                        self.nh_pressure_b[i,k] = 0.0
+                        self.nh_pressure_adv[i,k] = 0.0
+                        self.nh_pressure_drag[i,k] = 0.0
+
+                        self.b_coeff[i,k] = 0.0
+                        self.asp_ratio[i,k] = 0.0
                 else:
                     self.nh_pressure_b[i,k] = 0.0
                     self.nh_pressure_adv[i,k] = 0.0
