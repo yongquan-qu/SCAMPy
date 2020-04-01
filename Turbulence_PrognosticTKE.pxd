@@ -43,6 +43,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         double entrainment_factor
         double detrainment_factor
         double entrainment_sigma
+        double entrainment_ed_mf_sigma
         double entrainment_scale
         double updraft_mixing_frac
         double sorting_power

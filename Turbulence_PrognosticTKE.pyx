@@ -93,7 +93,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'tan18':
                 self.pressure_func_buoy = pressure_tan18_buoy
             elif str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_buoy']) == 'normalmode':
-                self.pressure_func_buoy = pressure_normalmode_buoy            
+                self.pressure_func_buoy = pressure_normalmode_buoy
             else:
                 print('Turbulence--EDMF_PrognosticTKE: pressure closure in namelist option is not recognized')
         except:
@@ -151,6 +151,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
         self.updraft_mixing_frac = paramlist['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac']
         self.entrainment_sigma = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_sigma']
+        self.entrainment_ed_mf_sigma = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_ed_mf_sigma']
         self.entrainment_scale = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_scale']
         self.constant_plume_spacing = paramlist['turbulence']['EDMF_PrognosticTKE']['constant_plume_spacing']
         self.detrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['detrainment_factor']
@@ -1253,7 +1254,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         cdef:
             Py_ssize_t k
             double tau =  get_mixing_tau(self.zi, self.wstar)
-            double a, a_full, K, K_full, R_up, R_up_full, wu_half, we_half, mf_ed_ratio
+            double a, a_full, K, K_full, R_up, R_up_full, wu_half, we_half, ed_mf_ratio
 
         with nogil:
             for i in xrange(self.n_updrafts):
@@ -1265,20 +1266,17 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     wu_half = interp2pt(self.UpdVar.W.values[i,k], self.UpdVar.W.values[i,k-1])
                     we_half = interp2pt(self.EnvVar.W.values[k], self.EnvVar.W.values[k-1])
                     if a*wu_half  > 0.0:
-                        if fabs(self.EnvVar.TKE.buoy[k]) > 0.0:
-                            mf_ed_ratio = fabs(a*(1.0-a)*(wu_half-we_half)*(self.UpdVar.B.values[i,k]
-                             - self.EnvVar.B.values[k]))/fabs(self.EnvVar.TKE.buoy[k])
-                        else:
-                            mf_ed_ratio = 10.0 # Value much larger than 1 for sigmoid
+                        ed_mf_ratio = fabs(self.EnvVar.TKE.buoy[k])/(fabs(a*(1.0-a)*
+                            (wu_half-we_half)*(self.UpdVar.B.values[i,k] - self.EnvVar.B.values[k]))+1e-8)
 
                         self.turb_entr_H[i,k]  = (2.0/R_up**2.0)*self.Ref.rho0_half[k] * a * self.horizontal_KH[i,k]  * \
                                                     (self.EnvVar.H.values[k] - self.UpdVar.H.values[i,k]) * \
-                                                    (1.0/(1.0+exp(-50.0*(mf_ed_ratio-1.0))))
+                                                    (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))
                         self.turb_entr_QT[i,k] = (2.0/R_up**2.0)*self.Ref.rho0_half[k]* a * self.horizontal_KH[i,k]  * \
                                                      (self.EnvVar.QT.values[k] - self.UpdVar.QT.values[i,k]) * \
-                                                     (1.0/(1.0+exp(-50.0*(mf_ed_ratio-1.0))))
+                                                     (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))
                         self.frac_turb_entr[i,k]    = (2.0/R_up**2.0) * self.horizontal_KH[i,k] * \
-                                                     (1.0/(1.0+exp(-50.0*(mf_ed_ratio-1.0))))/ wu_half/a
+                                                     (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))/ wu_half/a
                     else:
                         self.turb_entr_H[i,k] = 0.0
                         self.turb_entr_QT[i,k] = 0.0
@@ -1313,11 +1311,13 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         input.c_det = self.detrainment_factor
         input.c_mu = self.entrainment_sigma
         input.c_mu0 = self.entrainment_scale
+        input.c_ed_mf = self.entrainment_ed_mf_sigma
         input.chi_upd = self.updraft_mixing_frac
         input.quadrature_order = quadrature_order
         for i in xrange(self.n_updrafts):
             input.zi = self.UpdVar.cloud_base[i]
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+                input.buoy_ed_flux = self.EnvVar.TKE.buoy[k]
                 if self.UpdVar.Area.values[i,k]>0.0:
                     input.b_upd = self.UpdVar.B.values[i,k]
                     input.w_upd = interp2pt(self.UpdVar.W.values[i,k],self.UpdVar.W.values[i,k-1])
@@ -1333,7 +1333,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     input.T_env = self.EnvVar.T.values[k]
                     input.b_env = self.EnvVar.B.values[k]
                     input.b_mean = GMV.B.values[k]
-                    input.w_env = self.EnvVar.W.values[k]
+                    input.w_env = interp2pt(self.EnvVar.W.values[k],self.EnvVar.W.values[k-1])
                     input.H_up = self.UpdVar.H.values[i,k]
                     input.T_up = self.UpdVar.T.values[i,k]
                     input.qt_up = self.UpdVar.QT.values[i,k]

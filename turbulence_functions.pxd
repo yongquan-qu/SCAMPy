@@ -25,6 +25,7 @@ cdef struct entr_in_struct:
     double c_det
     double chi_upd
     double c_mu
+    double c_ed_mf
     double c_mu0
     double dz
     double w_upd
