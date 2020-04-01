@@ -62,6 +62,7 @@ cdef struct entr_in_struct:
     double L
     double zbl
     double poisson
+    double buoy_ed_flux
     long quadrature_order
 
 cdef struct pressure_in_struct:
