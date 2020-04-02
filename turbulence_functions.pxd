@@ -25,6 +25,7 @@ cdef struct entr_in_struct:
     double c_det
     double chi_upd
     double c_mu
+    double c_ed_mf
     double c_mu0
     double dz
     double w_upd
@@ -62,6 +63,7 @@ cdef struct entr_in_struct:
     double L
     double zbl
     double poisson
+    double buoy_ed_flux
     long quadrature_order
 
 cdef struct pressure_in_struct:
@@ -69,8 +71,6 @@ cdef struct pressure_in_struct:
     char *asp_label
     double a_med
     double a_kfull
-    double a_khalf
-    double a_kphalf
     double b_kfull
     double rho0_kfull
     double bcoeff_tan18
@@ -80,8 +80,7 @@ cdef struct pressure_in_struct:
     double beta2
     double rd
     double w_kfull
-    double w_khalf
-    double w_kphalf
+    double w_kmfull
     double w_kenv
     double dzi
     double dz
@@ -112,7 +111,6 @@ cdef buoyant_stract buoyancy_sorting_mean(entr_in_struct entr_in) nogil
 cdef pressure_buoy_struct pressure_tan18_buoy(pressure_in_struct press_in) nogil
 cdef pressure_drag_struct pressure_tan18_drag(pressure_in_struct press_in) nogil
 cdef pressure_buoy_struct pressure_normalmode_buoy(pressure_in_struct press_in) nogil
-cdef pressure_buoy_struct pressure_normalmode_buoysin(pressure_in_struct press_in) nogil
 cdef pressure_drag_struct pressure_normalmode_drag(pressure_in_struct press_in) nogil
 
 cdef double get_wstar(double bflux, double zi )
