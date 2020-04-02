@@ -41,7 +41,7 @@ cdef entr_struct entr_detr_inverse_w(entr_in_struct entr_in) nogil:
 cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
     cdef:
         entr_struct _ret
-        double moisture_deficit_e, moisture_deficit_d, c_det, mu, db, dw, logistic_e, logistic_d
+        double moisture_deficit_e, moisture_deficit_d, c_det, mu, db, dw, logistic_e, logistic_d, ed_mf_ratio
 
     moisture_deficit_d = (fmax((entr_in.RH_upd/100.0)**entr_in.sort_pow-(entr_in.RH_env/100.0)**entr_in.sort_pow,0.0))**(1.0/entr_in.sort_pow)
     moisture_deficit_e = (fmax((entr_in.RH_env/100.0)**entr_in.sort_pow-(entr_in.RH_upd/100.0)**entr_in.sort_pow,0.0))**(1.0/entr_in.sort_pow)
@@ -61,6 +61,10 @@ cdef entr_struct entr_detr_env_moisture_deficit(entr_in_struct entr_in) nogil:
 
     logistic_e = 1.0/(1.0+exp(-mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
     logistic_d = 1.0/(1.0+exp( mu*db/dw*(entr_in.chi_upd - entr_in.a_upd/(entr_in.a_upd+entr_in.a_env))))
+
+    ed_mf_ratio = fabs(entr_in.buoy_ed_flux)/(fabs(entr_in.a_upd*entr_in.a_env*(entr_in.w_upd-entr_in.w_env)*(entr_in.b_upd - entr_in.b_env))+1e-8)
+    logistic_e *= (1.0/(1.0+exp( entr_in.c_ed_mf*(ed_mf_ratio-1.0))))
+    logistic_d *= (1.0/(1.0+exp(-entr_in.c_ed_mf*(ed_mf_ratio-1.0)))) #TBD: Check whether to keep the logistic for detrainment or not.
 
     _ret.entr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_e + c_det*moisture_deficit_e)
     _ret.detr_sc = fabs(db/dw)/dw*(entr_in.c_ent*logistic_d + c_det*moisture_deficit_d)
