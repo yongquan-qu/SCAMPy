@@ -225,7 +225,7 @@ def DYCOMS_RF01(namelist_defaults):
     namelist['grid']['dz'] = 50
 
     namelist['time_stepping']['dt'] = 10.0
-    namelist['time_stepping']['t_max'] = 60 * 60 * 4.
+    namelist['time_stepping']['t_max'] = 60 * 60 * 16.
     namelist['meta']['simname'] = 'DYCOMS_RF01'
     namelist['meta']['casename'] = 'DYCOMS_RF01'
 
