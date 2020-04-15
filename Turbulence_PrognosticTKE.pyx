@@ -1277,8 +1277,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.turb_entr_QT[i,k] = (2.0/R_up**2.0)*self.Ref.rho0_half[k]* a * self.horizontal_KH[i,k]  * \
                                                      (self.EnvVar.QT.values[k] - self.UpdVar.QT.values[i,k]) * \
                                                      (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))
-                        self.frac_turb_entr[i,k]    = (2.0/R_up**2.0) * self.horizontal_KH[i,k] * \
-                                                     (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))/ wu_half/a
+                        self.frac_turb_entr[i,k]    = (2.0/R_up**2.0) * self.horizontal_KH[i,k] / wu_half/a
                     else:
                         self.turb_entr_H[i,k] = 0.0
                         self.turb_entr_QT[i,k] = 0.0
@@ -1295,8 +1294,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                         self.turb_entr_W[i,k]  = (2.0/R_up_full**2.0)*self.Ref.rho0[k] * a_full * K_full  * \
                                                     (self.EnvVar.W.values[k]-self.UpdVar.W.values[i,k]) * \
                                                     (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))
-                        self.frac_turb_entr_full[i,k] = (2.0/R_up_full**2.0) * K_full / self.UpdVar.W.values[i,k] * \
-                                                    (1.0/(1.0+exp(self.entrainment_ed_mf_sigma*(ed_mf_ratio-1.0))))/a_full
+                        self.frac_turb_entr_full[i,k] = (2.0/R_up_full**2.0) * K_full / self.UpdVar.W.values[i,k] / a_full
                     else:
                         self.turb_entr_W[i,k] = 0.0
 
