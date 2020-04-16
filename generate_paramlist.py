@@ -62,8 +62,7 @@ def main():
     # TODO: merge the tan18 buoyancy forluma into normalmode formula -> simply set buoy_coeff1 as 1./3. and buoy_coeff2 as 0.
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_buoy_coeff'] = 1.0/3.0
 
-
-    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.1
+    paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff1'] = 0.12
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_buoy_coeff2'] = 0.0
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_adv_coeff'] = 0.1
     paramlist_defaults['turbulence']['EDMF_PrognosticTKE']['pressure_normalmode_drag_coeff'] = 10.0
