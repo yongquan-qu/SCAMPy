@@ -152,7 +152,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
         self.max_area = paramlist['turbulence']['EDMF_PrognosticTKE']['max_area']
         self.entrainment_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_factor']
         try:
-            self.entrainment_Mdiv_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_Mdiv_factor']
+            self.entrainment_Mdiv_factor = paramlist['turbulence']['EDMF_PrognosticTKE']['entrainment_massflux_div_factor']
         except:
             self.entrainment_Mdiv_factor = 0.0
         self.updraft_mixing_frac = paramlist['turbulence']['EDMF_PrognosticTKE']['updraft_mixing_frac']
