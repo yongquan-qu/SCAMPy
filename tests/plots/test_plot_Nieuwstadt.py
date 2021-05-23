@@ -4,14 +4,12 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
-import subprocess
+
 import main as scampy
 import common as cmn
 import plot_scripts as pls
@@ -42,22 +40,13 @@ def test_plot_Nieuwstadt(sim_data):
     plot Nieuwstadt timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Nieuwstadt/")
-    except:
-        print('Nieuwstadt folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/Nieuwstadt/all_variables/")
-    except:
-        print('Nieuwstadt/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/Nieuwstadt.nc")):
-        les_data = Dataset(localpath + "/les_data/Nieuwstadt.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/wkfy1mcbbo9iyx7/Nieuwstadt.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Nieuwstadt.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Nieuwstadt.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/Nieuwstadt/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/Nieuwstadt.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1YLk80OuZSI0o-jeCxXgSBAF2PfSK6SRY"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/Nieuwstadt/"
     f2 = f1 + "all_variables/"
