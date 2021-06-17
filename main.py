@@ -1,5 +1,6 @@
 import argparse
 import json
+from pathlib import Path
 
 
 def main():
@@ -17,18 +18,19 @@ def main():
     paramlist = json.loads(file_paramlist)
     del file_paramlist
 
-    main1d(namelist, paramlist)
+    # Fetch path where namelist (and presumably paramlist) is stored
+    inpath = Path(args.namelist).resolve().parent
 
-    return
+    main1d(namelist, paramlist, inpath)
 
-def main1d(namelist, paramlist):
+
+def main1d(namelist, paramlist, inpath=Path.cwd()):
     import Simulation1d
-    Simulation = Simulation1d.Simulation1d(namelist, paramlist)
+    Simulation = Simulation1d.Simulation1d(namelist, paramlist, inpath)
     Simulation.initialize(namelist)
     Simulation.run()
     print('The simulation has completed.')
 
-    return
 
 if __name__ == "__main__":
     main()
