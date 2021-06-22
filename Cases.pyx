@@ -38,6 +38,8 @@ def CasesFactory(namelist, paramlist):
         return SP(paramlist)
     elif namelist['meta']['casename'] == 'DryBubble':
         return DryBubble(paramlist)
+    elif namelist['meta']['casename'] == 'LES_driven_SCM':
+        return LES_driven_SCM(paramlist)
 
     else:
         print('case not recognized')
@@ -53,7 +55,7 @@ cdef class CasesBase:
         return
     cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
         return
-    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         Stats.add_ts('Tsurface')
@@ -146,10 +148,10 @@ cdef class Soares(CasesBase):
         self.Sur.initialize()
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -163,7 +165,7 @@ cdef class Soares(CasesBase):
         self.Sur.update(GMV)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class Nieuwstadt(CasesBase):
@@ -239,10 +241,10 @@ cdef class Nieuwstadt(CasesBase):
         self.Sur.initialize()
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -256,7 +258,7 @@ cdef class Nieuwstadt(CasesBase):
         self.Sur.update(GMV)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class Bomex(CasesBase):
@@ -349,10 +351,10 @@ cdef class Bomex(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.initialize()
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             # Geostrophic velocity profiles. vg = 0
@@ -387,7 +389,7 @@ cdef class Bomex(CasesBase):
         self.Sur.update(GMV)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class life_cycle_Tan2018(CasesBase):
@@ -478,10 +480,10 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.bflux = (g * ((8.0e-3 + (eps_vi-1.0)*(299.1 * 5.2e-5  + 22.45e-3 * 8.0e-3)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
         self.Sur.initialize()
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             # Geostrophic velocity profiles. vg = 0
             self.Fo.ug[k] = -10.0 + (1.8e-3)*Gr.z_half[k]
@@ -520,7 +522,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.update(GMV)
         return
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class Rico(CasesBase):
@@ -602,10 +604,10 @@ cdef class Rico(CasesBase):
         self.Sur.initialize()
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         for k in xrange(Gr.nzg):
             # Geostrophic velocity profiles
             self.Fo.ug[k] = -9.9 + 2.0e-3 * Gr.z_half[k]
@@ -637,7 +639,7 @@ cdef class Rico(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class TRMM_LBA(CasesBase):
@@ -770,10 +772,10 @@ cdef class TRMM_LBA(CasesBase):
         self.Sur.initialize()
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         self.Fo.dTdt = np.zeros(Gr.nzg, dtype=np.double)
         self.rad_time = np.linspace(10,360,36)*60
         z_in         = np.array([42.5, 200.92, 456.28, 743, 1061.08, 1410.52, 1791.32, 2203.48, 2647,3121.88, 3628.12,
@@ -944,7 +946,7 @@ cdef class TRMM_LBA(CasesBase):
                 else:
                     self.Fo.dTdt[k] = self.rad[35,k]
 
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
 
         return
 
@@ -1018,10 +1020,10 @@ cdef class ARM_SGP(CasesBase):
         self.Sur.initialize()
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         cdef:
             Py_ssize_t k
         for k in xrange(Gr.nzg):
@@ -1074,7 +1076,7 @@ cdef class ARM_SGP(CasesBase):
                     self.Fo.dTdt[k] = dTdt*(1-(self.Fo.Gr.z_half[k]-1000.0)/1000.0)
                     self.Fo.dqtdt[k]  = dqtdt * exner_c(self.Fo.Ref.p0_half[k])\
                                         *(1-(self.Fo.Gr.z_half[k]-1000.0)/1000.0)
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
 
         return
 
@@ -1161,10 +1163,10 @@ cdef class GATE_III(CasesBase):
         self.Sur.initialize()
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         #LES z is in meters
         z_in     = np.array([ 0.0,   0.5,  1.0,  1.5,   2.0,   2.5,    3.0,   3.5,   4.0,   4.5,   5.0,   5.5,   6.0,
                               6.5,  7.0,  7.5,   8.0,  8.5,   9.0,  9.5,  10.0,  10.5,  11.0,    11.5,   12.0, 12.5,
@@ -1204,7 +1206,7 @@ cdef class GATE_III(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 
@@ -1361,10 +1363,10 @@ cdef class DYCOMS_RF01(CasesBase):
 
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
 
         # geostrophic velocity profiles
         self.Fo.ug[:] = 7.0
@@ -1399,7 +1401,7 @@ cdef class DYCOMS_RF01(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class GABLS(CasesBase):
@@ -1471,10 +1473,10 @@ cdef class GABLS(CasesBase):
         self.Sur.initialize()
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg - Gr.gw):
             # Geostrophic velocity profiles.
@@ -1496,7 +1498,7 @@ cdef class GABLS(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 # Not fully implemented yet - Ignacio
@@ -1572,10 +1574,10 @@ cdef class SP(CasesBase):
         self.Sur.initialize()
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg - Gr.gw):
             # Geostrophic velocity profiles. vg = 0
@@ -1597,7 +1599,7 @@ cdef class SP(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
 cdef class DryBubble(CasesBase):
@@ -1709,10 +1711,10 @@ cdef class DryBubble(CasesBase):
         self.Sur.initialize()
         return
 
-    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV ):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS, namelist)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -1728,5 +1730,70 @@ cdef class DryBubble(CasesBase):
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+
+cdef class LES_driven_SCM(CasesBase):
+    def __init__(self, paramlist, namelist):
+        self.casename = 'Rico'
+        # self.Sur = Surface.SurfaceLES(paramlist)
+        self.Sur = Surface.SurfaceNone()
+        self.Fo = Forcing.ForcingLES(namelist)
+        self.inversion_option = 'critical_Ri'
+        self.Fo.apply_coriolis = True
+        # get LES latitiude
+        cdef double latitude = 18.0
+        self.Fo.coriolis_param = 2.0 * omega * np.sin(latitude * pi / 180.0 ) # s^{-1}
+        self.Fo.apply_subsidence = True
+        return
+
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+        Ref.Pg = 1.0154e5  #Pressure at ground
+        Ref.Tg = 299.8  #Temperature at ground
+        cdef double pvg = pv_star(Ref.Tg)
+        Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)   #Total water mixing ratio at surface
+        Ref.initialize(Gr, Stats)
+        return
+
+    cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
+        cdef:
+            double [:] thetal = np.zeros((Gr.nzg,), dtype=np.double, order='c')
+            double ql=0.0, qi =0.0 # IC of Rico is cloud-free
+            Py_ssize_t k
+
+        for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
+            GMV.U.values[k] =  -9.9 + 2.0e-3 * Gr.z_half[k]
+            GMV.V.values[k] = -3.8
+            #Set Thetal profile
+            if Gr.z_half[k] <= 740.0:
+                thetal[k] = 297.9
+            else:
+                thetal[k] = 297.9 + (317.0-297.9)/(4000.0-740.0)*(Gr.z_half[k] - 740.0)
+
+            #Set qt profile
+            if Gr.z_half[k] <= 740.0:
+                GMV.QT.values[k] =  (16.0 + (13.8 - 16.0)/740.0 * Gr.z_half[k])/1000.0
+            elif Gr.z_half[k] > 740.0 and Gr.z_half[k] <= 3260.0:
+                GMV.QT.values[k] = (13.8 + (2.4 - 13.8)/(3260.0-740.0) * (Gr.z_half[k] - 740.0))/1000.0
+            else:
+                GMV.QT.values[k] = (2.4 + (1.8-2.4)/(4000.0-3260.0)*(Gr.z_half[k] - 3260.0))/1000.0
+
+        if GMV.H.name == 'thetal':
+            for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
+                GMV.H.values[k] = thetal[k]
+                GMV.T.values[k] =  thetal[k] * exner_c(Ref.p0_half[k])
+                GMV.THL.values[k] = thetal[k]
+        elif GMV.H.name == 's':
+            for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
+                GMV.T.values[k] = thetal[k] * exner_c(Ref.p0_half[k])
+                GMV.H.values[k] = t_to_entropy_c(Ref.p0_half[k],GMV.T.values[k],
+                                                 GMV.QT.values[k], ql, qi)
+                GMV.THL.values[k] = thetali_c(Ref.p0_half[k],GMV.T.values[k],
+                                                 GMV.QT.values[k], ql, qi, latent_heat(GMV.T.values[k]))
+
+        GMV.U.set_bcs(Gr)
+        GMV.QT.set_bcs(Gr)
+        GMV.H.set_bcs(Gr)
+        GMV.T.set_bcs(Gr)
+        GMV.satadjust()
         return

@@ -2332,6 +2332,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                 b[nz-1] += c[nz-1]
                 c[nz-1] = 0.0
+
         tridiag_solve(self.Gr.nz, &x[0],&a[0], &b[0], &c[0])
 
         for kk in xrange(nz):

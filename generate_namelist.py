@@ -276,6 +276,22 @@ def DryBubble(namelist_defaults):
 
     return namelist
 
+def LES_driven_SCM(namelist_defaults):
+    namelist = copy.deepcopy(namelist_defaults)
+
+    namelist['grid']['nz'] = 200
+    namelist['grid']['dz'] = 50.0
+
+    namelist['stats_io']['frequency'] = 10.0
+    namelist['time_stepping']['dt'] = 10.0
+    namelist['time_stepping']['t_max'] = 1000.0
+    namelist['meta']['simname'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+    namelist['meta']['casename'] = 'LES_driven_SCM'
+
+    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'moisture_deficit_div'
+
+    return namelist
+
 def write_file(namelist):
 
     try:

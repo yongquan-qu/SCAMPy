@@ -9,12 +9,15 @@ include "parameters.pxi"
 import cython
 from Variables cimport GridMeanVariables, VariablePrognostic
 from forcing_functions cimport  convert_forcing_entropy, convert_forcing_thetal
+from TimeStepping cimport TimeStepping
 from libc.math cimport cbrt, sqrt, log, fabs,atan, exp, fmax, pow, fmin
+import netCDF4 as nc
+from scipy.interpolate import interp2d
 
 cdef class ForcingBase:
     def __init__(self):
         return
-    cpdef initialize(self, GridMeanVariables GMV):
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
         self.subsidence = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
         self.dTdt = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
         self.dqtdt = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
@@ -26,7 +29,7 @@ cdef class ForcingBase:
         elif GMV.H.name == 'thetal':
             self.convert_forcing_prog_fp = convert_forcing_thetal
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
         cdef:
@@ -46,10 +49,10 @@ cdef class ForcingNone(ForcingBase):
     def __init__(self):
         ForcingBase.__init__(self)
         return
-    cpdef initialize(self, GridMeanVariables GMV):
-        ForcingBase.initialize(self, GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
+        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
         return
@@ -64,10 +67,10 @@ cdef class ForcingStandard(ForcingBase):
     def __init__(self):
         ForcingBase.__init__(self)
         return
-    cpdef initialize(self, GridMeanVariables GMV):
-        ForcingBase.initialize(self, GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
+        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t k
             double qv
@@ -98,10 +101,10 @@ cdef class ForcingStandard(ForcingBase):
 #     def __init__(self):
 #         ForcingBase.__init__(self)
 #         return
-#     cpdef initialize(self, GridMeanVariables GMV):
-#         ForcingBase.initialize(self, GMV)
+#     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
+#         ForcingBase.initialize(self, Gr, GMV, TS, namelist)
 #         return
-#     cpdef update(self, GridMeanVariables GMV):
+#     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
 #         cdef:
 #             Py_ssize_t k
 #             double qv
@@ -131,8 +134,8 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         ForcingBase.__init__(self)
         return
 
-    cpdef initialize(self, GridMeanVariables GMV):
-        ForcingBase.initialize(self, GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
+        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
 
         self.alpha_z    = 1.
         self.kappa      = 85.
@@ -197,7 +200,7 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         ForcingBase.coriolis_force(self, U, V)
         return
 
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t k
             double qv
@@ -226,4 +229,75 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
     cpdef io(self, NetCDFIO_Stats Stats):
         Stats.write_profile('rad_dTdt', self.dTdt[ self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
         Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
+        return
+
+
+cdef class ForcingLES(ForcingBase):
+    def __init__(self):
+        ForcingBase.__init__(self)
+        return
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS, namelist):
+        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
+        # construct the LES filename from the SCM simulation name so they always match
+        simname = namelist['meta']['simname'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+        les_filename = 'Stats.' + simname +'.nc'
+        # load the netCDF file
+        les_data = nc.Dataset('Stats.cfsite23_HadGEM2-A_amip_2004-2008.07.nc')
+        self.t_les       = np.array(les_data.groups['profiles'].variables['t'])
+        self.z_les       = np.array(les_data.groups['profiles'].variables['z'])
+        self.les_dtdt_rad    = les_data['profiles'].variables['dtdt_rad']
+        self.les_dtdt_hadv   = les_data['profiles'].variables['dtdt_hadv']
+        self.les_dtdt_nudge  = les_data['profiles'].variables['dtdt_nudge']
+        self.les_dqtdt_rad   = les_data['profiles'].variables['dqtdt_rad']
+        self.les_dqtdt_hadv  = les_data['profiles'].variables['dqtdt_hadv']
+        self.les_dqtdt_nudge = les_data['profiles'].variables['dqtdt_nudge']
+        self.les_subsidence  = les_data['profiles'].variables['ls_subsidence']
+
+        self.t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+        self.z_scm = self.Gr.z_half
+        # interp2d from LES to SCM
+        f_dtdt_rad = interp2d(self.t_les, self.z_les, self.les_dtdt_rad, kind='linear')
+        self.dtdt_rad = f_dtdt_rad(self.t_scm,self.z_scm)
+        f_dtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dtdt_hadv, kind='linear')
+        self.dtdt_hadv = f_dtdt_hadv(self.t_scm,self.z_scm)
+        f_dtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dtdt_nudge, kind='linear')
+        self.dtdt_nudge = f_dtdt_nudge(self.t_scm,self.z_scm)
+        f_dqtdt_rad = interp2d(self.t_les, self.z_les, self.les_dqtdt_rad, kind='linear')
+        self.dqtdt_rad = f_dqtdt_rad(self.t_scm,self.z_scm)
+        f_dqtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dqtdt_hadv, kind='linear')
+        self.dqtdt_hadv = f_dqtdt_hadv(self.t_scm,self.z_scm)
+        f_dqtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dqtdt_nudge, kind='linear')
+        self.dqtdt_nudge = f_dqtdt_nudge(self.t_scm,self.z_scm)
+        f_subsidence = interp2d(self.t_les, self.z_les, self.les_subsidence, kind='linear')
+        self.scm_subsidence = f_subsidence(self.t_scm,self.z_scm)
+
+        return
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
+        # read radiaitve forcing variables
+        cdef:
+            Py_ssize_t i, k
+
+        i = int(TS.t/TS.dt)
+        for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            GMV.T.tendencies[k] += (self.dtdt_rad[i,k] + self.dtdt_hadv[i,k])
+            GMV.QT.tendencies[k] += (self.dqtdt_rad[i,k] + self.dqtdt_hadv[i,k])
+        if self.apply_subsidence:
+            for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+                # Apply large-scale subsidence tendencies
+                GMV.H.tendencies[k] -= (GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.QT.tendencies[k] -= (GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+
+        
+        # apply radiaitve forcing tendencies
+        # do need to convert from entropy tendency to thetali tendency ?
+        # for k in xrange(self.Gr.gw, self.Gr.nzg - self.Gr.gw):
+        #     self.dTdt[k] = - (self.f_rad[k + 1] - self.f_rad[k]) / self.Gr.dz / self.Ref.rho0_half[k] / cp
+
+        if self.apply_coriolis:
+            self.coriolis_force(GMV.U, GMV.V)
+
+        return
+    cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        return
+    cpdef io(self, NetCDFIO_Stats Stats):
         return
