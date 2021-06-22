@@ -3,10 +3,13 @@
 #cython: wraparound=False
 #cython: initializedcheck=False
 #cython: cdivision=True
+from Grid cimport Grid
+import netCDF4 as nc
+import numpy as np
 
 cdef class TimeStepping:
 
-    def __init__(self,namelist):
+    def __init__(self, Gr, namelist):
         try:
             self.dt = namelist['time_stepping']['dt']
         except:
@@ -15,7 +18,11 @@ cdef class TimeStepping:
         self.dti = 1.0/self.dt
 
         try:
-            self.t_max = namelist['time_stepping']['t_max']
+            if namelist['meta']['casename'] == 'LES_driven_SCM':
+                les_data = nc.Dataset(Gr.les_filename,'r')
+                self.t_max = np.max(les_data.groups['profiles'].variables['t'])
+            else:
+                self.t_max = namelist['time_stepping']['t_max']
         except:
             self.t_max = 7200.0
 

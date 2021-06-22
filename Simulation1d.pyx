@@ -20,7 +20,7 @@ class Simulation1d:
         self.GMV = GridMeanVariables(namelist, self.Gr, self.Ref)
         self.Case = CasesFactory(namelist, paramlist)
         self.Turb = ParameterizationFactory(namelist,paramlist, self.Gr, self.Ref)
-        self.TS = TimeStepping.TimeStepping(namelist)
+        self.TS = TimeStepping.TimeStepping(self.Gr, namelist)
         self.Stats = NetCDFIO_Stats(namelist, paramlist, self.Gr)
         return
 

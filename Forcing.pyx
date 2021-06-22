@@ -17,7 +17,7 @@ from scipy.interpolate import interp2d
 cdef class ForcingBase:
     def __init__(self):
         return
-    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
         self.subsidence = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
         self.dTdt = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
         self.dqtdt = np.zeros((self.Gr.nzg,), dtype=np.double, order='c')
@@ -49,8 +49,8 @@ cdef class ForcingNone(ForcingBase):
     def __init__(self):
         ForcingBase.__init__(self)
         return
-    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
-        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
+        ForcingBase.initialize(self, Gr, GMV, TS)
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
@@ -67,8 +67,8 @@ cdef class ForcingStandard(ForcingBase):
     def __init__(self):
         ForcingBase.__init__(self)
         return
-    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
-        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
+        ForcingBase.initialize(self, Gr, GMV, TS)
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
@@ -101,8 +101,8 @@ cdef class ForcingStandard(ForcingBase):
 #     def __init__(self):
 #         ForcingBase.__init__(self)
 #         return
-#     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
-#         ForcingBase.initialize(self, Gr, GMV, TS, namelist)
+#     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
+#         ForcingBase.initialize(self, Gr, GMV, TS)
 #         return
 #     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
 #         cdef:
@@ -134,8 +134,8 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         ForcingBase.__init__(self)
         return
 
-    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS,namelist):
-        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
+        ForcingBase.initialize(self, Gr, GMV, TS)
 
         self.alpha_z    = 1.
         self.kappa      = 85.
@@ -237,13 +237,10 @@ cdef class ForcingLES(ForcingBase):
         ForcingBase.__init__(self)
         return
 
-    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS, namelist):
-        ForcingBase.initialize(self, Gr, GMV, TS, namelist)
-        # construct the LES filename from the SCM simulation name so they always match
-        simname = namelist['meta']['simname']
-        les_filename = 'Stats.' + simname +'.nc'
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
+        ForcingBase.initialize(self, Gr, GMV, TS)
         # load the netCDF file
-        les_data = nc.Dataset('Stats.cfsite23_HadGEM2-A_amip_2004-2008.07.nc')
+        les_data = nc.Dataset(Gr.les_filename,'r')
         self.t_les       = np.array(les_data.groups['profiles'].variables['t'])
         self.z_les       = np.array(les_data.groups['profiles'].variables['z'])
         self.les_dtdt_rad    = les_data['profiles'].variables['dtdt_rad']
@@ -287,12 +284,6 @@ cdef class ForcingLES(ForcingBase):
                 # Apply large-scale subsidence tendencies
                 GMV.H.tendencies[k] -= (GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
                 GMV.QT.tendencies[k] -= (GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
-
-        
-        # apply radiaitve forcing tendencies
-        # do need to convert from entropy tendency to thetali tendency ?
-        # for k in xrange(self.Gr.gw, self.Gr.nzg - self.Gr.gw):
-        #     self.dTdt[k] = - (self.f_rad[k + 1] - self.f_rad[k]) / self.Gr.dz / self.Ref.rho0_half[k] / cp
 
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)

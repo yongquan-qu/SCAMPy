@@ -85,6 +85,8 @@ def main():
         namelist = SP(namelist_defaults)
     elif case_name == 'DryBubble':
         namelist = DryBubble(namelist_defaults)
+    elif case_name == 'LES_driven_SCM':
+        namelist = LES_driven_SCM(namelist_defaults)
     else:
         print('Not a valid case name')
         exit()
@@ -278,18 +280,14 @@ def DryBubble(namelist_defaults):
 
 def LES_driven_SCM(namelist_defaults):
     namelist = copy.deepcopy(namelist_defaults)
-    # need to read these from LES file
-    namelist['grid']['nz'] = 200
     namelist['grid']['dz'] = 50.0
-    namelist['time_stepping']['t_max'] = 1000.0
 
     namelist['stats_io']['frequency'] = 10.0
     namelist['time_stepping']['dt'] = 10.0
-    namelist['meta']['simfolder'] = '?'
-    namelist['meta']['simname'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+    namelist['meta']['lesfolder'] = './LES_driven_SCM/'
+    namelist['meta']['lesfile'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+    namelist['meta']['simname'] = 'LES_driven_SCM'
     namelist['meta']['casename'] = 'LES_driven_SCM'
-
-    namelist_defaults['turbulence']['EDMF_PrognosticTKE']['entrainment'] = 'moisture_deficit_div'
 
     return namelist
 

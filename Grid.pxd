@@ -14,3 +14,4 @@ cdef class Grid:
         Py_ssize_t nzg
         double [:] z
         double [:] z_half
+        str les_filename

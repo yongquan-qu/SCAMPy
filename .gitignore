@@ -16,3 +16,4 @@ _templates/
 *.png
 *.mod
 *.nc
+LES_driven_SCM/
