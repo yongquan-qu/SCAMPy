@@ -236,10 +236,11 @@ cdef class ForcingLES(ForcingBase):
     def __init__(self):
         ForcingBase.__init__(self)
         return
+
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS, namelist):
         ForcingBase.initialize(self, Gr, GMV, TS, namelist)
         # construct the LES filename from the SCM simulation name so they always match
-        simname = namelist['meta']['simname'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+        simname = namelist['meta']['simname']
         les_filename = 'Stats.' + simname +'.nc'
         # load the netCDF file
         les_data = nc.Dataset('Stats.cfsite23_HadGEM2-A_amip_2004-2008.07.nc')

@@ -278,13 +278,14 @@ def DryBubble(namelist_defaults):
 
 def LES_driven_SCM(namelist_defaults):
     namelist = copy.deepcopy(namelist_defaults)
-
+    # need to read these from LES file
     namelist['grid']['nz'] = 200
     namelist['grid']['dz'] = 50.0
+    namelist['time_stepping']['t_max'] = 1000.0
 
     namelist['stats_io']['frequency'] = 10.0
     namelist['time_stepping']['dt'] = 10.0
-    namelist['time_stepping']['t_max'] = 1000.0
+    namelist['meta']['simfolder'] = '?'
     namelist['meta']['simname'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
     namelist['meta']['casename'] = 'LES_driven_SCM'
 

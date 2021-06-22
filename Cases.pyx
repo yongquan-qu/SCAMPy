@@ -53,7 +53,7 @@ cdef class CasesBase:
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         return
@@ -131,7 +131,7 @@ cdef class Soares(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 0.16 #1.0e-4 0.16 is the value specified in the Nieuwstadt paper.
         self.Sur.Tsurface = 300.0
         self.Sur.qsurface = 5.0e-3
@@ -145,7 +145,7 @@ cdef class Soares(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.bflux   =  g * ((theta_flux + (eps_vi - 1.0) * (theta_surface * qt_flux + self.Sur.qsurface * theta_flux))
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -162,7 +162,7 @@ cdef class Soares(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
@@ -224,7 +224,7 @@ cdef class Nieuwstadt(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 0.16 #1.0e-4 0.16 is the value specified in the Nieuwstadt paper.
         self.Sur.Tsurface = 300.0
         self.Sur.qsurface = 0.0
@@ -238,7 +238,7 @@ cdef class Nieuwstadt(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.bflux   =  g * ((theta_flux + (eps_vi - 1.0) * (theta_surface * qt_flux + self.Sur.qsurface * theta_flux))
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -255,7 +255,7 @@ cdef class Nieuwstadt(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
@@ -339,7 +339,7 @@ cdef class Bomex(CasesBase):
         GMV.satadjust()
 
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = 299.1 * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -349,7 +349,7 @@ cdef class Bomex(CasesBase):
         self.Sur.ustar = 0.28 # m/s
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
@@ -386,7 +386,7 @@ cdef class Bomex(CasesBase):
         CasesBase.io(self,Stats)
         return
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
@@ -465,7 +465,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         GMV.satadjust()
 
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = 299.1 * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -478,7 +478,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.bflux = (g * ((8.0e-3 + (eps_vi-1.0)*(299.1 * 5.2e-5  + 22.45e-3 * 8.0e-3)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
         self.Fo.Gr = Gr
@@ -519,7 +519,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.lhf = self.lhf0*weight
         self.Sur.shf = self.shf0*weight
         self.Sur.bflux = (g * ((8.0e-3*weight + (eps_vi-1.0)*(299.1 * 5.2e-5*weight  + 22.45e-3 * 8.0e-3*weight)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
         self.Fo.update(GMV, TS)
@@ -588,7 +588,7 @@ cdef class Rico(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.00015
@@ -601,7 +601,7 @@ cdef class Rico(CasesBase):
         self.Sur.ch = self.Sur.ch * grid_adjust
         self.Sur.cq = self.Sur.cq * grid_adjust
         self.Sur.Tsurface = 299.8
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
 
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -635,7 +635,7 @@ cdef class Rico(CasesBase):
         CasesBase.io(self,Stats)
         return
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
@@ -759,7 +759,7 @@ cdef class TRMM_LBA(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         #self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = (273.15+23) * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -769,7 +769,7 @@ cdef class TRMM_LBA(CasesBase):
         self.Sur.ustar = 0.28 # this is taken from Bomex -- better option is to approximate from LES tke above the surface
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -918,7 +918,7 @@ cdef class TRMM_LBA(CasesBase):
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
         self.Sur.lhf = 554.0 * mt.pow(np.maximum(0, np.cos(np.pi/2*((5.25*3600.0 - TS.t)/5.25/3600.0))),1.3)
         self.Sur.shf = 270.0 * mt.pow(np.maximum(0, np.cos(np.pi/2*((5.25*3600.0 - TS.t)/5.25/3600.0))),1.5)
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         # fix momentum fluxes to zero as they are not used in the paper
         self.Sur.rho_uflux = 0.0
         self.Sur.rho_vflux = 0.0
@@ -1008,7 +1008,7 @@ cdef class ARM_SGP(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Tsurface = 299.0 * exner_c(Ref.Pg)
         self.Sur.qsurface = 15.2e-3 # kg/kg
         self.Sur.lhf = 5.0
@@ -1017,7 +1017,7 @@ cdef class ARM_SGP(CasesBase):
         self.Sur.ustar = 0.28 # this is taken from Bomex -- better option is to approximate from LES tke above the surface
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -1054,7 +1054,7 @@ cdef class ARM_SGP(CasesBase):
         # if self.Sur.lhf < 1.0:
         #     self.Sur.lhf = 1.0
         #+++++++++
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         # fix momentum fluxes to zero as they are not used in the paper
         self.Sur.rho_uflux = 0.0
         self.Sur.rho_vflux = 0.0
@@ -1150,7 +1150,7 @@ cdef class GATE_III(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.qsurface = 16.5/1000.0 # kg/kg
@@ -1160,7 +1160,7 @@ cdef class GATE_III(CasesBase):
         self.Sur.ch = 0.0034337
         self.Sur.cq = 0.0034337
         self.Sur.Tsurface = 299.184
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -1202,7 +1202,7 @@ cdef class GATE_III(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV) # here lhf and shf are needed for calcualtion of bflux in surface and thus u_star
+        self.Sur.update(GMV, TS) # here lhf and shf are needed for calcualtion of bflux in surface and thus u_star
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
@@ -1337,7 +1337,7 @@ cdef class DYCOMS_RF01(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough      = 1.0e-4
         self.Sur.ustar_fixed = False
         self.Sur.cm          = 0.0011
@@ -1359,7 +1359,7 @@ cdef class DYCOMS_RF01(CasesBase):
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
         self.Sur.Gr  = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
 
         return
 
@@ -1397,7 +1397,7 @@ cdef class DYCOMS_RF01(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
@@ -1465,12 +1465,12 @@ cdef class GABLS(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.1
         self.Sur.Tsurface = 265.0
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
 
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -1494,7 +1494,7 @@ cdef class GABLS(CasesBase):
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
         self.Sur.Tsurface = 265.0 - (0.25/3600.0)*TS.t
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
@@ -1562,7 +1562,7 @@ cdef class SP(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.1
@@ -1571,7 +1571,7 @@ cdef class SP(CasesBase):
         theta_flux = 0.24
         self.Sur.bflux   =  g * theta_flux / theta_surface
         # self.Sur.bflux = 0.24 * exner_c(Ref.p0_half[Gr.gw]) * g / (Ref.p0_half[Gr.gw]*Ref.alpha0_half[Gr.gw]/Rd)
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
 
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -1595,7 +1595,7 @@ cdef class SP(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
@@ -1703,12 +1703,12 @@ cdef class DryBubble(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr,  ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.qsurface = 1.0e-5
         self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS, namelist)
         return
 
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
@@ -1726,7 +1726,7 @@ cdef class DryBubble(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):

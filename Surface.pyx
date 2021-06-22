@@ -12,17 +12,18 @@ from surface_functions cimport entropy_flux, compute_ustar, buoyancy_flux, excha
 from turbulence_functions cimport get_wstar, get_inversion
 from Variables cimport GridMeanVariables
 from libc.math cimport cbrt, fabs, sqrt
-
-
+import netCDF4 as nc
+from scipy.interpolate import interp1d
+from TimeStepping cimport TimeStepping
 
 cdef class SurfaceBase:
     def __init__(self, paramlist):
         self.Ri_bulk_crit = paramlist['turbulence']['Ri_bulk_crit']
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
 
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
     cpdef free_convection_windspeed(self, GridMeanVariables GMV):
         cdef:
@@ -46,9 +47,9 @@ cdef class SurfaceNone(SurfaceBase):
     def __init__(self):
         pass
 
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         # JH: assigning small fluxed so that simulation won't crash when computing mixing length
         cdef:
             Py_ssize_t k, gw = self.Gr.gw
@@ -66,10 +67,10 @@ cdef class SurfaceFixedFlux(SurfaceBase):
     def __init__(self,paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
 
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t k, gw = self.Gr.gw
             double rho_tflux =  self.shf /(cpm_c(self.qsurface))
@@ -116,7 +117,7 @@ cdef class SurfaceFixedCoeffs(SurfaceBase):
     def __init__(self, paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         cdef:
             double pvg = pv_star(self.Tsurface)
             double pdg = self.Ref.Pg - pvg
@@ -124,7 +125,7 @@ cdef class SurfaceFixedCoeffs(SurfaceBase):
         self.s_surface = (1.0-self.qsurface) * sd_c(pdg, self.Tsurface) + self.qsurface * sv_c(pvg,self.Tsurface)
         return
 
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t gw = self.Gr.gw
             double windspeed = np.maximum(np.sqrt(GMV.U.values[gw]*GMV.U.values[gw] + GMV.V.values[gw] * GMV.V.values[gw]), 0.01)
@@ -169,9 +170,9 @@ cdef class SurfaceMoninObukhov(SurfaceBase):
     def __init__(self, paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         self.qsurface = qv_star_t(self.Ref.Pg, self.Tsurface)
         cdef:
             Py_ssize_t k, gw = self.Gr.gw
@@ -232,9 +233,9 @@ cdef class SurfaceMoninObukhovDry(SurfaceBase):
     def __init__(self, paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         self.qsurface = qv_star_t(self.Ref.Pg, self.Tsurface)
         cdef:
             Py_ssize_t k, gw = self.Gr.gw
@@ -293,9 +294,9 @@ cdef class SurfaceSullivanPatton(SurfaceBase):
     def __init__(self, paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
-    cpdef initialize(self):
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
         return
-    cpdef update(self, GridMeanVariables GMV):
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t k, gw = self.Gr.gw
             double zb = self.Gr.z_half[gw]
@@ -352,4 +353,37 @@ cdef class SurfaceSullivanPatton(SurfaceBase):
 
     cpdef free_convection_windspeed(self, GridMeanVariables GMV):
         SurfaceBase.free_convection_windspeed(self, GMV)
+        return
+
+cdef class SurfaceLES(SurfaceBase):
+    def __init__(self, paramlist):
+        SurfaceBase.__init__(self, paramlist)
+        return
+
+    cpdef initialize(self, Grid Gr, TimeStepping TS, namelist):
+        simname = namelist['meta']['simname']
+        les_filename = 'Stats.' + simname +'.nc'
+        # load the netCDF file
+        les_data = nc.Dataset('Stats.cfsite23_HadGEM2-A_amip_2004-2008.07.nc')
+        self.t_les       = np.array(les_data.groups['profiles'].variables['t'])
+        self.les_lhf_surface_mean = les_data['profiles'].variables['lhf_surface_mean']
+        self.les_shf_surface_mean = les_data['profiles'].variables['shf_surface_mean']
+
+        self.t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+
+        # interp2d from LES to SCM
+        f_shf = interp1d(self.t_les, self.les_shf_surface_mean, kind='linear')
+        self.scm_shf = f_shf(self.t_scm)
+
+        f_lhf = interp1d(self.t_les, self.les_lhf_surface_mean, kind='linear')
+        self.scm_lhf = f_lhf(self.t_scm)
+
+        return
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
+        cdef:
+            Py_ssize_t i
+
+        i = int(TS.t/TS.dt)
+        self.lhf = self.scm_lhf[i]
+        self.shf = self.scm_shf[i]
         return
