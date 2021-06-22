@@ -4,18 +4,15 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
 
 import main as scampy
 import common as cmn
 import plot_scripts as pls
-import pprint as pp
 
 @pytest.fixture(scope="module")
 def sim_data(request):
@@ -42,22 +39,13 @@ def test_plot_Rico(sim_data):
     plot Rico timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Rico/")
-    except:
-        print('Rico folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/Rico/all_variables/")
-    except:
-        print('Rico/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/Rico.nc")):
-        les_data = Dataset(localpath + "/les_data/Rico.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/c2bvey47y8xryuc/Rico.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Rico.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Rico.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/Rico/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/Rico.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1Wyt8S1I7cNYYP3e-edSgXDTRpBrkwo1t"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/Rico/"
     f2 = f1 + "all_variables/"

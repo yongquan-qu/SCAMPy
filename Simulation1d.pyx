@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 import numpy as np
 cimport numpy as np
 from Variables cimport GridMeanVariables
@@ -14,14 +15,14 @@ cimport TimeStepping
 
 class Simulation1d:
 
-    def __init__(self, namelist, paramlist):
+    def __init__(self, namelist, paramlist, inpath=Path.cwd()):
         self.Gr = Grid.Grid(namelist)
         self.Ref = ReferenceState.ReferenceState(self.Gr)
         self.GMV = GridMeanVariables(namelist, self.Gr, self.Ref)
         self.Case = CasesFactory(namelist, paramlist)
         self.Turb = ParameterizationFactory(namelist,paramlist, self.Gr, self.Ref)
         self.TS = TimeStepping.TimeStepping(namelist)
-        self.Stats = NetCDFIO_Stats(namelist, paramlist, self.Gr)
+        self.Stats = NetCDFIO_Stats(namelist, paramlist, self.Gr, inpath)
         return
 
     def initialize(self, namelist):

@@ -4,13 +4,11 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
 
 import main as scampy
 import common as cmn
@@ -43,22 +41,13 @@ def test_plot_Gabls(sim_data):
     plot Gabls timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Gabls/")
-    except:
-        print('Gabls folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/Gabls/all_variables/")
-    except:
-        print('Gabls/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/Gabls.nc")):
-        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/241bj5yucslpb53/Gabls.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Gabls.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Gabls.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/Gabls/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/Gabls.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1gSyyz4Jx0JqaeO7gHaD9--uOD_tamvYA"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/Gabls/"
     f2 = f1 + "all_variables/"

@@ -4,13 +4,11 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
 
 import main as scampy
 import common as cmn
@@ -42,22 +40,13 @@ def test_plot_Tan2018(sim_data):
     plot Tan2018 timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Tan2018/")
-    except:
-        print('Tan2018 folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/Tan2018/all_variables/")
-    except:
-        print('Tan2018/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/Bomex.nc")):
-        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/zrhxou8i80bfdk2/Bomex.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Bomex.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Bomex.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/Tan2018/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/Bomex.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1h8LcxaoBVHqtxwoaynux_3PrUpi_8GfY"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/Tan2018/"
     f2 = f1 + "all_variables/"

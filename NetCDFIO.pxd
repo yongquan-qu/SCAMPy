@@ -1,5 +1,6 @@
-from TimeStepping cimport TimeStepping
 from Grid cimport Grid
+
+
 cdef class NetCDFIO_Stats:
     cdef:
         Grid Gr
@@ -7,10 +8,10 @@ cdef class NetCDFIO_Stats:
         object profiles_grp
         object ts_grp
 
-        str stats_file_name
-        str stats_path
-        str output_path
-        str path_plus_file
+        stats_file_name
+        stats_path
+        outpath
+        path_plus_file
         str uuid
 
         public double last_output_time
@@ -28,4 +29,3 @@ cdef class NetCDFIO_Stats:
     cpdef write_reference_profile(self, var_name, double[:] data)
     cpdef write_ts(self, var_name, double data)
     cpdef write_simulation_time(self, double t)
-
