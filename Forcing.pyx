@@ -252,22 +252,22 @@ cdef class ForcingLES(ForcingBase):
         self.les_subsidence  = les_data['profiles'].variables['ls_subsidence']
 
         self.t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
-        self.z_scm = self.Gr.z_half
+
         # interp2d from LES to SCM
         f_dtdt_rad = interp2d(self.t_les, self.z_les, self.les_dtdt_rad, kind='linear')
-        self.dtdt_rad = f_dtdt_rad(self.t_scm,self.z_scm)
+        self.dtdt_rad = f_dtdt_rad(self.t_scm, Gr.z_half)
         f_dtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dtdt_hadv, kind='linear')
-        self.dtdt_hadv = f_dtdt_hadv(self.t_scm,self.z_scm)
+        self.dtdt_hadv = f_dtdt_hadv(self.t_scm, Gr.z_half)
         f_dtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dtdt_nudge, kind='linear')
-        self.dtdt_nudge = f_dtdt_nudge(self.t_scm,self.z_scm)
+        self.dtdt_nudge = f_dtdt_nudge(self.t_scm, Gr.z_half)
         f_dqtdt_rad = interp2d(self.t_les, self.z_les, self.les_dqtdt_rad, kind='linear')
-        self.dqtdt_rad = f_dqtdt_rad(self.t_scm,self.z_scm)
+        self.dqtdt_rad = f_dqtdt_rad(self.t_scm, Gr.z_half)
         f_dqtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dqtdt_hadv, kind='linear')
-        self.dqtdt_hadv = f_dqtdt_hadv(self.t_scm,self.z_scm)
+        self.dqtdt_hadv = f_dqtdt_hadv(self.t_scm, Gr.z_half)
         f_dqtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dqtdt_nudge, kind='linear')
-        self.dqtdt_nudge = f_dqtdt_nudge(self.t_scm,self.z_scm)
+        self.dqtdt_nudge = f_dqtdt_nudge(self.t_scm, Gr.z_half)
         f_subsidence = interp2d(self.t_les, self.z_les, self.les_subsidence, kind='linear')
-        self.scm_subsidence = f_subsidence(self.t_scm,self.z_scm)
+        self.scm_subsidence = f_subsidence(self.t_scm, Gr.z_half)
 
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):

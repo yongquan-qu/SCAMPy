@@ -63,3 +63,8 @@ cdef class SurfaceSullivanPatton(SurfaceBase):
     cpdef initialize(self, Grid Gr, TimeStepping TS)
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef free_convection_windspeed(self, GridMeanVariables GMV)
+
+cdef class SurfaceLES(SurfaceBase):
+    cpdef initialize(self, Grid Gr, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef free_convection_windspeed(self, GridMeanVariables GMV)

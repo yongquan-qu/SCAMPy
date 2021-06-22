@@ -4,14 +4,12 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
-import subprocess
+
 import main as scampy
 import common as cmn
 import plot_scripts as pls
@@ -42,22 +40,13 @@ def test_plot_Soares(sim_data):
     plot Soares timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/Soares/")
-    except:
-        print('Soares folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/Soares/all_variables/")
-    except:
-        print('Soares/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/Soares.nc")):
-        les_data = Dataset(localpath + "/les_data/Soares.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/wkfy1mcbbo9iyx7/Soares.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/Soares.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/Soares.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/Soares/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/Soares.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1D6DKEGnIFeH9G4y77_BhhZNq1edC9gat"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/Soares/"
     f2 = f1 + "all_variables/"

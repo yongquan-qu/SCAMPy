@@ -4,13 +4,11 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
 
 import main as scampy
 import common as cmn
@@ -42,22 +40,14 @@ def test_plot_GATE_III(sim_data):
     plot GATE_III timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/GATE_III/")
-    except:
-        print('GATE_III folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/GATE_III/all_variables/")
-    except:
-        print('GATE_III/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/GATE_III.nc")):
-        les_data = Dataset(localpath + "/les_data/GATE_III.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/snhxbzxt4btgiis/TRMM_LBA.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/TRMM_LBA.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/GATE_III.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/GATE_III/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/GATE_III.nc"
+    if not les_data_path.is_file():
+        raise ValueError("External file does not exist.")
+        url_ = r""
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/GATE_III/"
     f2 = f1 + "all_variables/"

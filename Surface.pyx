@@ -385,3 +385,7 @@ cdef class SurfaceLES(SurfaceBase):
         self.lhf = self.scm_lhf[i]
         self.shf = self.scm_shf[i]
         return
+
+    cpdef free_convection_windspeed(self, GridMeanVariables GMV):
+        SurfaceBase.free_convection_windspeed(self, GMV)
+        return

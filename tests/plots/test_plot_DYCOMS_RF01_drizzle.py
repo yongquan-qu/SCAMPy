@@ -4,13 +4,11 @@ sys.path.insert(0, "../")
 
 import os
 import subprocess
-import json
-import warnings
+from pathlib import Path
 
 from netCDF4 import Dataset
 
 import pytest
-import numpy as np
 
 import main as scampy
 import common as cmn
@@ -47,22 +45,13 @@ def test_plot_DYCOMS_RF01_drizzle(sim_data):
     plot drizzling DYCOMS_RF01 timeseries
     """
     # make directory
-    localpath = os.getcwd()
-    try:
-        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/")
-    except:
-        print('DYCOMS_RF01_drizzle folder exists')
-    try:
-        os.mkdir(localpath + "/plots/output/DYCOMS_RF01_drizzle/all_variables/")
-    except:
-        print('DYCOMS_RF01_drizzle/all_variables folder exists')
-
-    if (os.path.exists(localpath + "/les_data/DYCOMS_RF01.nc")):
-        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
-    else:
-        url_ = "https://www.dropbox.com/s/dh636h4owlt6a79/DYCOMS_RF01.nc?dl=0"
-        os.system("wget -O "+localpath+"/les_data/DYCOMS_RF01.nc "+url_)
-        les_data = Dataset(localpath + "/les_data/DYCOMS_RF01.nc", 'r')
+    localpath = Path.cwd()
+    (localpath / "plots/output/DYCOMS_RF01_drizzle/all_variables/").mkdir(parents=True, exist_ok=True)
+    les_data_path = localpath / "les_data/DYCOMS_RF01.nc"
+    if not les_data_path.is_file():
+        url_ = r"https://drive.google.com/uc?export=download&id=1qBpJRVZsaQeJLuBEUwzLDv0aNlZsBaEq"
+        os.system(f"curl -sLo {les_data_path} '{url_}'")
+    les_data = Dataset(les_data_path, 'r')
 
     f1 = "plots/output/DYCOMS_RF01_drizzle/"
     f2 = f1 + "all_variables/"

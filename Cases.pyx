@@ -12,6 +12,8 @@ from NetCDFIO cimport NetCDFIO_Stats
 from thermodynamic_functions cimport *
 import math as mt
 from libc.math cimport sqrt, log, fabs,atan, exp, fmax
+import netCDF4 as nc
+from scipy.interpolate import interp1d
 
 def CasesFactory(namelist, paramlist):
     if namelist['meta']['casename'] == 'Soares':
@@ -49,7 +51,7 @@ def CasesFactory(namelist, paramlist):
 cdef class CasesBase:
     def __init__(self, paramlist):
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         return
@@ -87,7 +89,7 @@ cdef class Soares(CasesBase):
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 5.0e-3
         Ref.Tg = 300.0
@@ -180,7 +182,7 @@ cdef class Nieuwstadt(CasesBase):
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
         Ref.Tg = 300.0
@@ -271,7 +273,7 @@ cdef class Bomex(CasesBase):
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
         self.Fo.apply_subsidence = True
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
@@ -406,7 +408,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
         self.Fo.apply_subsidence = True
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
@@ -537,7 +539,7 @@ cdef class Rico(CasesBase):
         self.Fo.apply_subsidence = True
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0154e5  #Pressure at ground
         Ref.Tg = 299.8  #Temperature at ground
         cdef double pvg = pv_star(Ref.Tg)
@@ -653,7 +655,7 @@ cdef class TRMM_LBA(CasesBase):
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 991.3*100  #Pressure at ground
         Ref.Tg = 296.85   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         pvg = pv_star(Ref.Tg)
@@ -963,7 +965,7 @@ cdef class ARM_SGP(CasesBase):
         self.Fo.apply_subsidence =False
 
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 970.0*100 #Pressure at ground
         Ref.Tg = 299.0   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 15.2/1000#Total water mixing ratio at surface
@@ -1093,7 +1095,7 @@ cdef class GATE_III(CasesBase):
         self.Fo.apply_coriolis = False
 
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1013.0*100  #Pressure at ground
         Ref.Tg = 299.184   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 16.5/1000#Total water mixing ratio at surface
@@ -1224,7 +1226,7 @@ cdef class DYCOMS_RF01(CasesBase):
         self.inversion_option = 'thetal_maxgrad'
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg   = 1017.8 * 100.0
         Ref.qtg  = 9.0 / 1000.0
         # Use an exner function with values for Rd, and cp given in Stevens 2005 to compute temperature
@@ -1417,7 +1419,7 @@ cdef class GABLS(CasesBase):
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 265.0  #Temperature at ground
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
@@ -1514,7 +1516,7 @@ cdef class SP(CasesBase):
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 300.0  #Temperature at ground
         Ref.qtg = 1.0e-4   #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN.
@@ -1612,7 +1614,7 @@ cdef class DryBubble(CasesBase):
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.qtg = 1.0e-5
         Ref.Tg = 296
@@ -1747,12 +1749,9 @@ cdef class LES_driven_SCM(CasesBase):
         self.Fo.apply_subsidence = True
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
-        Ref.Pg = 1.0154e5  #Pressure at ground
-        Ref.Tg = 299.8     #Temperature at ground
-        cdef double pvg = pv_star(Ref.Tg)
-        Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
+        # get the LES fer state
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -1761,39 +1760,55 @@ cdef class LES_driven_SCM(CasesBase):
             double ql=0.0, qi =0.0 # IC of Rico is cloud-free
             Py_ssize_t k
 
+        les_data = nc.Dataset(Gr.les_filename,'r')
         for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
-            GMV.U.values[k] =  -9.9 + 2.0e-3 * Gr.z_half[k]
-            GMV.V.values[k] = -3.8
-            #Set Thetal profile
-            if Gr.z_half[k] <= 740.0:
-                thetal[k] = 297.9
-            else:
-                thetal[k] = 297.9 + (317.0-297.9)/(4000.0-740.0)*(Gr.z_half[k] - 740.0)
-
-            #Set qt profile
-            if Gr.z_half[k] <= 740.0:
-                GMV.QT.values[k] =  (16.0 + (13.8 - 16.0)/740.0 * Gr.z_half[k])/1000.0
-            elif Gr.z_half[k] > 740.0 and Gr.z_half[k] <= 3260.0:
-                GMV.QT.values[k] = (13.8 + (2.4 - 13.8)/(3260.0-740.0) * (Gr.z_half[k] - 740.0))/1000.0
-            else:
-                GMV.QT.values[k] = (2.4 + (1.8-2.4)/(4000.0-3260.0)*(Gr.z_half[k] - 3260.0))/1000.0
-
-        if GMV.H.name == 'thetal':
-            for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
-                GMV.H.values[k] = thetal[k]
-                GMV.T.values[k] =  thetal[k] * exner_c(Ref.p0_half[k])
-                GMV.THL.values[k] = thetal[k]
-        elif GMV.H.name == 's':
-            for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
-                GMV.T.values[k] = thetal[k] * exner_c(Ref.p0_half[k])
-                GMV.H.values[k] = t_to_entropy_c(Ref.p0_half[k],GMV.T.values[k],
-                                                 GMV.QT.values[k], ql, qi)
-                GMV.THL.values[k] = thetali_c(Ref.p0_half[k],GMV.T.values[k],
-                                                 GMV.QT.values[k], ql, qi, latent_heat(GMV.T.values[k]))
+            thetali = np.array(les_data.groups['profiles'].variables['thetali_mean'])
+            qt      = np.array(les_data.groups['profiles'].variables['qt_mean'])
+            u_mean  = np.array(les_data.groups['profiles'].variables['u_mean'])
+            v_mean  = np.array(les_data.groups['profiles'].variables['v_mean'])
+            # interp1d from LES to SCM
+            f_thetali     = interp1d(self.z_les, thetali[0,:], kind='linear')
+            GMV.H.values  = f_thetali(Gr.z_half)
+            f_qt          = interp1d(self.z_les, qt[0,:], kind='linear')
+            GMV.QT.values = f_qt(Gr.z_half)
+            f_u_mean      = interp1d(self.z_les, u_mean[0,:], kind='linear')
+            GMV.U.values  = f_u_mean(Gr.z_half)
+            f_v_mean      = interp1d(self.z_les, v_mean[0,:], kind='linear')
+            GMV.V.values  = f_v_mean(Gr.z_half)
 
         GMV.U.set_bcs(Gr)
         GMV.QT.set_bcs(Gr)
         GMV.H.set_bcs(Gr)
         GMV.T.set_bcs(Gr)
         GMV.satadjust()
+        return
+
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
+        self.Sur.Gr = Gr
+        self.Sur.Ref = Ref
+        self.Sur.qsurface = 1.0e-5
+        self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
+        self.Sur.initialize(Gr, TS)
+        return
+
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+        self.Fo.Gr = Gr
+        self.Fo.Ref = Ref
+        self.Fo.initialize(Gr, GMV, TS)
+        return
+
+    cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        CasesBase.initialize_io(self, Stats)
+        return
+
+    cpdef io(self, NetCDFIO_Stats Stats):
+        CasesBase.io(self, Stats)
+        return
+
+    cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Sur.update(GMV, TS)
+        return
+
+    cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Fo.update(GMV, TS)
         return
