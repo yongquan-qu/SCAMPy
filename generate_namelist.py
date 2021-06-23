@@ -285,7 +285,8 @@ def LES_driven_SCM(namelist_defaults):
     namelist['stats_io']['frequency'] = 10.0
     namelist['time_stepping']['dt'] = 10.0
     namelist['meta']['lesfolder'] = './LES_driven_SCM/'
-    namelist['meta']['lesfile'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+    # namelist['meta']['lesfile'] = 'cfsite23_HadGEM2-A_amip_2004-2008.07'
+    namelist['meta']['lesfile'] = 'cfsite17_HadGEM2-A_amip_2004-2008.07'
     namelist['meta']['simname'] = 'LES_driven_SCM'
     namelist['meta']['casename'] = 'LES_driven_SCM'
 

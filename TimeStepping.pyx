@@ -27,6 +27,7 @@ cdef class TimeStepping:
                 self.t_max = namelist['time_stepping']['t_max']
         except:
             self.t_max = 7200.0
+        # self.t_max = 443600.0
 
 
         # set time

@@ -367,16 +367,15 @@ cdef class SurfaceLES(SurfaceBase):
         les_lhf_surface_mean = les_data['timeseries'].variables['lhf_surface_mean']
         les_shf_surface_mean = les_data['timeseries'].variables['shf_surface_mean']
 
-        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
 
         # interp2d from LES to SCM
         f_shf = interp1d(t_les, les_shf_surface_mean, kind='linear')
-        self.scm_shf = f_shf(t_scm)
-
         f_lhf = interp1d(t_les, les_lhf_surface_mean, kind='linear')
+        self.scm_shf = f_shf(t_scm)
         self.scm_lhf = f_lhf(t_scm)
-
         return
+
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
             Py_ssize_t i, k, gw = self.Gr.gw
@@ -415,7 +414,20 @@ cdef class SurfaceLES(SurfaceBase):
 
             self.ustar = compute_ustar(self.windspeed, self.bflux, self.zrough, self.Gr.z_half[gw])
 
-        self.obukhov_length = -self.ustar *self.ustar *self.ustar /self.bflux /vkb
+        try:
+            self.obukhov_length = -self.ustar *self.ustar *self.ustar /self.bflux /vkb
+        except:
+            print(i)
+            print('self.ustar', self.ustar)
+            print('self.bflux', self.bflux)
+            print('self.shf', self.shf)
+            print('self.lhf', self.lhf)
+            print('self.scm_lhf', self.scm_lhf[i])
+            print('self.scm_shf', self.scm_shf[i])
+            print(GMV.T.values[gw])
+            print(GMV.QT.values[gw])
+            print(self.Ref.alpha0[gw-1])
+            self.obukhov_length = -self.ustar *self.ustar *self.ustar /self.bflux /vkb
         self.rho_uflux = - self.Ref.rho0[gw-1] *  self.ustar * self.ustar / self.windspeed * GMV.U.values[gw]
         self.rho_vflux = - self.Ref.rho0[gw-1] *  self.ustar * self.ustar / self.windspeed * GMV.V.values[gw]
         return

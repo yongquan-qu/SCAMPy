@@ -250,7 +250,7 @@ cdef class ForcingLES(ForcingBase):
         les_dqtdt_nudge = np.array(les_data['profiles'].variables['dqtdt_nudge'])
         les_subsidence  = np.array(les_data['profiles'].variables['ls_subsidence'])
 
-        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
 
         # interp2d from LES to SCM
         f_dtdt_rad = interp2d(z_les, t_les, les_dtdt_rad)
