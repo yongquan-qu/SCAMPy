@@ -139,3 +139,13 @@ cdef class DryBubble(CasesBase):
     cpdef io(self, NetCDFIO_Stats Stats)
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS)
+
+cdef class LES_driven_SCM(CasesBase):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist)
+    cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref )
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist)
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS)
+    cpdef initialize_io(self, NetCDFIO_Stats Stats)
+    cpdef io(self, NetCDFIO_Stats Stats)
+    cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS)
