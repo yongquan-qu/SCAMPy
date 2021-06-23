@@ -356,34 +356,68 @@ cdef class SurfaceSullivanPatton(SurfaceBase):
         return
 
 cdef class SurfaceLES(SurfaceBase):
-    def __init__(self, paramlist):
+    def __init__(self,paramlist):
         SurfaceBase.__init__(self, paramlist)
         return
 
     cpdef initialize(self, Grid Gr, TimeStepping TS):
         # load the netCDF file
         les_data = nc.Dataset(Gr.les_filename,'r')
-        self.t_les       = np.array(les_data.groups['profiles'].variables['t'])
-        self.les_lhf_surface_mean = les_data['profiles'].variables['lhf_surface_mean']
-        self.les_shf_surface_mean = les_data['profiles'].variables['shf_surface_mean']
+        t_les       = np.array(les_data.groups['profiles'].variables['t'])
+        les_lhf_surface_mean = les_data['timeseries'].variables['lhf_surface_mean']
+        les_shf_surface_mean = les_data['timeseries'].variables['shf_surface_mean']
 
-        self.t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
 
         # interp2d from LES to SCM
-        f_shf = interp1d(self.t_les, self.les_shf_surface_mean, kind='linear')
-        self.scm_shf = f_shf(self.t_scm)
+        f_shf = interp1d(t_les, les_shf_surface_mean, kind='linear')
+        self.scm_shf = f_shf(t_scm)
 
-        f_lhf = interp1d(self.t_les, self.les_lhf_surface_mean, kind='linear')
-        self.scm_lhf = f_lhf(self.t_scm)
+        f_lhf = interp1d(t_les, les_lhf_surface_mean, kind='linear')
+        self.scm_lhf = f_lhf(t_scm)
 
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         cdef:
-            Py_ssize_t i
+            Py_ssize_t i, k, gw = self.Gr.gw
+            double rho_tflux =  self.shf /(cpm_c(self.qsurface))
+
 
         i = int(TS.t/TS.dt)
         self.lhf = self.scm_lhf[i]
         self.shf = self.scm_shf[i]
+
+        self.windspeed = np.sqrt(GMV.U.values[gw]*GMV.U.values[gw] + GMV.V.values[gw] * GMV.V.values[gw])
+        self.rho_qtflux = self.lhf/(latent_heat(self.Tsurface))
+
+        if GMV.H.name == 'thetal':
+            self.rho_hflux = rho_tflux / exner_c(self.Ref.Pg)
+        elif GMV.H.name == 's':
+            self.rho_hflux = entropy_flux(rho_tflux/self.Ref.rho0[gw-1],self.rho_qtflux/self.Ref.rho0[gw-1],
+                                          self.Ref.p0_half[gw], GMV.T.values[gw], GMV.QT.values[gw])
+        self.bflux = buoyancy_flux(self.shf, self.lhf, GMV.T.values[gw], GMV.QT.values[gw],self.Ref.alpha0[gw-1]  )
+
+        if not self.ustar_fixed:
+            # Correction to windspeed for free convective cases (Beljaars, QJRMS (1994), 121, pp. 255-270)
+            # Value 1.2 is empirical, but should be O(1)
+            if self.windspeed < 0.1:  # Limit here is heuristic
+                if self.bflux > 0.0:
+                   self.free_convection_windspeed(GMV)
+                else:
+                    print('WARNING: Low windspeed + stable conditions, need to check ustar computation')
+                    print('self.bflux ==>',self.bflux )
+                    print('self.shf ==>',self.shf)
+                    print('self.lhf ==>',self.lhf)
+                    print('GMV.U.values[gw] ==>',GMV.U.values[gw])
+                    print('GMV.v.values[gw] ==>',GMV.V.values[gw])
+                    print('GMV.QT.values[gw] ==>',GMV.QT.values[gw])
+                    print('self.Ref.alpha0[gw-1] ==>',self.Ref.alpha0[gw-1])
+
+            self.ustar = compute_ustar(self.windspeed, self.bflux, self.zrough, self.Gr.z_half[gw])
+
+        self.obukhov_length = -self.ustar *self.ustar *self.ustar /self.bflux /vkb
+        self.rho_uflux = - self.Ref.rho0[gw-1] *  self.ustar * self.ustar / self.windspeed * GMV.U.values[gw]
+        self.rho_vflux = - self.Ref.rho0[gw-1] *  self.ustar * self.ustar / self.windspeed * GMV.V.values[gw]
         return
 
     cpdef free_convection_windspeed(self, GridMeanVariables GMV):

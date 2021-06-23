@@ -28,8 +28,8 @@ class Simulation1d:
     def initialize(self, namelist):
         self.Case.initialize_reference(self.Gr, self.Ref, self.Stats, namelist)
         self.Case.initialize_profiles(self.Gr, self.GMV, self.Ref)
-        self.Case.initialize_surface(self.Gr, self.Ref )
-        self.Case.initialize_forcing(self.Gr, self.Ref, self.GMV)
+        self.Case.initialize_surface(self.Gr, self.Ref, self.TS, namelist)
+        self.Case.initialize_forcing(self.Gr, self.Ref, self.GMV, self.TS)
         self.Turb.initialize(self.Case, self.GMV, self.Ref)
         self.initialize_io()
         self.io()

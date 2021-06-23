@@ -38,7 +38,7 @@ cdef class Grid:
             self.les_filename = lesfolder + 'Stats.' + lesfile +'.nc'
             les_data = nc.Dataset(self.les_filename,'r')
             z_top = np.max(les_data.groups['timeseries'].variables['cloud_top'])
-            self.nz = (z_top - z_top%self.dz)/self.dz*1.5
+            self.nz = int((z_top - z_top%self.dz)/self.dz*1.5)
         else:
             self.nz = namelist['grid']['nz']
         self.nzg = self.nz + 2 * self.gw

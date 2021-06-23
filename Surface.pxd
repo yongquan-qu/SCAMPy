@@ -24,6 +24,8 @@ cdef class SurfaceBase:
         double rho_vflux
         double obukhov_length
         double Ri_bulk_crit
+        double [:] scm_shf
+        double [:] scm_lhf
         bint ustar_fixed
         Grid Gr
         ReferenceState Ref

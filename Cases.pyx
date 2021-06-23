@@ -57,7 +57,7 @@ cdef class CasesBase:
         return
     cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         Stats.add_ts('Tsurface')
@@ -150,7 +150,7 @@ cdef class Soares(CasesBase):
         self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -243,7 +243,7 @@ cdef class Nieuwstadt(CasesBase):
         self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -353,7 +353,7 @@ cdef class Bomex(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.initialize(Gr, TS)
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -482,7 +482,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.bflux = (g * ((8.0e-3 + (eps_vi-1.0)*(299.1 * 5.2e-5  + 22.45e-3 * 8.0e-3)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
         self.Sur.initialize(Gr, TS)
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -606,7 +606,7 @@ cdef class Rico(CasesBase):
         self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -774,7 +774,7 @@ cdef class TRMM_LBA(CasesBase):
         self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1022,7 +1022,7 @@ cdef class ARM_SGP(CasesBase):
         self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1165,7 +1165,7 @@ cdef class GATE_III(CasesBase):
         self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1365,7 +1365,7 @@ cdef class DYCOMS_RF01(CasesBase):
 
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1475,7 +1475,7 @@ cdef class GABLS(CasesBase):
         self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1576,7 +1576,7 @@ cdef class SP(CasesBase):
         self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1713,7 +1713,7 @@ cdef class DryBubble(CasesBase):
         self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
@@ -1736,16 +1736,13 @@ cdef class DryBubble(CasesBase):
         return
 
 cdef class LES_driven_SCM(CasesBase):
-    def __init__(self, paramlist, namelist):
+    def __init__(self, paramlist):
         self.casename = 'Rico'
-        # self.Sur = Surface.SurfaceLES(paramlist)
-        self.Sur = Surface.SurfaceLES()
-        self.Fo = Forcing.ForcingLES(namelist)
+        self.Sur = Surface.SurfaceLES(paramlist)
+        self.Fo = Forcing.ForcingLES()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         # get LES latitiude
-        cdef double latitude = 18.0
-        self.Fo.coriolis_param = 2.0 * omega * np.sin(latitude * pi / 180.0 ) # s^{-1}
         self.Fo.apply_subsidence = True
         return
 
@@ -1761,20 +1758,21 @@ cdef class LES_driven_SCM(CasesBase):
             Py_ssize_t k
 
         les_data = nc.Dataset(Gr.les_filename,'r')
-        for k in xrange(Gr.gw,Gr.nzg-Gr.gw):
-            thetali = np.array(les_data.groups['profiles'].variables['thetali_mean'])
-            qt      = np.array(les_data.groups['profiles'].variables['qt_mean'])
-            u_mean  = np.array(les_data.groups['profiles'].variables['u_mean'])
-            v_mean  = np.array(les_data.groups['profiles'].variables['v_mean'])
-            # interp1d from LES to SCM
-            f_thetali     = interp1d(self.z_les, thetali[0,:], kind='linear')
-            GMV.H.values  = f_thetali(Gr.z_half)
-            f_qt          = interp1d(self.z_les, qt[0,:], kind='linear')
-            GMV.QT.values = f_qt(Gr.z_half)
-            f_u_mean      = interp1d(self.z_les, u_mean[0,:], kind='linear')
-            GMV.U.values  = f_u_mean(Gr.z_half)
-            f_v_mean      = interp1d(self.z_les, v_mean[0,:], kind='linear')
-            GMV.V.values  = f_v_mean(Gr.z_half)
+        z_les_half = np.array(les_data.groups['profiles'].variables['z_half'])
+        thetali = np.array(les_data.groups['profiles'].variables['thetali_mean'])
+        qt      = np.array(les_data.groups['profiles'].variables['qt_mean'])
+        u_mean  = np.array(les_data.groups['profiles'].variables['u_mean'])
+        v_mean  = np.array(les_data.groups['profiles'].variables['v_mean'])
+        # interp1d from LES to SCM
+        f_thetali     = interp1d(z_les_half, thetali[0,:], fill_value="extrapolate")
+        GMV.H.values  = f_thetali(Gr.z_half)
+        f_qt          = interp1d(z_les_half, qt[0,:], fill_value="extrapolate")
+        GMV.QT.values = f_qt(Gr.z_half)
+        f_u_mean      = interp1d(z_les_half, u_mean[0,:], fill_value="extrapolate")
+        GMV.U.values  = f_u_mean(Gr.z_half)
+        f_v_mean      = interp1d(z_les_half, v_mean[0,:], fill_value="extrapolate")
+        GMV.V.values  = f_v_mean(Gr.z_half)
+
 
         GMV.U.set_bcs(Gr)
         GMV.QT.set_bcs(Gr)
@@ -1787,11 +1785,12 @@ cdef class LES_driven_SCM(CasesBase):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.qsurface = 1.0e-5
+        self.Sur.zrough = 1.0e-4
         self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
         self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS, namelist):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)

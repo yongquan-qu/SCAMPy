@@ -12,6 +12,7 @@ cimport numpy as np
 import numpy as np
 import netCDF4 as nc
 from scipy.integrate import odeint
+from scipy.interpolate import interp1d
 from thermodynamic_functions cimport t_to_entropy_c, eos_first_guess_entropy, eos, alpha_c
 include 'parameters.pxi'
 
@@ -61,16 +62,31 @@ cdef class ReferenceState:
 
         if namelist['meta']['casename'] == 'LES_driven_SCM':
             les_data = nc.Dataset(Gr.les_filename,'r')
-            alpha_half = np.array(les_data.groups['reference'].variables['alpha0'])
-            alpha = np.array(les_data.groups['reference'].variables['alpha0_full'])
-            p_ = np.array(les_data.groups['reference'].variables['p0_full'])
-            p_half = np.array(les_data.groups['reference'].variables['p0'])
+            les_alpha_half = np.array(les_data.groups['reference'].variables['alpha0'])
+            les_alpha = np.array(les_data.groups['reference'].variables['alpha0_full'])
+            les_p = np.array(les_data.groups['reference'].variables['p0_full'])
+            les_p_half = np.array(les_data.groups['reference'].variables['p0'])
+            z_les = np.array(les_data.groups['profiles'].variables['z'])
+            z_les_half = np.array(les_data.groups['profiles'].variables['z_half'])
+            f_les_alpha_half = interp1d(z_les_half, les_alpha_half, fill_value="extrapolate")
+            f_les_p_half = interp1d(z_les_half, les_p_half, fill_value="extrapolate")
+            f_les_alpha = interp1d(z_les, les_alpha, fill_value="extrapolate")
+            f_les_p = interp1d(z_les, les_p, fill_value="extrapolate")
+            alpha_half = f_les_alpha_half(Gr.z_half)
+            alpha = f_les_alpha(Gr.z)
+            p_half = f_les_p_half(Gr.z_half)
+            p_ = f_les_p(Gr.z_half)
+
             self.alpha0_half = alpha_half
             self.alpha0 = alpha
             self.p0 = p_
             self.p0_half = p_half
             self.rho0 = 1.0 / np.array(self.alpha0)
             self.rho0_half = 1.0 / np.array(self.alpha0_half)
+
+            self.Pg = les_p[0]
+            self.qtg = np.array(les_data.groups['profiles'].variables['qt_mean'])[0,0]
+            self.Tg = np.array(les_data.groups['timeseries'].variables['surface_temperature'])[0]
         else:
             self.sg = t_to_entropy_c(self.Pg, self.Tg, self.qtg, 0.0, 0.0)
 

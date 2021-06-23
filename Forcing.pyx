@@ -241,33 +241,36 @@ cdef class ForcingLES(ForcingBase):
         ForcingBase.initialize(self, Gr, GMV, TS)
         # load the netCDF file
         les_data = nc.Dataset(Gr.les_filename,'r')
-        self.t_les       = np.array(les_data.groups['profiles'].variables['t'])
-        self.z_les       = np.array(les_data.groups['profiles'].variables['z'])
-        self.les_dtdt_rad    = les_data['profiles'].variables['dtdt_rad']
-        self.les_dtdt_hadv   = les_data['profiles'].variables['dtdt_hadv']
-        self.les_dtdt_nudge  = les_data['profiles'].variables['dtdt_nudge']
-        self.les_dqtdt_rad   = les_data['profiles'].variables['dqtdt_rad']
-        self.les_dqtdt_hadv  = les_data['profiles'].variables['dqtdt_hadv']
-        self.les_dqtdt_nudge = les_data['profiles'].variables['dqtdt_nudge']
-        self.les_subsidence  = les_data['profiles'].variables['ls_subsidence']
+        t_les       = np.array(les_data.groups['profiles'].variables['t'])
+        z_les       = np.array(les_data.groups['profiles'].variables['z'])
+        les_dtdt_rad    = np.array(les_data['profiles'].variables['dtdt_rad'])
+        les_dtdt_hadv   = np.array(les_data['profiles'].variables['dtdt_hadv'])
+        les_dtdt_nudge  = np.array(les_data['profiles'].variables['dtdt_nudge'])
+        les_dqtdt_hadv  = np.array(les_data['profiles'].variables['dqtdt_hadv'])
+        les_dqtdt_nudge = np.array(les_data['profiles'].variables['dqtdt_nudge'])
+        les_subsidence  = np.array(les_data['profiles'].variables['ls_subsidence'])
 
-        self.t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
+        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt))
 
         # interp2d from LES to SCM
-        f_dtdt_rad = interp2d(self.t_les, self.z_les, self.les_dtdt_rad, kind='linear')
-        self.dtdt_rad = f_dtdt_rad(self.t_scm, Gr.z_half)
-        f_dtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dtdt_hadv, kind='linear')
-        self.dtdt_hadv = f_dtdt_hadv(self.t_scm, Gr.z_half)
-        f_dtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dtdt_nudge, kind='linear')
-        self.dtdt_nudge = f_dtdt_nudge(self.t_scm, Gr.z_half)
-        f_dqtdt_rad = interp2d(self.t_les, self.z_les, self.les_dqtdt_rad, kind='linear')
-        self.dqtdt_rad = f_dqtdt_rad(self.t_scm, Gr.z_half)
-        f_dqtdt_hadv = interp2d(self.t_les, self.z_les, self.les_dqtdt_hadv, kind='linear')
-        self.dqtdt_hadv = f_dqtdt_hadv(self.t_scm, Gr.z_half)
-        f_dqtdt_nudge = interp2d(self.t_les, self.z_les, self.les_dqtdt_nudge, kind='linear')
-        self.dqtdt_nudge = f_dqtdt_nudge(self.t_scm, Gr.z_half)
-        f_subsidence = interp2d(self.t_les, self.z_les, self.les_subsidence, kind='linear')
-        self.scm_subsidence = f_subsidence(self.t_scm, Gr.z_half)
+        f_dtdt_rad = interp2d(z_les, t_les, les_dtdt_rad)
+        self.dtdt_rad = f_dtdt_rad(Gr.z_half, t_scm)
+        f_dtdt_hadv = interp2d(z_les, t_les, les_dtdt_hadv)
+        self.dtdt_hadv = f_dtdt_hadv(Gr.z_half, t_scm)
+        f_dtdt_nudge = interp2d(z_les, t_les, les_dtdt_nudge)
+        self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
+        f_dqtdt_hadv = interp2d(z_les, t_les, les_dqtdt_hadv)
+        self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
+        f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
+        self.dqtdt_nudge = f_dqtdt_nudge(Gr.z_half, t_scm)
+        f_subsidence = interp2d(z_les, t_les, les_subsidence)
+        self.scm_subsidence = f_subsidence(Gr.z_half, t_scm)
+
+        # get site's latitude
+        sitedata = nc.Dataset('LES_driven_SCM/geolocation.nc','r')
+        lats = np.array(sitedata.variables['lat'])
+        latitude = lats[int(Gr.les_filename[29:31])-1]
+        self.coriolis_param = 2.0 * omega * np.sin(latitude * pi / 180.0 ) # s^{-1}
 
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
@@ -277,8 +280,8 @@ cdef class ForcingLES(ForcingBase):
 
         i = int(TS.t/TS.dt)
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            GMV.T.tendencies[k] += (self.dtdt_rad[i,k] + self.dtdt_hadv[i,k])
-            GMV.QT.tendencies[k] += (self.dqtdt_rad[i,k] + self.dqtdt_hadv[i,k])
+            GMV.H.tendencies[k] += (self.dtdt_rad[i,k] + self.dtdt_hadv[i,k])
+            GMV.QT.tendencies[k] += self.dqtdt_hadv[i,k]
         if self.apply_subsidence:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 # Apply large-scale subsidence tendencies

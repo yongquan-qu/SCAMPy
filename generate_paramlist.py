@@ -91,6 +91,9 @@ def main():
         paramlist = SP(paramlist_defaults)
     elif case_name == 'DryBubble':
         paramlist = DryBubble(paramlist_defaults)
+    elif case_name == 'LES_driven_SCM':
+        paramlist = LES_driven_SCM(paramlist_defaults)
+
     else:
         print('Not a valid case name')
         exit()
@@ -189,6 +192,11 @@ def DryBubble(paramlist_defaults):
 
     return  paramlist
 
+def LES_driven_SCM(paramlist_defaults):
+    paramlist = copy.deepcopy(paramlist_defaults)
+    paramlist['meta']['casename'] = 'LES_driven_SCM'
+
+    return  paramlist
 
 def write_file(paramlist):
 

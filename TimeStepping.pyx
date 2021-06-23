@@ -19,7 +19,9 @@ cdef class TimeStepping:
 
         try:
             if namelist['meta']['casename'] == 'LES_driven_SCM':
-                les_data = nc.Dataset(Gr.les_filename,'r')
+                lesfolder = namelist['meta']['lesfolder']
+                lesfile = namelist['meta']['lesfile']
+                les_data = nc.Dataset(lesfolder + 'Stats.' + lesfile +'.nc','r')
                 self.t_max = np.max(les_data.groups['profiles'].variables['t'])
             else:
                 self.t_max = namelist['time_stepping']['t_max']
