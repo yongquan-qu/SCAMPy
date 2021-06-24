@@ -65,22 +65,16 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 cdef class ForcingLES(ForcingBase):
     cdef:
         str LES_filename
-        double [:] t_les # radiative dTdt from les
-        double [:] z_les # radiative dTdt from les
-        double [:,:] les_dtdt_rad # radiative dTdt from les
-        double [:,:] les_dtdt_hadv # radiative dTdt from les
-        double [:,:] les_dtdt_nudge # radiative dTdt from les
-        double [:,:] les_dqtdt_rad # radiative dTdt from les
-        double [:,:] les_dqtdt_hadv # radiative dTdt from les
-        double [:,:] les_dqtdt_nudge # radiative dTdt from les
-        double [:,:] les_subsidence # radiative dTdt from les
-        double [:,:] scm_subsidence # radiative dTdt from les
+        double [:] t_les
+        double [:] z_les
+        double [:,:] scm_subsidence
+        double [:,:] dtdt_rad
         double [:,:] dtdt_hadv
         double [:,:] dtdt_nudge
-        double [:,:] dqtdt_rad
         double [:,:] dqtdt_hadv
         double [:,:] dqtdt_nudge
-        double [:,:] dtdt_rad # radiative dTdt from les
+        double [:,:] u_nudge
+        double [:,:] v_nudge
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS)

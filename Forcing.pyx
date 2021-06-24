@@ -249,6 +249,8 @@ cdef class ForcingLES(ForcingBase):
         les_dqtdt_hadv  = np.array(les_data['profiles'].variables['dqtdt_hadv'])
         les_dqtdt_nudge = np.array(les_data['profiles'].variables['dqtdt_nudge'])
         les_subsidence  = np.array(les_data['profiles'].variables['ls_subsidence'])
+        les_u_nudge     = np.array(les_data['profiles'].variables['u_mean'])
+        les_v_nudge     = np.array(les_data['profiles'].variables['v_mean'])
 
         t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
 
@@ -263,6 +265,12 @@ cdef class ForcingLES(ForcingBase):
         self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
         f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
         self.dqtdt_nudge = f_dqtdt_nudge(Gr.z_half, t_scm)
+
+        f_u_nudge = interp2d(z_les, t_les, les_u_nudge)
+        f_v_nudge = interp2d(z_les, t_les, les_v_nudge)
+        self.u_nudge = f_u_nudge(Gr.z_half, t_scm)
+        self.v_nudge = f_v_nudge(Gr.z_half, t_scm)
+
         f_subsidence = interp2d(z_les, t_les, les_subsidence)
         self.scm_subsidence = f_subsidence(Gr.z_half, t_scm)
 
@@ -282,6 +290,8 @@ cdef class ForcingLES(ForcingBase):
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             GMV.H.tendencies[k] += (self.dtdt_rad[i,k] + self.dtdt_hadv[i,k])
             GMV.QT.tendencies[k] += self.dqtdt_hadv[i,k]
+            GMV.U.tendencies[k] += (self.u_nudge[0,k] - GMV.U.values[k])/(6.0*3600.0)
+            GMV.V.tendencies[k] += (self.v_nudge[0,k] - GMV.V.values[k])/(6.0*3600.0)
         if self.apply_subsidence:
             for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
                 # Apply large-scale subsidence tendencies
