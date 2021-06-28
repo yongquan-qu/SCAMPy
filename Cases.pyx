@@ -8,6 +8,7 @@ from ReferenceState cimport ReferenceState
 from TimeStepping cimport  TimeStepping
 cimport Surface
 cimport Forcing
+cimport Radiation
 from NetCDFIO cimport NetCDFIO_Stats
 from thermodynamic_functions cimport *
 import math as mt
@@ -59,6 +60,8 @@ cdef class CasesBase:
         return
     cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         Stats.add_ts('Tsurface')
         Stats.add_ts('shf')
@@ -75,6 +78,8 @@ cdef class CasesBase:
         return
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        return
 
 
 cdef class Soares(CasesBase):
@@ -85,6 +90,7 @@ cdef class Soares(CasesBase):
         self.casename = 'Soares2004'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
@@ -156,6 +162,10 @@ cdef class Soares(CasesBase):
         self.Fo.initialize(Gr, GMV, TS)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -169,6 +179,9 @@ cdef class Soares(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class Nieuwstadt(CasesBase):
 # "Nieuwstadt, F. T., Mason, P. J., Moeng, C. H., & Schumann, U. (1993).
@@ -178,6 +191,7 @@ cdef class Nieuwstadt(CasesBase):
         self.casename = 'Nieuwstadt'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
@@ -249,6 +263,10 @@ cdef class Nieuwstadt(CasesBase):
         self.Fo.initialize(Gr, GMV, TS)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -263,11 +281,16 @@ cdef class Nieuwstadt(CasesBase):
         self.Fo.update(GMV, TS)
         return
 
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
+
 cdef class Bomex(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'Bomex'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
@@ -381,6 +404,10 @@ cdef class Bomex(CasesBase):
                 self.Fo.subsidence[k] = -0.65/100 + (Gr.z_half[k] - 1500.0)* (0.0 - -0.65/100.0)/(2100.0 - 1500.0)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -393,6 +420,9 @@ cdef class Bomex(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class life_cycle_Tan2018(CasesBase):
     # Taken from: "An extended eddy- diffusivity mass-flux scheme for unified representation of subgrid-scale turbulence and convection"
@@ -403,6 +433,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.casename = 'life_cycle_Tan2018'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
@@ -508,6 +539,10 @@ cdef class life_cycle_Tan2018(CasesBase):
                 self.Fo.subsidence[k] = -0.65/100 + (Gr.z_half[k] - 1500.0)* (0.0 - -0.65/100.0)/(2100.0 - 1500.0)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -526,12 +561,16 @@ cdef class life_cycle_Tan2018(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class Rico(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'Rico'
         self.Sur = Surface.SurfaceFixedCoeffs(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         cdef double latitude = 18.0
@@ -629,6 +668,9 @@ cdef class Rico(CasesBase):
             else:
                 self.Fo.subsidence[k] = -0.005
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -643,6 +685,9 @@ cdef class Rico(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class TRMM_LBA(CasesBase):
     # adopted from: "Daytime convective development over land- A model intercomparison based on LBA observations",
@@ -651,6 +696,7 @@ cdef class TRMM_LBA(CasesBase):
         self.casename = 'TRMM_LBA'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
@@ -910,6 +956,10 @@ cdef class TRMM_LBA(CasesBase):
         return
 
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -952,6 +1002,10 @@ cdef class TRMM_LBA(CasesBase):
 
         return
 
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
+
 cdef class ARM_SGP(CasesBase):
     # adopted from: "Large-eddy simulation of the diurnal cycle of shallow cumulus convection over land",
     # By Brown et al. (2002)  Q. J. R. Meteorol. Soc. 128, 1075-1093
@@ -959,6 +1013,7 @@ cdef class ARM_SGP(CasesBase):
         self.casename = 'ARM_SGP'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 8.5e-5
@@ -1033,6 +1088,9 @@ cdef class ARM_SGP(CasesBase):
             self.Fo.vg[k] = 0.0
 
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -1082,6 +1140,9 @@ cdef class ARM_SGP(CasesBase):
 
         return
 
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class GATE_III(CasesBase):
     # adopted from: "Large eddy simulation of Maritime Deep Tropical Convection",
@@ -1090,6 +1151,7 @@ cdef class GATE_III(CasesBase):
         self.casename = 'GATE_III'
         self.Sur = Surface.SurfaceFixedCoeffs(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_subsidence = False
         self.Fo.apply_coriolis = False
@@ -1196,6 +1258,10 @@ cdef class GATE_III(CasesBase):
         return
 
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -1211,6 +1277,9 @@ cdef class GATE_III(CasesBase):
         self.Fo.update(GMV, TS)
         return
 
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class DYCOMS_RF01(CasesBase):
     """
@@ -1223,6 +1292,7 @@ cdef class DYCOMS_RF01(CasesBase):
         self.casename = 'DYCOMS_RF01'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingDYCOMS_RF01() # radiation is included in Forcing
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         return
 
@@ -1388,6 +1458,9 @@ cdef class DYCOMS_RF01(CasesBase):
         # cloud-top cooling + cloud-base warming + cooling in free troposphere
         self.Fo.calculate_radiation(GMV)
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         self.Fo.initialize_io(Stats)
@@ -1405,12 +1478,16 @@ cdef class DYCOMS_RF01(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class GABLS(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'GABLS'
         self.Sur = Surface.SurfaceMoninObukhovDry(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         cdef double latitude = 73.0
@@ -1485,6 +1562,9 @@ cdef class GABLS(CasesBase):
             self.Fo.ug[k] = 8.0
             self.Fo.vg[k] = 0.0
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -1502,6 +1582,9 @@ cdef class GABLS(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 # Not fully implemented yet - Ignacio
 cdef class SP(CasesBase):
@@ -1509,6 +1592,7 @@ cdef class SP(CasesBase):
         self.casename = 'SP'
         self.Sur = Surface.SurfaceSullivanPatton(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 1.0e-4 # s^{-1}
@@ -1586,6 +1670,9 @@ cdef class SP(CasesBase):
             self.Fo.ug[k] = 1.0
             self.Fo.vg[k] = 0.0
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -1603,12 +1690,16 @@ cdef class SP(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class DryBubble(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'DryBubble'
         self.Sur = Surface.SurfaceNone()
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'theta_rho'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
@@ -1718,6 +1809,9 @@ cdef class DryBubble(CasesBase):
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -1734,12 +1828,16 @@ cdef class DryBubble(CasesBase):
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
         return
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
+        return
 
 cdef class LES_driven_SCM(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'Rico'
         self.Sur = Surface.SurfaceLES(paramlist)
         self.Fo = Forcing.ForcingLES(paramlist)
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         # get LES latitiude
@@ -1795,6 +1893,9 @@ cdef class LES_driven_SCM(CasesBase):
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -1810,4 +1911,8 @@ cdef class LES_driven_SCM(CasesBase):
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.update(GMV, TS)
+        return
+
+    cpdef update_radiation(self, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(GMV, TS)
         return
