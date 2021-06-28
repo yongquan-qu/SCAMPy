@@ -93,7 +93,7 @@ cdef class Soares(CasesBase):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 5.0e-3
         Ref.Tg = 300.0
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -186,7 +186,7 @@ cdef class Nieuwstadt(CasesBase):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
         Ref.Tg = 300.0
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -277,7 +277,7 @@ cdef class Bomex(CasesBase):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -412,7 +412,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -544,7 +544,7 @@ cdef class Rico(CasesBase):
         Ref.Tg = 299.8  #Temperature at ground
         cdef double pvg = pv_star(Ref.Tg)
         Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -660,7 +660,7 @@ cdef class TRMM_LBA(CasesBase):
         Ref.Tg = 296.85   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         pvg = pv_star(Ref.Tg)
         Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -969,7 +969,7 @@ cdef class ARM_SGP(CasesBase):
         Ref.Pg = 970.0*100 #Pressure at ground
         Ref.Tg = 299.0   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 15.2/1000#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1099,7 +1099,7 @@ cdef class GATE_III(CasesBase):
         Ref.Pg = 1013.0*100  #Pressure at ground
         Ref.Tg = 299.184   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 16.5/1000#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1231,7 +1231,7 @@ cdef class DYCOMS_RF01(CasesBase):
         Ref.qtg  = 9.0 / 1000.0
         # Use an exner function with values for Rd, and cp given in Stevens 2005 to compute temperature
         Ref.Tg   = 289.0 * exner_c(Ref.Pg, kappa = dycoms_Rd / dycoms_cp)
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     # helper function
@@ -1423,7 +1423,7 @@ cdef class GABLS(CasesBase):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 265.0  #Temperature at ground
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1520,7 +1520,7 @@ cdef class SP(CasesBase):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 300.0  #Temperature at ground
         Ref.qtg = 1.0e-4   #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN.
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -1618,7 +1618,7 @@ cdef class DryBubble(CasesBase):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.qtg = 1.0e-5
         Ref.Tg = 296
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -1739,7 +1739,7 @@ cdef class LES_driven_SCM(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'Rico'
         self.Sur = Surface.SurfaceLES(paramlist)
-        self.Fo = Forcing.ForcingLES()
+        self.Fo = Forcing.ForcingLES(paramlist)
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         # get LES latitiude

@@ -81,11 +81,16 @@ cdef class ForcingStandard(ForcingBase):
             GMV.H.tendencies[k] += self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k],
                                                                 qv, GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
             GMV.QT.tendencies[k] += self.dqtdt[k]
-        if self.apply_subsidence:
-            for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            if self.apply_subsidence:
                 # Apply large-scale subsidence tendencies
-                GMV.H.tendencies[k] -= (GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.subsidence[k]
-                GMV.QT.tendencies[k] -= (GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.subsidence[k]
+                GMV.H.subsidence[k] =  -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.subsidence[k]
+                GMV.QT.subsidence[k] = -(GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.subsidence[k]
+            else:
+                GMV.H.subsidence[k] =  0.0
+                GMV.QT.subsidence[k] = 0.0
+
+            GMV.H.tendencies[k]  += GMV.H.subsidence[k]
+            GMV.QT.tendencies[k] += GMV.QT.subsidence[k]
 
 
         if self.apply_coriolis:
@@ -213,8 +218,10 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
             GMV.H.tendencies[k]  += self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
             GMV.QT.tendencies[k] += self.dqtdt[k]
             # Apply large-scale subsidence tendencies
-            GMV.H.tendencies[k]  -= (GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.subsidence[k]
-            GMV.QT.tendencies[k] -= (GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.subsidence[k]
+            GMV.H.subsidence[k]  = -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.subsidence[k]
+            GMV.QT.subsidence[k] = -(GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.subsidence[k]
+            GMV.H.tendencies[k]  += GMV.H.subsidence[k]
+            GMV.QT.tendencies[k] += GMV.QT.subsidence[k]
 
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
@@ -233,8 +240,9 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 
 
 cdef class ForcingLES(ForcingBase):
-    def __init__(self):
+    def __init__(self, paramlist):
         ForcingBase.__init__(self)
+        self.nudge_tau = paramlist['forcing']['nudging_timescale']
         return
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
@@ -256,14 +264,14 @@ cdef class ForcingLES(ForcingBase):
 
         # interp2d from LES to SCM
         f_dtdt_rad = interp2d(z_les, t_les, les_dtdt_rad)
-        self.dtdt_rad = f_dtdt_rad(Gr.z_half, t_scm)
         f_dtdt_hadv = interp2d(z_les, t_les, les_dtdt_hadv)
-        self.dtdt_hadv = f_dtdt_hadv(Gr.z_half, t_scm)
         f_dtdt_nudge = interp2d(z_les, t_les, les_dtdt_nudge)
-        self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
         f_dqtdt_hadv = interp2d(z_les, t_les, les_dqtdt_hadv)
-        self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
         f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
+        self.dtdt_rad = f_dtdt_rad(Gr.z_half, t_scm)
+        self.dtdt_hadv = f_dtdt_hadv(Gr.z_half, t_scm)
+        self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
+        self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
         self.dqtdt_nudge = f_dqtdt_nudge(Gr.z_half, t_scm)
 
         f_u_nudge = interp2d(z_les, t_les, les_u_nudge)
@@ -288,16 +296,26 @@ cdef class ForcingLES(ForcingBase):
 
         i = int(TS.t/TS.dt)
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-            GMV.H.tendencies[k] += (self.dtdt_rad[i,k] + self.dtdt_hadv[i,k])
-            GMV.QT.tendencies[k] += self.dqtdt_hadv[i,k]
-            GMV.U.tendencies[k] += (self.u_nudge[0,k] - GMV.U.values[k])/(6.0*3600.0)
-            GMV.V.tendencies[k] += (self.v_nudge[0,k] - GMV.V.values[k])/(6.0*3600.0)
-        if self.apply_subsidence:
-            for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
+            qv = GMV.QT.values[k] - GMV.QL.values[k]
+            GMV.H.radiation[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv, self.dtdt_rad[i,k])
+            GMV.H.horz_adv[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_hadv[i,k])
+            GMV.H.nudge[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_nudge[i,k])
+            GMV.QT.horz_adv[k] = self.dqtdt_hadv[i,k]
+            GMV.QT.nudge[k] = self.dqtdt_nudge[i,k]
+            GMV.U.nudge[k] = (self.u_nudge[0,k] - GMV.U.values[k])/self.nudge_tau
+            GMV.V.nudge[k] = (self.v_nudge[0,k] - GMV.V.values[k])/self.nudge_tau
+            if self.apply_subsidence:
                 # Apply large-scale subsidence tendencies
-                GMV.H.tendencies[k] -= (GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
-                GMV.QT.tendencies[k] -= (GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.H.subsidence[k] =  -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.QT.subsidence[k] = -(GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+            else:
+                GMV.H.subsidence[k] =  0.0
+                GMV.QT.subsidence[k] = 0.0
 
+            GMV.H.tendencies[k] += GMV.H.radiation[k] + GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k]
+            GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k]
+            GMV.U.tendencies[k] += GMV.U.nudge[k]
+            GMV.V.tendencies[k] += GMV.V.nudge[k]
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
 

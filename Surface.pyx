@@ -374,6 +374,8 @@ cdef class SurfaceLES(SurfaceBase):
         f_lhf = interp1d(t_les, les_lhf_surface_mean, kind='linear')
         self.scm_shf = f_shf(t_scm)
         self.scm_lhf = f_lhf(t_scm)
+        self.lhf = self.scm_lhf[0]
+        self.shf = self.scm_shf[0]
         return
 
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):

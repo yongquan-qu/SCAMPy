@@ -882,13 +882,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
                      (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
                 else: # neutral or stable
-                    try:
-                        l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
-                    except:
-                        print('obukhov_length ', obukhov_length)
-                        print('self.EnvVar.TKE.values[self.Gr.gw] ',self.EnvVar.TKE.values[self.Gr.gw])
-                        print('ustar', ustar)
-                        l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
+                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
 
                 # Buoyancy-shear-subdomain exchange-dissipation TKE equilibrium scale
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -976,7 +970,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     1.0/exp( - latent_heat(self.EnvVar.T.values[k]) * self.EnvVar.QL.values[k]
                         / cpm_c(self.EnvVar.QT.values[k]) / self.EnvVar.T.values[k] )*(
                         (1.0+ (eps_vi-1.0)*self.EnvVar.QT.values[k])*grad_thl+(eps_vi-1.0)*self.EnvVar.THL.values[k]*grad_qt))
-
                 N = sqrt(fmax(g/thv*grad_th_eff, 0.0))
                 if N > 0.0:
                     l1 = fmin(sqrt(fmax(self.static_stab_coeff*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)

@@ -65,6 +65,7 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 cdef class ForcingLES(ForcingBase):
     cdef:
         str LES_filename
+        double nudge_tau
         double [:] t_les
         double [:] z_les
         double [:,:] scm_subsidence

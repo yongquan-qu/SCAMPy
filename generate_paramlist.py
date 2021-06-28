@@ -195,6 +195,8 @@ def DryBubble(paramlist_defaults):
 def LES_driven_SCM(paramlist_defaults):
     paramlist = copy.deepcopy(paramlist_defaults)
     paramlist['meta']['casename'] = 'LES_driven_SCM'
+    paramlist['forcing'] = {}
+    paramlist['forcing']['nudging_timescale'] = 6.0*3600.0
 
     return  paramlist
 
