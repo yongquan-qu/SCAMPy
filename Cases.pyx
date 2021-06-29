@@ -1839,7 +1839,7 @@ cdef class LES_driven_SCM(CasesBase):
         self.Fo = Forcing.ForcingLES()
         self.Rad = Radiation.RadiationLES()
         self.inversion_option = 'critical_Ri'
-        self.Fo.apply_coriolis = True
+        self.Fo.apply_coriolis = False
         # get LES latitiude
         self.Fo.apply_subsidence = True
         self.Fo.nudge_tau = paramlist['forcing']['nudging_timescale']
