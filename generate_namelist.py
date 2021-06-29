@@ -280,7 +280,7 @@ def DryBubble(namelist_defaults):
 
 def LES_driven_SCM(namelist_defaults):
     namelist = copy.deepcopy(namelist_defaults)
-    namelist['grid']['dz'] = 50.0
+    namelist['grid']['dz'] = 20.0
 
     namelist['stats_io']['frequency'] = 10.0
     namelist['time_stepping']['dt'] = 10.0
