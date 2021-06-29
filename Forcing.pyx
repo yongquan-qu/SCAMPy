@@ -158,9 +158,8 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 
 
 cdef class ForcingLES(ForcingBase):
-    def __init__(self, paramlist):
+    def __init__(self):
         ForcingBase.__init__(self)
-        self.nudge_tau = paramlist['forcing']['nudging_timescale']
         return
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):

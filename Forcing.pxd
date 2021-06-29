@@ -6,6 +6,7 @@ from TimeStepping cimport TimeStepping
 
 cdef class ForcingBase:
     cdef:
+        double nudge_tau
         double [:] subsidence
         double [:] dTdt # horizontal advection temperature tendency
         double [:] dqtdt # horizontal advection moisture tendency
@@ -58,11 +59,9 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 cdef class ForcingLES(ForcingBase):
     cdef:
         str LES_filename
-        double nudge_tau
         double [:] t_les
         double [:] z_les
         double [:,:] scm_subsidence
-        double [:,:] dtdt_rad
         double [:,:] dtdt_hadv
         double [:,:] dtdt_nudge
         double [:,:] dqtdt_hadv

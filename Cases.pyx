@@ -1836,12 +1836,13 @@ cdef class LES_driven_SCM(CasesBase):
     def __init__(self, paramlist):
         self.casename = 'Rico'
         self.Sur = Surface.SurfaceLES(paramlist)
-        self.Fo = Forcing.ForcingLES(paramlist)
+        self.Fo = Forcing.ForcingLES()
         self.Rad = Radiation.RadiationLES()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         # get LES latitiude
         self.Fo.apply_subsidence = True
+        self.Fo.nudge_tau = paramlist['forcing']['nudging_timescale']
         return
 
     cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):

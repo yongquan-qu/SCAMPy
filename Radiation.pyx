@@ -321,9 +321,8 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
 
 
 cdef class RadiationLES(RadiationBase):
-    def __init__(self, paramlist):
+    def __init__(self):
         RadiationBase.__init__(self)
-        self.nudge_tau = paramlist['radiation']['nudging_timescale']
         return
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
