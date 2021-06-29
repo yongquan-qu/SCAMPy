@@ -95,8 +95,8 @@ cdef class ForcingStandard(ForcingBase):
 
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
-
         return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         return
     cpdef io(self, NetCDFIO_Stats Stats):
@@ -143,7 +143,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
-
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -184,29 +183,26 @@ cdef class ForcingLES(ForcingBase):
         f_dtdt_nudge = interp2d(z_les, t_les, les_dtdt_nudge)
         f_dqtdt_hadv = interp2d(z_les, t_les, les_dqtdt_hadv)
         f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
+        f_u_nudge = interp2d(z_les, t_les, les_u_nudge)
+        f_v_nudge = interp2d(z_les, t_les, les_v_nudge)
+        f_subsidence = interp2d(z_les, t_les, les_subsidence)
 
         self.dtdt_hadv = f_dtdt_hadv(Gr.z_half, t_scm)
         self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
         self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
         self.dqtdt_nudge = f_dqtdt_nudge(Gr.z_half, t_scm)
-
-        f_u_nudge = interp2d(z_les, t_les, les_u_nudge)
-        f_v_nudge = interp2d(z_les, t_les, les_v_nudge)
         self.u_nudge = f_u_nudge(Gr.z_half, t_scm)
         self.v_nudge = f_v_nudge(Gr.z_half, t_scm)
-
-        f_subsidence = interp2d(z_les, t_les, les_subsidence)
         self.scm_subsidence = f_subsidence(Gr.z_half, t_scm)
 
-        # get site's latitude
+        # get the degree latitude of the site
         sitedata = nc.Dataset('LES_driven_SCM/geolocation.nc','r')
         lats = np.array(sitedata.variables['lat'])
         latitude = lats[int(Gr.les_filename[29:31])-1]
         self.coriolis_param = 2.0 * omega * np.sin(latitude * pi / 180.0 ) # s^{-1}
-
         return
+
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
-        # read radiaitve forcing variables
         cdef:
             Py_ssize_t i, k
 
@@ -231,11 +227,13 @@ cdef class ForcingLES(ForcingBase):
             GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k]
             GMV.U.tendencies[k] += GMV.U.nudge[k]
             GMV.V.tendencies[k] += GMV.V.nudge[k]
+
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
-
         return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         return
+
     cpdef io(self, NetCDFIO_Stats Stats):
         return

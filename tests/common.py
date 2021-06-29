@@ -41,7 +41,7 @@ def simulation_setup(case):
     outpath = str(
         os.path.join(
             namelist['output']['output_root'] +
-            'Output.' +
+            '/Output.' +
             namelist['meta']['simname'] +
             '.' +
             uuid[len(uuid )-5:len(uuid)]

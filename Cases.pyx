@@ -1834,7 +1834,7 @@ cdef class DryBubble(CasesBase):
 
 cdef class LES_driven_SCM(CasesBase):
     def __init__(self, paramlist):
-        self.casename = 'Rico'
+        self.casename = 'LES_driven_SCM'
         self.Sur = Surface.SurfaceLES(paramlist)
         self.Fo = Forcing.ForcingLES()
         self.Rad = Radiation.RadiationLES()
@@ -1846,14 +1846,11 @@ cdef class LES_driven_SCM(CasesBase):
         return
 
     cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
-        # get the LES fer state
         Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
-            double [:] thetal = np.zeros((Gr.nzg,), dtype=np.double, order='c')
-            double ql=0.0, qi =0.0 # IC of Rico is cloud-free
             Py_ssize_t k
 
         les_data = nc.Dataset(Gr.les_filename,'r')
@@ -1871,7 +1868,6 @@ cdef class LES_driven_SCM(CasesBase):
         GMV.U.values  = f_u_mean(Gr.z_half)
         f_v_mean      = interp1d(z_les_half, v_mean[0,:], fill_value="extrapolate")
         GMV.V.values  = f_v_mean(Gr.z_half)
-
 
         GMV.U.set_bcs(Gr)
         GMV.QT.set_bcs(Gr)
@@ -1894,6 +1890,7 @@ cdef class LES_driven_SCM(CasesBase):
         self.Fo.Ref = Ref
         self.Fo.initialize(Gr, GMV, TS)
         return
+
     cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Rad.initialize(Gr, GMV, TS)
         return
