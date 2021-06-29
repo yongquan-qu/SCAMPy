@@ -40,12 +40,6 @@ cdef class ForcingStandard(ForcingBase):
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
-# cdef class ForcingRadiative(ForcingBase):
-#     cpdef initialize(self, GridMeanVariables GMV)
-#     cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
-#     cpdef initialize_io(self, NetCDFIO_Stats Stats)
-#     cpdef io(self, NetCDFIO_Stats Stats)
-
 cdef class ForcingDYCOMS_RF01(ForcingBase):
     cdef:
         double alpha_z
@@ -56,7 +50,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         double [:] f_rad # radiative flux at cell edges
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef calculate_radiation(self, GridMeanVariables GMV)
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)

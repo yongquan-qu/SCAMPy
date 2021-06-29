@@ -21,22 +21,30 @@ cdef class RadiationBase:
     cdef:
         double [:] dTdt
         double [:] dqtdt
+        Grid Gr
+        double (*convert_forcing_prog_fp)(double p0, double qt, double qv, double T,
+                                          double qt_tendency, double T_tendency) nogil
+        ReferenceState Ref
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class RadiationNone(RadiationBase):
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class RadiationTRMM_LBA(RadiationBase):
+    cdef:
+        double [:] rad_time
+        double [:,:] rad
+
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
@@ -50,12 +58,13 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
         double divergence
         double [:] f_rad # radiative flux at cell edges
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef calculate_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class RadiationLES(RadiationBase):
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)

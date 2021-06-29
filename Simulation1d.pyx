@@ -30,6 +30,7 @@ class Simulation1d:
         self.Case.initialize_profiles(self.Gr, self.GMV, self.Ref)
         self.Case.initialize_surface(self.Gr, self.Ref, self.TS, namelist)
         self.Case.initialize_forcing(self.Gr, self.Ref, self.GMV, self.TS)
+        self.Case.initialize_radiation(self.Gr, self.Ref, self.GMV, self.TS)
         self.Turb.initialize(self.Case, self.GMV, self.Ref)
         self.initialize_io()
         self.io()
@@ -41,6 +42,7 @@ class Simulation1d:
             self.GMV.zero_tendencies()
             self.Case.update_surface(self.GMV, self.TS)
             self.Case.update_forcing(self.GMV, self.TS)
+            self.Case.update_radiation(self.Ref, self.Gr, self.GMV, self.TS)
             self.Turb.update(self.GMV, self.Case, self.TS)
             self.TS.update()
             # Apply the tendencies, also update the BCs and diagnostic thermodynamics

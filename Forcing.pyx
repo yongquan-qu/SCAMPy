@@ -102,37 +102,6 @@ cdef class ForcingStandard(ForcingBase):
     cpdef io(self, NetCDFIO_Stats Stats):
         return
 
-# cdef class ForcingRadiative(ForcingBase): # yair - added to avoid zero subsidence
-#     def __init__(self):
-#         ForcingBase.__init__(self)
-#         return
-#     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
-#         ForcingBase.initialize(self, Gr, GMV, TS)
-#         return
-#     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
-#         cdef:
-#             Py_ssize_t k
-#             double qv
-#
-#         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
-#             # Apply large-scale horizontal advection tendencies
-#             qv = GMV.QT.values[k] - GMV.QL.values[k]
-#             GMV.H.tendencies[k] += self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv,
-#                                                                 GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
-#             GMV.QT.tendencies[k] += self.dqtdt[k]
-#
-#
-#         return
-#
-#     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
-#         ForcingBase.coriolis_force(self, U, V)
-#         return
-#     cpdef initialize_io(self, NetCDFIO_Stats Stats):
-#         return
-#     cpdef io(self, NetCDFIO_Stats Stats):
-#         return
-
-
 cdef class ForcingDYCOMS_RF01(ForcingBase):
 
     def __init__(self):
@@ -152,55 +121,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         self.f_rad = np.zeros((self.Gr.nzg + 1), dtype=np.double, order='c') # radiative flux at cell edges
         return
 
-    cpdef calculate_radiation(self, GridMeanVariables GMV):
-        """
-        see eq. 3 in Stevens et. al. 2005 DYCOMS paper
-        """
-        cdef:
-            Py_ssize_t k
-
-            double zi
-            double rhoi
-
-        # find zi (level of 8.0 g/kg isoline of qt)
-        for k in xrange(self.Gr.gw, self.Gr.nzg - self.Gr.gw):
-            if (GMV.QT.values[k] < 8.0 / 1000):
-                idx_zi = k
-                # will be used at cell edges
-                zi     = self.Gr.z[idx_zi]
-                rhoi   = self.Ref.rho0[idx_zi]
-                break
-
-        # cloud-top cooling
-        q_0 = 0.0
-    
-        self.f_rad = np.zeros((self.Gr.nzg + 1), dtype=np.double, order='c')
-        self.f_rad[self.Gr.nzg] = self.F0 * np.exp(-q_0)
-        for k in xrange(self.Gr.nzg - 1, -1, -1):
-            q_0           += self.kappa * self.Ref.rho0_half[k] * GMV.QL.values[k] * self.Gr.dz
-            self.f_rad[k]  = self.F0 * np.exp(-q_0)
-
-        # cloud-base warming
-        q_1 = 0.0
-        self.f_rad[0] += self.F1 * np.exp(-q_1)
-        for k in xrange(1, self.Gr.nzg + 1):
-            q_1           += self.kappa * self.Ref.rho0_half[k - 1] * GMV.QL.values[k - 1] * self.Gr.dz
-            self.f_rad[k] += self.F1 * np.exp(-q_1)
-
-        # cooling in free troposphere
-        for k in xrange(0, self.Gr.nzg):
-            if self.Gr.z[k] > zi:
-                cbrt_z         = cbrt(self.Gr.z[k] - zi)
-                self.f_rad[k] += rhoi * dycoms_cp * self.divergence * self.alpha_z * (np.power(cbrt_z, 4) / 4.0 + zi * cbrt_z)
-        # condition at the top
-        cbrt_z                   = cbrt(self.Gr.z[k] + self.Gr.dz - zi)
-        self.f_rad[self.Gr.nzg] += rhoi * dycoms_cp * self.divergence * self.alpha_z * (np.power(cbrt_z, 4) / 4.0 + zi * cbrt_z)
-
-        for k in xrange(self.Gr.gw, self.Gr.nzg - self.Gr.gw):
-            self.dTdt[k] = - (self.f_rad[k + 1] - self.f_rad[k]) / self.Gr.dz / self.Ref.rho0_half[k] / dycoms_cp
-
-        return
-
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
         ForcingBase.coriolis_force(self, U, V)
         return
@@ -214,8 +134,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
 
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             # Apply large-scale horizontal advection tendencies
-            qv = GMV.QT.values[k] - GMV.QL.values[k]
-            # GMV.H.tendencies[k]  += self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
             GMV.QT.tendencies[k] += self.dqtdt[k]
             # Apply large-scale subsidence tendencies
             GMV.H.subsidence[k]  = -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.subsidence[k]
@@ -263,12 +181,11 @@ cdef class ForcingLES(ForcingBase):
         t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
 
         # interp2d from LES to SCM
-        f_dtdt_rad = interp2d(z_les, t_les, les_dtdt_rad)
         f_dtdt_hadv = interp2d(z_les, t_les, les_dtdt_hadv)
         f_dtdt_nudge = interp2d(z_les, t_les, les_dtdt_nudge)
         f_dqtdt_hadv = interp2d(z_les, t_les, les_dqtdt_hadv)
         f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
-        self.dtdt_rad = f_dtdt_rad(Gr.z_half, t_scm)
+
         self.dtdt_hadv = f_dtdt_hadv(Gr.z_half, t_scm)
         self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
         self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
@@ -297,7 +214,6 @@ cdef class ForcingLES(ForcingBase):
         i = int(TS.t/TS.dt)
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             qv = GMV.QT.values[k] - GMV.QL.values[k]
-            GMV.H.radiation[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv, self.dtdt_rad[i,k])
             GMV.H.horz_adv[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_hadv[i,k])
             GMV.H.nudge[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_nudge[i,k])
             GMV.QT.horz_adv[k] = self.dqtdt_hadv[i,k]
@@ -312,7 +228,7 @@ cdef class ForcingLES(ForcingBase):
                 GMV.H.subsidence[k] =  0.0
                 GMV.QT.subsidence[k] = 0.0
 
-            GMV.H.tendencies[k] += GMV.H.radiation[k] + GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k]
+            GMV.H.tendencies[k] += GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k]
             GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k]
             GMV.U.tendencies[k] += GMV.U.nudge[k]
             GMV.V.tendencies[k] += GMV.V.nudge[k]
