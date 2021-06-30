@@ -130,8 +130,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
             Py_ssize_t k
             double qv
 
-        # self.calculate_radiation(GMV)
-
         for k in xrange(self.Gr.gw, self.Gr.nzg-self.Gr.gw):
             # Apply large-scale horizontal advection tendencies
             GMV.QT.tendencies[k] += self.dqtdt[k]
@@ -163,11 +161,11 @@ cdef class ForcingLES(ForcingBase):
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
         ForcingBase.initialize(self, Gr, GMV, TS)
+        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
         # load the netCDF file
         les_data = nc.Dataset(Gr.les_filename,'r')
-        t_les       = np.array(les_data.groups['profiles'].variables['t'])
-        z_les       = np.array(les_data.groups['profiles'].variables['z'])
-        les_dtdt_rad    = np.array(les_data['profiles'].variables['dtdt_rad'])
+        t_les = np.array(les_data.groups['profiles'].variables['t'])
+        z_= np.array(les_data.groups['profiles'].variables['z'])
         les_dtdt_hadv   = np.array(les_data['profiles'].variables['dtdt_hadv'])
         les_dtdt_nudge  = np.array(les_data['profiles'].variables['dtdt_nudge'])
         les_dqtdt_hadv  = np.array(les_data['profiles'].variables['dqtdt_hadv'])
@@ -176,7 +174,24 @@ cdef class ForcingLES(ForcingBase):
         les_u_nudge     = np.array(les_data['profiles'].variables['u_mean'])
         les_v_nudge     = np.array(les_data['profiles'].variables['v_mean'])
 
-        t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
+        # The following extrapolation procedure is here to make sure the interpolation
+        #  works well when scm-resolution is higher than les resolution
+        z_les = np.append(0.0,z_)
+        A = np.subtract(les_dtdt_hadv[:,0],np.subtract(les_dtdt_hadv[:,1],les_dtdt_hadv[:,0]))
+        les_dtdt_hadv = np.column_stack((A, les_dtdt_hadv))
+        A = np.subtract(les_dtdt_nudge[:,0],np.subtract(les_dtdt_nudge[:,1],les_dtdt_nudge[:,0]))
+        les_dtdt_nudge = np.column_stack((A, les_dtdt_nudge))
+        A = np.subtract(les_dqtdt_hadv[:,0],np.subtract(les_dqtdt_hadv[:,1],les_dqtdt_hadv[:,0]))
+        les_dqtdt_hadv = np.column_stack((A, les_dqtdt_hadv))
+        A = np.subtract(les_dqtdt_nudge[:,0],np.subtract(les_dqtdt_nudge[:,1],les_dqtdt_nudge[:,0]))
+        les_dqtdt_nudge = np.column_stack((A, les_dqtdt_nudge))
+        A = np.subtract(les_subsidence[:,0],np.subtract(les_subsidence[:,1],les_subsidence[:,0]))
+        les_subsidence = np.column_stack((A, les_subsidence))
+        A = np.subtract(les_u_nudge[:,0],np.subtract(les_u_nudge[:,1],les_u_nudge[:,0]))
+        les_u_nudge = np.column_stack((A, les_u_nudge))
+        A = np.subtract(les_v_nudge[:,0],np.subtract(les_v_nudge[:,1],les_v_nudge[:,0]))
+        les_v_nudge = np.column_stack((A, les_v_nudge))
+
 
         # interp2d from LES to SCM
         f_dtdt_hadv = interp2d(z_les, t_les, les_dtdt_hadv)
@@ -195,7 +210,7 @@ cdef class ForcingLES(ForcingBase):
         self.v_nudge = f_v_nudge(Gr.z_half, t_scm)
         self.scm_subsidence = f_subsidence(Gr.z_half, t_scm)
 
-        # get the degree latitude of the site
+        # get the degree latitude of the site if Coriolis is called
         sitedata = nc.Dataset('LES_driven_SCM/geolocation.nc','r')
         lats = np.array(sitedata.variables['lat'])
         latitude = lats[int(Gr.les_filename[29:31])-1]
@@ -217,8 +232,8 @@ cdef class ForcingLES(ForcingBase):
             GMV.V.nudge[k] = (self.v_nudge[0,k] - GMV.V.values[k])/self.nudge_tau
             if self.apply_subsidence:
                 # Apply large-scale subsidence tendencies
-                GMV.H.subsidence[k] =  -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
-                GMV.QT.subsidence[k] = -(GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.H.subsidence[k] =  -0.5*(GMV.H.values[k+1]-GMV.H.values[k-1]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.QT.subsidence[k] = -0.5*(GMV.QT.values[k+1]-GMV.QT.values[k-1]) * self.Gr.dzi * self.scm_subsidence[i,k]
             else:
                 GMV.H.subsidence[k] =  0.0
                 GMV.QT.subsidence[k] = 0.0

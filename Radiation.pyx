@@ -47,8 +47,6 @@ cdef class RadiationNone(RadiationBase):
         return
     cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
         return
-    cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
-        return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         return
     cpdef io(self, NetCDFIO_Stats Stats):
@@ -327,12 +325,17 @@ cdef class RadiationLES(RadiationBase):
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS):
         RadiationBase.initialize(self, Gr, GMV, TS)
-        les_data = nc.Dataset(Gr.les_filename,'r')
-        t_les       = np.array(les_data.groups['profiles'].variables['t'])
-        z_les       = np.array(les_data.groups['profiles'].variables['z'])
-        les_dtdt_rad    = np.array(les_data['profiles'].variables['dtdt_rad'])
         t_scm = np.linspace(0.0,TS.t_max, int(TS.t_max/TS.dt)+1)
-
+        # load LES data
+        les_data = nc.Dataset(Gr.les_filename,'r')
+        t_les    = np.array(les_data.groups['profiles'].variables['t'])
+        z_       = np.array(les_data.groups['profiles'].variables['z'])
+        z_les    = np.append(0.0,z_)
+        les_dtdt_rad = np.array(les_data['profiles'].variables['dtdt_rad'])
+        # The following extrapolation procedure is here to make sure the interpolation
+        #  works well when scm-resolution is higher than les resolution
+        A = np.subtract(les_dtdt_rad[:,0],np.subtract(les_dtdt_rad[:,1],les_dtdt_rad[:,0]))
+        les_dtdt_rad = np.column_stack((A, les_dtdt_rad))
         f_dtdt_rad = interp2d(z_les, t_les, les_dtdt_rad)
         self.dtdt_rad = f_dtdt_rad(Gr.z_half, t_scm)
         return

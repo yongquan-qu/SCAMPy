@@ -34,7 +34,6 @@ cdef class RadiationBase:
 cdef class RadiationNone(RadiationBase):
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
     cpdef update(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
-    cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
