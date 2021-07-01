@@ -165,11 +165,13 @@ cdef class ForcingLES(ForcingBase):
         # load the netCDF file
         les_data = nc.Dataset(Gr.les_filename,'r')
         t_les = np.array(les_data.groups['profiles'].variables['t'])
-        z_= np.array(les_data.groups['profiles'].variables['z'])
+        z_ = np.array(les_data.groups['profiles'].variables['z'])
         les_dtdt_hadv   = np.array(les_data['profiles'].variables['dtdt_hadv'])
         les_dtdt_nudge  = np.array(les_data['profiles'].variables['dtdt_nudge'])
+        les_dtdt_fluc   = np.array(les_data['profiles'].variables['dtdt_fluc'])
         les_dqtdt_hadv  = np.array(les_data['profiles'].variables['dqtdt_hadv'])
         les_dqtdt_nudge = np.array(les_data['profiles'].variables['dqtdt_nudge'])
+        les_dqtdt_fluc  = np.array(les_data['profiles'].variables['dqtdt_fluc'])
         les_subsidence  = np.array(les_data['profiles'].variables['ls_subsidence'])
         les_u_nudge     = np.array(les_data['profiles'].variables['u_mean'])
         les_v_nudge     = np.array(les_data['profiles'].variables['v_mean'])
@@ -183,10 +185,14 @@ cdef class ForcingLES(ForcingBase):
         les_dtdt_nudge = np.column_stack((A, les_dtdt_nudge))
         A = np.subtract(les_dqtdt_hadv[:,0],np.subtract(les_dqtdt_hadv[:,1],les_dqtdt_hadv[:,0]))
         les_dqtdt_hadv = np.column_stack((A, les_dqtdt_hadv))
+        A = np.subtract(les_dtdt_fluc[:,0],np.subtract(les_dtdt_fluc[:,1],les_dtdt_fluc[:,0]))
+        les_dtdt_fluc = np.column_stack((A, les_dtdt_fluc))
         A = np.subtract(les_dqtdt_nudge[:,0],np.subtract(les_dqtdt_nudge[:,1],les_dqtdt_nudge[:,0]))
         les_dqtdt_nudge = np.column_stack((A, les_dqtdt_nudge))
         A = np.subtract(les_subsidence[:,0],np.subtract(les_subsidence[:,1],les_subsidence[:,0]))
         les_subsidence = np.column_stack((A, les_subsidence))
+        A = np.subtract(les_dqtdt_fluc[:,0],np.subtract(les_dqtdt_fluc[:,1],les_dqtdt_fluc[:,0]))
+        les_dqtdt_fluc = np.column_stack((A, les_dqtdt_fluc))
         A = np.subtract(les_u_nudge[:,0],np.subtract(les_u_nudge[:,1],les_u_nudge[:,0]))
         les_u_nudge = np.column_stack((A, les_u_nudge))
         A = np.subtract(les_v_nudge[:,0],np.subtract(les_v_nudge[:,1],les_v_nudge[:,0]))
@@ -198,6 +204,8 @@ cdef class ForcingLES(ForcingBase):
         f_dtdt_nudge = interp2d(z_les, t_les, les_dtdt_nudge)
         f_dqtdt_hadv = interp2d(z_les, t_les, les_dqtdt_hadv)
         f_dqtdt_nudge = interp2d(z_les, t_les, les_dqtdt_nudge)
+        f_dtdt_fluc = interp2d(z_les, t_les, les_dtdt_fluc)
+        f_dqtdt_fluc = interp2d(z_les, t_les, les_dqtdt_fluc)
         f_u_nudge = interp2d(z_les, t_les, les_u_nudge)
         f_v_nudge = interp2d(z_les, t_les, les_v_nudge)
         f_subsidence = interp2d(z_les, t_les, les_subsidence)
@@ -206,6 +214,8 @@ cdef class ForcingLES(ForcingBase):
         self.dtdt_nudge = f_dtdt_nudge(Gr.z_half, t_scm)
         self.dqtdt_hadv = f_dqtdt_hadv(Gr.z_half, t_scm)
         self.dqtdt_nudge = f_dqtdt_nudge(Gr.z_half, t_scm)
+        self.dtdt_fluc = f_dtdt_fluc(Gr.z_half, t_scm)
+        self.dqtdt_fluc = f_dqtdt_fluc(Gr.z_half, t_scm)
         self.u_nudge = f_u_nudge(Gr.z_half, t_scm)
         self.v_nudge = f_v_nudge(Gr.z_half, t_scm)
         self.scm_subsidence = f_subsidence(Gr.z_half, t_scm)
@@ -226,8 +236,10 @@ cdef class ForcingLES(ForcingBase):
             qv = GMV.QT.values[k] - GMV.QL.values[k]
             GMV.H.horz_adv[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_hadv[i,k])
             GMV.H.nudge[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv,self.dtdt_nudge[i,k])
+            GMV.H.fluc[k] = self.convert_forcing_prog_fp(self.Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv, self.dtdt_fluc[i,k])
             GMV.QT.horz_adv[k] = self.dqtdt_hadv[i,k]
             GMV.QT.nudge[k] = self.dqtdt_nudge[i,k]
+            GMV.QT.fluc[k] = self.dqtdt_fluc[i,k]
             GMV.U.nudge[k] = (self.u_nudge[0,k] - GMV.U.values[k])/self.nudge_tau
             GMV.V.nudge[k] = (self.v_nudge[0,k] - GMV.V.values[k])/self.nudge_tau
             if self.apply_subsidence:
@@ -238,8 +250,8 @@ cdef class ForcingLES(ForcingBase):
                 GMV.H.subsidence[k] =  0.0
                 GMV.QT.subsidence[k] = 0.0
 
-            GMV.H.tendencies[k] += GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k]
-            GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k]
+            GMV.H.tendencies[k] += GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k] + GMV.H.fluc[k]
+            GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k] + GMV.QT.fluc[k]
             GMV.U.tendencies[k] += GMV.U.nudge[k]
             GMV.V.tendencies[k] += GMV.V.nudge[k]
 

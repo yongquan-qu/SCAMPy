@@ -66,6 +66,8 @@ cdef class ForcingLES(ForcingBase):
         double [:,:] dtdt_nudge
         double [:,:] dqtdt_hadv
         double [:,:] dqtdt_nudge
+        double [:,:] dtdt_fluc
+        double [:,:] dqtdt_fluc
         double [:,:] u_nudge
         double [:,:] v_nudge
 

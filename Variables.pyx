@@ -26,6 +26,7 @@ cdef class VariablePrognostic:
         self.radiation = np.zeros((nz_tot,),dtype=np.double, order='c')
         self.horz_adv = np.zeros((nz_tot,),dtype=np.double, order='c')
         self.nudge = np.zeros((nz_tot,),dtype=np.double, order='c')
+        self.fluc = np.zeros((nz_tot,),dtype=np.double, order='c')
         self.subsidence = np.zeros((nz_tot,),dtype=np.double, order='c')
         # Placement on staggered grid
         if loc != 'half' and loc != 'full':

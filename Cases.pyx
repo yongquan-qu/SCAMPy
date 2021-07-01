@@ -1881,7 +1881,6 @@ cdef class LES_driven_SCM(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.qsurface = 1.0e-5
         self.Sur.zrough = 1.0e-4
-        self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
         self.Sur.initialize(Gr, TS)
         return
 

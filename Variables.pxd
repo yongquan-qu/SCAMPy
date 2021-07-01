@@ -12,6 +12,7 @@ cdef class VariablePrognostic:
         double [:] radiation
         double [:] horz_adv
         double [:] nudge
+        double [:] fluc
         double [:] subsidence
         str loc
         str kind
