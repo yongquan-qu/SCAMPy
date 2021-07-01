@@ -244,14 +244,15 @@ cdef class ForcingLES(ForcingBase):
             GMV.V.nudge[k] = (self.v_nudge[0,k] - GMV.V.values[k])/self.nudge_tau
             if self.apply_subsidence:
                 # Apply large-scale subsidence tendencies
-                GMV.H.subsidence[k] =  -0.5*(GMV.H.values[k+1]-GMV.H.values[k-1]) * self.Gr.dzi * self.scm_subsidence[i,k]
-                GMV.QT.subsidence[k] = -0.5*(GMV.QT.values[k+1]-GMV.QT.values[k-1]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.H.subsidence[k] =  -(GMV.H.values[k+1]-GMV.H.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
+                GMV.QT.subsidence[k] =  -(GMV.QT.values[k+1]-GMV.QT.values[k]) * self.Gr.dzi * self.scm_subsidence[i,k]
             else:
                 GMV.H.subsidence[k] =  0.0
                 GMV.QT.subsidence[k] = 0.0
 
             GMV.H.tendencies[k] += GMV.H.horz_adv[k] + GMV.H.nudge[k] + GMV.H.subsidence[k] + GMV.H.fluc[k]
             GMV.QT.tendencies[k] += GMV.QT.horz_adv[k] + GMV.QT.nudge[k] + GMV.QT.subsidence[k] + GMV.QT.fluc[k]
+
             GMV.U.tendencies[k] += GMV.U.nudge[k]
             GMV.V.tendencies[k] += GMV.V.nudge[k]
 
