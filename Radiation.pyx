@@ -291,9 +291,6 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
         cbrt_z                   = cbrt(Gr.z[k] + Gr.dz - zi)
         self.f_rad[Gr.nzg] += rhoi * dycoms_cp * self.divergence * self.alpha_z * (np.power(cbrt_z, 4) / 4.0 + zi * cbrt_z)
 
-        # print('update Gr.gw ',Gr.gw, self.Gr.gw)
-        # print('update Gr.nz ',Gr.nz, self.Gr.nz)
-        # print('update Gr.nzg ',Gr.nzg, self.Gr.nzg)
         for k in xrange(Gr.gw, Gr.nzg - Gr.gw):
             self.dTdt[k] = - (self.f_rad[k + 1] - self.f_rad[k]) / Gr.dz / Ref.rho0_half[k] / dycoms_cp
         return
@@ -361,6 +358,5 @@ cdef class RadiationLES(RadiationBase):
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
-        print(np.shape(self.dTdt))
-        Stats.write_profile('rad_dTdt', self.dTdt)
+        Stats.write_profile('rad_dTdt', self.dTdt[self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
         return

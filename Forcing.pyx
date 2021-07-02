@@ -28,12 +28,11 @@ cdef class ForcingBase:
             self.convert_forcing_prog_fp = convert_forcing_entropy
         elif GMV.H.name == 'thetal':
             self.convert_forcing_prog_fp = convert_forcing_thetal
-        print('base initialize Gr.gw ', self.Gr.gw)
-        print('base initialize Gr.nz ', self.Gr.nz)
-        print('base initialize Gr.nzg ', self.Gr.nzg)
         return
+
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
+
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V):
         cdef:
             Py_ssize_t k
@@ -42,8 +41,10 @@ cdef class ForcingBase:
             U.tendencies[k] -= self.coriolis_param * (self.vg[k] - V.values[k])
             V.tendencies[k] += self.coriolis_param * (self.ug[k] - U.values[k])
         return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         return
+
     cpdef io(self, NetCDFIO_Stats Stats):
         return
 
@@ -142,9 +143,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
             GMV.H.tendencies[k]  += GMV.H.subsidence[k]
             GMV.QT.tendencies[k] += GMV.QT.subsidence[k]
 
-        print('update Gr.gw ', self.Gr.gw)
-        print('update Gr.nz ', self.Gr.nz)
-        print('update Gr.nzg ', self.Gr.nzg)
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
         return
@@ -153,11 +151,6 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
-        print('io self.Gr.gw ',self.Gr.gw)
-        print('io self.Gr.nz ',self.Gr.nz)
-        print('io self.Gr.nzg ',self.Gr.nzg)
-        # Stats.write_profile('rad_dTdt', self.dTdt[ self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
-        # Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
         return
 
 

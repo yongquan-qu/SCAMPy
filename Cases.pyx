@@ -1308,6 +1308,7 @@ cdef class DYCOMS_RF01(CasesBase):
         # cloud-top cooling + cloud-base warming + cooling in free troposphere
 
     cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.Gr  = Gr
         self.Rad.initialize(Gr, GMV, TS)
         self.Rad.calculate_radiation(Ref, Gr, GMV, TS)
         return
@@ -1415,6 +1416,7 @@ cdef class GABLS(CasesBase):
             self.Fo.vg[k] = 0.0
         return
     cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.Gr  = Gr
         self.Rad.initialize(Gr, GMV, TS)
         return
 
