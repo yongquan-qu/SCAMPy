@@ -317,10 +317,6 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
-        print('io self.Gr.gw ',self.Gr.gw)
-        print('io self.Gr.nz ',self.Gr.nz)
-        print('io self.Gr.nzg ',self.Gr.nzg)
-        print(self.Gr.gw, self.Gr.nzg - self.Gr.gw)
         Stats.write_profile('rad_dTdt', self.dTdt[self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
         Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
         return
