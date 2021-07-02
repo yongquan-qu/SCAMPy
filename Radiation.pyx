@@ -304,7 +304,8 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             # Apply radiative temperature tendency
             qv = GMV.QT.values[k] - GMV.QL.values[k]
-            GMV.H.tendencies[k]  += self.convert_forcing_prog_fp(Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
+            GMV.H.radiation[k] = self.convert_forcing_prog_fp(Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], self.dqtdt[k], self.dTdt[k])
+            GMV.H.tendencies[k] += GMV.H.radiation[k]
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -313,6 +314,8 @@ cdef class RadiationDYCOMS_RF01(RadiationBase):
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
+        print(np.shape(self.dTdt))
+        print(self.Gr.gw, self.Gr.nzg - self.Gr.gw)
         Stats.write_profile('rad_dTdt', self.dTdt[self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
         Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
         return
@@ -347,12 +350,16 @@ cdef class RadiationLES(RadiationBase):
         i = int(TS.t/TS.dt)
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             qv = GMV.QT.values[k] - GMV.QL.values[k]
+            self.dTdt[k] = self.dtdt_rad[i,k]
             GMV.H.radiation[k] = self.convert_forcing_prog_fp(Ref.p0_half[k],GMV.QT.values[k], qv, GMV.T.values[k], qv, self.dtdt_rad[i,k])
             GMV.H.tendencies[k] += GMV.H.radiation[k]
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        Stats.add_profile('rad_dTdt')
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
+        print(np.shape(self.dTdt))
+        Stats.write_profile('rad_dTdt', self.dTdt)
         return

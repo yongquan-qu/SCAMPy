@@ -144,13 +144,11 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
-        Stats.add_profile('rad_dTdt')
-        Stats.add_profile('rad_flux')
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
-        Stats.write_profile('rad_dTdt', self.dTdt[ self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
-        Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
+        # Stats.write_profile('rad_dTdt', self.dTdt[ self.Gr.gw     : self.Gr.nzg - self.Gr.gw])
+        # Stats.write_profile('rad_flux', self.f_rad[self.Gr.gw + 1 : self.Gr.nzg - self.Gr.gw + 1])
         return
 
 

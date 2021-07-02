@@ -21,9 +21,9 @@ cdef class RadiationBase:
     cdef:
         double [:] dTdt
         double [:] dqtdt
-        Grid Gr
         double (*convert_forcing_prog_fp)(double p0, double qt, double qv, double T,
                                           double qt_tendency, double T_tendency) nogil
+        Grid Gr
         ReferenceState Ref
 
     cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)

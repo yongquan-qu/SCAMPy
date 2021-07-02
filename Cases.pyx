@@ -1314,11 +1314,13 @@ cdef class DYCOMS_RF01(CasesBase):
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         self.Fo.initialize_io(Stats)
+        self.Rad.initialize_io(Stats)
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self, Stats)
         self.Fo.io(Stats)
+        self.Rad.io(Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
@@ -1665,10 +1667,14 @@ cdef class DryBubble(CasesBase):
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
+        self.Rad.initialize_io(Stats)
+        self.Fo.initialize_io(Stats)
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self, Stats)
+        self.Rad.io(Stats)
+        self.Fo.io(Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
@@ -1746,10 +1752,14 @@ cdef class LES_driven_SCM(CasesBase):
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
+        self.Rad.initialize_io(Stats)
+        self.Fo.initialize_io(Stats)
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self, Stats)
+        self.Rad.io(Stats)
+        self.Fo.io(Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
