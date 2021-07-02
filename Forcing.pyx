@@ -28,6 +28,9 @@ cdef class ForcingBase:
             self.convert_forcing_prog_fp = convert_forcing_entropy
         elif GMV.H.name == 'thetal':
             self.convert_forcing_prog_fp = convert_forcing_thetal
+        print('base initialize Gr.gw ', self.Gr.gw)
+        print('base initialize Gr.nz ', self.Gr.nz)
+        print('base initialize Gr.nzg ', self.Gr.nzg)
         return
     cpdef update(self, GridMeanVariables GMV, TimeStepping TS):
         return
@@ -139,6 +142,9 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
             GMV.H.tendencies[k]  += GMV.H.subsidence[k]
             GMV.QT.tendencies[k] += GMV.QT.subsidence[k]
 
+        print('update Gr.gw ', self.Gr.gw)
+        print('update Gr.nz ', self.Gr.nz)
+        print('update Gr.nzg ', self.Gr.nzg)
         if self.apply_coriolis:
             self.coriolis_force(GMV.U, GMV.V)
         return
