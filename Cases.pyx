@@ -1416,7 +1416,6 @@ cdef class GABLS(CasesBase):
             self.Fo.vg[k] = 0.0
         return
     cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
-        self.Rad.Gr  = Gr
         self.Rad.initialize(Gr, GMV, TS)
         return
 
@@ -1749,6 +1748,7 @@ cdef class LES_driven_SCM(CasesBase):
         return
 
     cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.Gr = Gr
         self.Rad.initialize(Gr, GMV, TS)
         return
 
