@@ -772,6 +772,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double tau =  get_mixing_tau(self.zi, self.wstar)
             double l1, l2, l3, z_, N
             double l[3]
+            double tke_surf
             double ri_grad, shear2
             double qt_dry, th_dry, t_cloudy, qv_cloudy, qt_cloudy, th_cloudy
             double lh, cpm, prefactor, d_buoy_thetal_dry, d_buoy_qt_dry
@@ -784,14 +785,27 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
 
         if (self.mixing_scheme == 'sbl'):
+            # Ref: Lopez-Gomez et al. (2020)
             for k in xrange(gw, self.Gr.nzg-gw):
                 z_ = self.Gr.z_half[k]
-                # kz scale (surface layer)
+                tke_surf = get_surface_tke(
+                    ustar,
+                    self.wstar,
+                    self.Gr.z_half[gw],
+                    obukhov_length
+                )
+                # Near-surface mixing length (Eq. 35)
                 if obukhov_length < 0.0: #unstable
-                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
-                     (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
+                    l2 = (
+                        vkb * z_ / self.tke_ed_coeff  # von Karman const * z / tke eddy diffusivity
+                        / (sqrt(tke_surf) / ustar)  # cf. Eq 35, k*: ratio of rms turbulent velocity to friction velocity in surface layer
+                        * fmin(pow(1.0 - 100.0 * z_ / obukhov_length, 0.2), 1.0/vkb)  # Eq. 37, \phi_m, with a^-_1 = -100.0, a^+_1 = - 0.2 (Table 1)
+                    )
                 else: # neutral or stable
-                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
+                    l2 = (
+                        vkb * z_ / self.tke_ed_coeff  # von Karman const * z / tke eddy diffusivity
+                        / (sqrt(tke_surf) / ustar)
+                    )
 
                 # Shear-dissipation TKE equilibrium scale (Stable)
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -863,7 +877,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 else:
                     l1 = 1.0e6
 
-                l[0]=l1; l[1]=l3; l[2]=l2;
+                l[0]=l1; l[1]=l3; l[2]=l2
 
                 j = 0
                 while(j<len(l)):
@@ -875,14 +889,27 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 self.ml_ratio[k] = self.mixing_length[k]/l[int(self.mls[k])]
 
         elif (self.mixing_scheme == 'sbtd_eq'):
+            # Ref: Lopez-Gomez et al. (2020)
             for k in xrange(gw, self.Gr.nzg-gw):
                 z_ = self.Gr.z_half[k]
-                # kz scale (surface layer)
+                tke_surf = get_surface_tke(
+                    ustar,
+                    self.wstar,
+                    self.Gr.z_half[gw],
+                    obukhov_length
+                )
+                # Near-surface mixing length (Eq. 35)
                 if obukhov_length < 0.0: #unstable
-                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff) * fmin(
-                     (1.0 - 100.0 * z_/obukhov_length)**0.2, 1.0/vkb )
+                    l2 = (
+                        vkb * z_ / self.tke_ed_coeff  # von Karman const * z / tke eddy diffusivity
+                        / (sqrt(tke_surf) / ustar)  # cf. Eq 35, k*: ratio of rms turbulent velocity to friction velocity in surface layer
+                        * fmin(pow(1.0 - 100.0 * z_ / obukhov_length, 0.2), 1.0/vkb)  # Eq. 37, \phi_m, with a^-_1 = -100.0, a^+_1 = - 0.2 (Table 1)
+                    )
                 else: # neutral or stable
-                    l2 = vkb * z_ /(sqrt(self.EnvVar.TKE.values[self.Gr.gw]/ustar/ustar)*self.tke_ed_coeff)
+                    l2 = (
+                        vkb * z_ / self.tke_ed_coeff  # von Karman const * z / tke eddy diffusivity
+                        / (sqrt(tke_surf) / ustar)
+                    )
 
                 # Buoyancy-shear-subdomain exchange-dissipation TKE equilibrium scale
                 shear2 = pow((GMV.U.values[k+1] - GMV.U.values[k-1]) * 0.5 * self.Gr.dzi, 2) + \
@@ -976,7 +1003,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                 else:
                     l1 = 1.0e6
 
-                l[0]=l1; l[1]=l3; l[2]=l2;
+                l[0]=l1; l[1]=l3; l[2]=l2
 
                 j = 0
                 while(j<len(l)):
@@ -1097,10 +1124,12 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             double alpha0LL  = self.Ref.alpha0_half[self.Gr.gw]
 
         if self.calc_tke:
-            self.EnvVar.TKE.values[self.Gr.gw] = get_surface_tke(Case.Sur.ustar,
-                                                     self.wstar,
-                                                     self.Gr.z_half[self.Gr.gw],
-                                                     Case.Sur.obukhov_length)
+            self.EnvVar.TKE.values[self.Gr.gw] = get_surface_tke(
+                Case.Sur.ustar,
+                self.wstar,
+                self.Gr.z_half[self.Gr.gw],
+                Case.Sur.obukhov_length,
+            )
             self.get_GMV_CoVar(self.UpdVar.Area,self.UpdVar.W, self.UpdVar.W, self.EnvVar.W, self.EnvVar.W, self.EnvVar.TKE,
                 &GMV.W.values[0],&GMV.W.values[0], &GMV.TKE.values[0])
 
