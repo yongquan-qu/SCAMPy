@@ -22,8 +22,8 @@ def simulation_setup(case):
     namelist  = json.loads(file_case)
     # fh = open(namelist['meta']['casename']+ ".in", 'w')
     # add here changes to namelist file:
-    namelist['output']['output_root'] = "./Tests."
-    namelist['meta']['uuid'] = case
+    namelist['output']['output_root'] = "./Tests./"
+    namelist['meta']['uuid'] = 'pytst'
     write_file(case+".in",namelist)
     #pp.pprint(namelist)
 
