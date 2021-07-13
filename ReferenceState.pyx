@@ -66,8 +66,8 @@ cdef class ReferenceState:
             les_alpha      = np.array(les_data.groups['reference'].variables['alpha0_full'])
             les_p          = np.array(les_data.groups['reference'].variables['p0_full'])
             les_p_half     = np.array(les_data.groups['reference'].variables['p0'])
-            z_les          = np.array(les_data.groups['profiles'].variables['z'])
-            z_les_half     = np.array(les_data.groups['profiles'].variables['z_half'])
+            z_les          = np.array(les_data.groups['reference'].variables['zp'])
+            z_les_half     = np.array(les_data.groups['reference'].variables['zp_half'])
 
             f_les_alpha_half = interp1d(z_les_half, les_alpha_half, fill_value="extrapolate")
             f_les_p_half     = interp1d(z_les_half, les_p_half, fill_value="extrapolate")

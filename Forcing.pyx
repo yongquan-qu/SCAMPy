@@ -165,7 +165,7 @@ cdef class ForcingLES(ForcingBase):
         # load the netCDF file
         les_data = nc.Dataset(Gr.les_filename,'r')
         t_les = np.array(les_data.groups['profiles'].variables['t'])
-        z_ = np.array(les_data.groups['profiles'].variables['z'])
+        z_ = np.array(les_data.groups['reference'].variables['zp_half'])
         les_dtdt_hadv   = np.array(les_data['profiles'].variables['dtdt_hadv'])
         les_dtdt_nudge  = np.array(les_data['profiles'].variables['dtdt_nudge'])
         les_dtdt_fluc   = np.array(les_data['profiles'].variables['dtdt_fluc'])

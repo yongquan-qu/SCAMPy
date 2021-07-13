@@ -1711,7 +1711,7 @@ cdef class LES_driven_SCM(CasesBase):
             Py_ssize_t k
 
         les_data = nc.Dataset(Gr.les_filename,'r')
-        z_les_half = np.array(les_data.groups['profiles'].variables['z_half'])
+        z_les_half = np.array(les_data.groups['reference'].variables['zp_half'])
         thetali = np.array(les_data.groups['profiles'].variables['thetali_mean'])
         qt      = np.array(les_data.groups['profiles'].variables['qt_mean'])
         u_mean  = np.array(les_data.groups['profiles'].variables['u_mean'])

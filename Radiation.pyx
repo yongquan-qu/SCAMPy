@@ -330,7 +330,7 @@ cdef class RadiationLES(RadiationBase):
         # load LES data
         les_data = nc.Dataset(Gr.les_filename,'r')
         t_les    = np.array(les_data.groups['profiles'].variables['t'])
-        z_       = np.array(les_data.groups['profiles'].variables['z'])
+        z_       = np.array(les_data.groups['reference'].variables['zp_half'])
         z_les    = np.append(0.0,z_)
         les_dtdt_rad = np.array(les_data['profiles'].variables['dtdt_rad'])
         # The following extrapolation procedure is here to make sure the interpolation

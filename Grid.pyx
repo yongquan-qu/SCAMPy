@@ -38,7 +38,7 @@ cdef class Grid:
             self.les_filename = lesfolder + 'Stats.' + lesfile +'.nc'
             les_data = nc.Dataset(self.les_filename,'r')
             # SCM domain is as deep as LES domain
-            z_top = np.max(les_data.groups['profiles'].variables['z'])
+            z_top = np.max(les_data.groups['reference'].variables['zp'])
             self.nz = int((z_top - z_top%self.dz)/self.dz)
             # these lines allow to run the SCM for a shallower domain than the LES
             # z_top = np.max(les_data.groups['timeseries'].variables['cloud_top'])
