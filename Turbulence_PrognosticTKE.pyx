@@ -997,7 +997,6 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
                     1.0/exp( - latent_heat(self.EnvVar.T.values[k]) * self.EnvVar.QL.values[k]
                         / cpm_c(self.EnvVar.QT.values[k]) / self.EnvVar.T.values[k] )*(
                         (1.0+ (eps_vi-1.0)*self.EnvVar.QT.values[k])*grad_thl+(eps_vi-1.0)*self.EnvVar.THL.values[k]*grad_qt))
-
                 N = sqrt(fmax(g/thv*grad_th_eff, 0.0))
                 if N > 0.0:
                     l1 = fmin(sqrt(fmax(self.static_stab_coeff*self.EnvVar.TKE.values[k],0.0))/N, 1.0e6)
@@ -2361,6 +2360,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
                 b[nz-1] += c[nz-1]
                 c[nz-1] = 0.0
+
         tridiag_solve(self.Gr.nz, &x[0],&a[0], &b[0], &c[0])
 
         for kk in xrange(nz):

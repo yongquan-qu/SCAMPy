@@ -9,6 +9,8 @@
 cimport numpy as np
 import numpy as np
 import time
+import netCDF4 as nc
+
 cdef class Grid:
     '''
     A class for storing information about the LES grid.
@@ -30,7 +32,19 @@ cdef class Grid:
 
         #Get the grid dimensions and ghost points
         self.gw = namelist['grid']['gw']
-        self.nz = namelist['grid']['nz']
+        if namelist['meta']['casename'] == 'LES_driven_SCM':
+            lesfolder = namelist['meta']['lesfolder']
+            lesfile = namelist['meta']['lesfile']
+            self.les_filename = lesfolder + 'Stats.' + lesfile +'.nc'
+            les_data = nc.Dataset(self.les_filename,'r')
+            # SCM domain is as deep as LES domain
+            z_top = np.max(les_data.groups['reference'].variables['zp'])
+            self.nz = int((z_top - z_top%self.dz)/self.dz)
+            # these lines allow to run the SCM for a shallower domain than the LES
+            # z_top = np.max(les_data.groups['timeseries'].variables['cloud_top'])
+            # self.nz = int((z_top - z_top%self.dz)/self.dz*1.5)
+        else:
+            self.nz = namelist['grid']['nz']
         self.nzg = self.nz + 2 * self.gw
 
         self.z_half = np.empty((self.nz+2*self.gw),dtype=np.double,order='c')

@@ -30,6 +30,7 @@ def sim_data(request):
     scampy.main1d(setup["namelist"], setup["paramlist"])
 
     # simulation results
+    print(setup["outfile"])
     sim_data = Dataset(setup["outfile"], 'r')
 
     # remove netcdf file after tests

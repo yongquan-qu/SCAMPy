@@ -8,10 +8,13 @@ from ReferenceState cimport ReferenceState
 from TimeStepping cimport  TimeStepping
 cimport Surface
 cimport Forcing
+cimport Radiation
 from NetCDFIO cimport NetCDFIO_Stats
 from thermodynamic_functions cimport *
 import math as mt
 from libc.math cimport sqrt, log, fabs,atan, exp, fmax
+import netCDF4 as nc
+from scipy.interpolate import interp1d
 
 def CasesFactory(namelist, paramlist):
     if namelist['meta']['casename'] == 'Soares':
@@ -38,6 +41,8 @@ def CasesFactory(namelist, paramlist):
         return SP(paramlist)
     elif namelist['meta']['casename'] == 'DryBubble':
         return DryBubble(paramlist)
+    elif namelist['meta']['casename'] == 'LES_driven_SCM':
+        return LES_driven_SCM(paramlist)
 
     else:
         print('case not recognized')
@@ -47,13 +52,15 @@ def CasesFactory(namelist, paramlist):
 cdef class CasesBase:
     def __init__(self, paramlist):
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         return
-    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         Stats.add_ts('Tsurface')
@@ -71,6 +78,8 @@ cdef class CasesBase:
         return
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
         return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        return
 
 
 cdef class Soares(CasesBase):
@@ -81,15 +90,16 @@ cdef class Soares(CasesBase):
         self.casename = 'Soares2004'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 5.0e-3
         Ref.Tg = 300.0
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -129,7 +139,7 @@ cdef class Soares(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 0.16 #1.0e-4 0.16 is the value specified in the Nieuwstadt paper.
         self.Sur.Tsurface = 300.0
         self.Sur.qsurface = 5.0e-3
@@ -143,13 +153,17 @@ cdef class Soares(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.bflux   =  g * ((theta_flux + (eps_vi - 1.0) * (theta_surface * qt_flux + self.Sur.qsurface * theta_flux))
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
+        return
+
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -160,10 +174,13 @@ cdef class Soares(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class Nieuwstadt(CasesBase):
@@ -174,15 +191,16 @@ cdef class Nieuwstadt(CasesBase):
         self.casename = 'Nieuwstadt'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1000.0 * 100.0
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
         Ref.Tg = 300.0
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -222,7 +240,7 @@ cdef class Nieuwstadt(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 0.16 #1.0e-4 0.16 is the value specified in the Nieuwstadt paper.
         self.Sur.Tsurface = 300.0
         self.Sur.qsurface = 0.0
@@ -236,13 +254,17 @@ cdef class Nieuwstadt(CasesBase):
         self.Sur.Ref = Ref
         self.Sur.bflux   =  g * ((theta_flux + (eps_vi - 1.0) * (theta_surface * qt_flux + self.Sur.qsurface * theta_flux))
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
+        return
+
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -253,10 +275,14 @@ cdef class Nieuwstadt(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class Bomex(CasesBase):
@@ -264,16 +290,17 @@ cdef class Bomex(CasesBase):
         self.casename = 'Bomex'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
         self.Fo.apply_subsidence = True
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -337,7 +364,7 @@ cdef class Bomex(CasesBase):
         GMV.satadjust()
 
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = 299.1 * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -347,12 +374,12 @@ cdef class Bomex(CasesBase):
         self.Sur.ustar = 0.28 # m/s
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             # Geostrophic velocity profiles. vg = 0
@@ -377,6 +404,10 @@ cdef class Bomex(CasesBase):
                 self.Fo.subsidence[k] = -0.65/100 + (Gr.z_half[k] - 1500.0)* (0.0 - -0.65/100.0)/(2100.0 - 1500.0)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -384,10 +415,13 @@ cdef class Bomex(CasesBase):
         CasesBase.io(self,Stats)
         return
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class life_cycle_Tan2018(CasesBase):
@@ -399,16 +433,17 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.casename = 'life_cycle_Tan2018'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 0.376e-4 # s^{-1}
         self.Fo.apply_subsidence = True
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.015e5  #Pressure at ground
         Ref.Tg = 300.4  #Temperature at ground
         Ref.qtg = 0.02245   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -463,7 +498,7 @@ cdef class life_cycle_Tan2018(CasesBase):
         GMV.satadjust()
 
         return
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = 299.1 * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -476,12 +511,12 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.bflux = (g * ((8.0e-3 + (eps_vi-1.0)*(299.1 * 5.2e-5  + 22.45e-3 * 8.0e-3)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         for k in xrange(Gr.gw, Gr.nzg-Gr.gw):
             # Geostrophic velocity profiles. vg = 0
             self.Fo.ug[k] = -10.0 + (1.8e-3)*Gr.z_half[k]
@@ -504,6 +539,10 @@ cdef class life_cycle_Tan2018(CasesBase):
                 self.Fo.subsidence[k] = -0.65/100 + (Gr.z_half[k] - 1500.0)* (0.0 - -0.65/100.0)/(2100.0 - 1500.0)
         return
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -517,10 +556,13 @@ cdef class life_cycle_Tan2018(CasesBase):
         self.Sur.lhf = self.lhf0*weight
         self.Sur.shf = self.shf0*weight
         self.Sur.bflux = (g * ((8.0e-3*weight + (eps_vi-1.0)*(299.1 * 5.2e-5*weight  + 22.45e-3 * 8.0e-3*weight)) /(299.1 * (1.0 + (eps_vi-1) * 22.45e-3))))
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class Rico(CasesBase):
@@ -528,6 +570,7 @@ cdef class Rico(CasesBase):
         self.casename = 'Rico'
         self.Sur = Surface.SurfaceFixedCoeffs(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         cdef double latitude = 18.0
@@ -535,12 +578,12 @@ cdef class Rico(CasesBase):
         self.Fo.apply_subsidence = True
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0154e5  #Pressure at ground
         Ref.Tg = 299.8  #Temperature at ground
         cdef double pvg = pv_star(Ref.Tg)
         Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)   #Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -586,7 +629,7 @@ cdef class Rico(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.00015
@@ -599,13 +642,13 @@ cdef class Rico(CasesBase):
         self.Sur.ch = self.Sur.ch * grid_adjust
         self.Sur.cq = self.Sur.cq * grid_adjust
         self.Sur.Tsurface = 299.8
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         for k in xrange(Gr.nzg):
             # Geostrophic velocity profiles
             self.Fo.ug[k] = -9.9 + 2.0e-3 * Gr.z_half[k]
@@ -625,6 +668,9 @@ cdef class Rico(CasesBase):
             else:
                 self.Fo.subsidence[k] = -0.005
         return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -633,11 +679,14 @@ cdef class Rico(CasesBase):
         CasesBase.io(self,Stats)
         return
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class TRMM_LBA(CasesBase):
@@ -647,16 +696,17 @@ cdef class TRMM_LBA(CasesBase):
         self.casename = 'TRMM_LBA'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationTRMM_LBA()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 991.3*100  #Pressure at ground
         Ref.Tg = 296.85   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         pvg = pv_star(Ref.Tg)
         Ref.qtg = eps_v * pvg/(Ref.Pg - pvg)#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -757,7 +807,7 @@ cdef class TRMM_LBA(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         #self.Sur.zrough = 1.0e-4 # not actually used, but initialized to reasonable value
         self.Sur.Tsurface = (273.15+23) * exner_c(Ref.Pg)
         self.Sur.qsurface = 22.45e-3 # kg/kg
@@ -767,144 +817,19 @@ cdef class TRMM_LBA(CasesBase):
         self.Sur.ustar = 0.28 # this is taken from Bomex -- better option is to approximate from LES tke above the surface
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
-        self.Fo.dTdt = np.zeros(Gr.nzg, dtype=np.double)
-        self.rad_time = np.linspace(10,360,36)*60
-        z_in         = np.array([42.5, 200.92, 456.28, 743, 1061.08, 1410.52, 1791.32, 2203.48, 2647,3121.88, 3628.12,
-                                 4165.72, 4734.68, 5335, 5966.68, 6629.72, 7324.12,
-                                 8049.88, 8807, 9595.48, 10415.32, 11266.52, 12149.08, 13063, 14008.28,
-                                 14984.92, 15992.92, 17032.28, 18103, 19205.08, 20338.52, 21503.32, 22699.48])
-        rad_in   = np.array([[-1.386, -1.927, -2.089, -1.969, -1.805, -1.585, -1.406, -1.317, -1.188, -1.106, -1.103, -1.025,
-                              -0.955, -1.045, -1.144, -1.119, -1.068, -1.092, -1.196, -1.253, -1.266, -1.306,  -0.95,  0.122,
-                               0.255,  0.258,  0.322,  0.135,      0,      0,      0,      0,      0],
-                             [ -1.23, -1.824, -2.011, -1.895, -1.729, -1.508, -1.331, -1.241, -1.109, -1.024, -1.018,  -0.94,
-                              -0.867, -0.953, -1.046, -1.018, -0.972, -1.006, -1.119, -1.187, -1.209, -1.259, -0.919,  0.122,
-                               0.264,  0.262,  0.326,  0.137,      0,      0,      0,      0,     0],
-                             [-1.043, -1.692, -1.906, -1.796,  -1.63,  -1.41, -1.233, -1.142,  -1.01,  -0.92, -0.911, -0.829,
-                              -0.754, -0.837, -0.923,  -0.89, -0.847, -0.895, -1.021, -1.101, -1.138, -1.201,  -0.88,  0.131,
-                               0.286,  0.259,  0.332,   0.14,      0,      0,      0,      0,      0],
-                             [-0.944, -1.613, -1.832,  -1.72, -1.555, -1.339, -1.163, -1.068, -0.935, -0.846, -0.835,  -0.75,
-                              -0.673, -0.751, -0.833, -0.798,  -0.76, -0.817, -0.952, -1.042, -1.088, -1.159, -0.853,  0.138,
-                               0.291,  0.265,  0.348,  0.136,      0,      0,      0,      0,      0],
-                             [-0.833, -1.526, -1.757, -1.648, -1.485,  -1.27, -1.093, -0.998, -0.867, -0.778, -0.761, -0.672,
-                              -0.594, -0.671, -0.748, -0.709, -0.676, -0.742, -0.887, -0.986, -1.041, -1.119, -0.825,  0.143,
-                               0.296,  0.271,  0.351,  0.138,      0,      0,      0,      0,      0],
-                             [-0.719, -1.425, -1.657,  -1.55, -1.392, -1.179, -1.003, -0.909, -0.778, -0.688, -0.667, -0.573,
-                              -0.492, -0.566, -0.639, -0.596, -0.568, -0.647, -0.804, -0.914, -0.981,  -1.07, -0.793,  0.151,
-                               0.303,  0.279,  0.355,  0.141,      0,      0,      0,      0,      0],
-                             [-0.724, -1.374, -1.585, -1.482, -1.328, -1.116, -0.936, -0.842, -0.715, -0.624, -0.598, -0.503,
-                              -0.421, -0.494, -0.561, -0.514,  -0.49,  -0.58, -0.745, -0.863, -0.938, -1.035, -0.764,  0.171,
-                               0.291,  0.284,  0.358,  0.144,      0,      0,      0,      0,      0],
-                             [-0.587,  -1.28, -1.513, -1.416, -1.264, -1.052, -0.874, -0.781, -0.655, -0.561, -0.532, -0.436,
-                              -0.354, -0.424, -0.485, -0.435, -0.417, -0.517, -0.691, -0.817, -0.898,     -1,  -0.74,  0.176,
-                               0.297,  0.289,   0.36,  0.146,      0,      0,      0,      0,      0],
-                             [-0.506, -1.194, -1.426, -1.332, -1.182, -0.972, -0.795, -0.704, -0.578,  -0.48, -0.445, -0.347,
-                              -0.267, -0.336, -0.391, -0.337, -0.325, -0.436,  -0.62, -0.756, -0.847,  -0.96, -0.714,   0.18,
-                               0.305,  0.317,  0.348,  0.158,      0,      0,      0,      0,      0],
-                             [-0.472,  -1.14, -1.364, -1.271, -1.123, -0.914, -0.738, -0.649, -0.522, -0.422, -0.386, -0.287,
-                              -0.207, -0.273, -0.322, -0.267,  -0.26, -0.379, -0.569, -0.712, -0.811, -0.931, -0.696,  0.183,
-                               0.311,   0.32,  0.351,   0.16,      0,      0,      0,      0,     0],
-                             [-0.448, -1.091, -1.305, -1.214, -1.068, -0.858, -0.682, -0.594, -0.469, -0.368, -0.329, -0.229,
-                              -0.149, -0.213, -0.257,   -0.2, -0.199, -0.327, -0.523, -0.668, -0.774, -0.903, -0.678,  0.186,
-                               0.315,  0.323,  0.355,  0.162,      0,      0,      0,      0,      0],
-                             [-0.405, -1.025, -1.228, -1.139, -0.996, -0.789, -0.615, -0.527, -0.402,   -0.3, -0.256, -0.156,
-                              -0.077, -0.136, -0.173, -0.115, -0.121, -0.259, -0.463, -0.617, -0.732, -0.869, -0.656,   0.19,
-                               0.322,  0.326,  0.359,  0.164,      0,      0,      0,      0,      0],
-                             [-0.391, -0.983, -1.174, -1.085, -0.945, -0.739, -0.566, -0.478, -0.354, -0.251, -0.205, -0.105,
-                              -0.027, -0.082, -0.114, -0.056, -0.069, -0.213,  -0.42, -0.579, -0.699,  -0.84, -0.642,  0.173,
-                               0.327,  0.329,  0.362,  0.165,      0,      0,      0,      0,      0],
-                             [-0.385, -0.946, -1.121, -1.032, -0.898, -0.695, -0.523, -0.434, -0.307, -0.203, -0.157, -0.057,
-                               0.021, -0.031, -0.059, -0.001, -0.018, -0.168, -0.381, -0.546, -0.672, -0.819, -0.629,  0.176,
-                               0.332,  0.332,  0.364,  0.166,      0,      0,      0,      0,      0],
-                             [-0.383, -0.904, -1.063, -0.972, -0.834, -0.632, -0.464, -0.378, -0.251, -0.144, -0.096,  0.001,
-                               0.079,  0.032,  0.011,  0.069,  0.044, -0.113, -0.332, -0.504, -0.637, -0.791, -0.611,  0.181,
-                               0.338,  0.335,  0.367,  0.167,      0,      0,      0,      0,      0],
-                             [-0.391, -0.873, -1.016, -0.929, -0.794, -0.591, -0.423, -0.337, -0.212, -0.104, -0.056,  0.043,
-                               0.121,  0.077,  0.058,  0.117,  0.088, -0.075, -0.298, -0.475, -0.613, -0.772, -0.599,  0.183,
-                               0.342,  0.337,   0.37,  0.168,      0,      0,      0,      0,      0],
-                             [-0.359, -0.836, -0.976, -0.888, -0.755, -0.554, -0.386,   -0.3, -0.175, -0.067, -0.018,  0.081,
-                                0.16,  0.119,  0.103,  0.161,  0.129, -0.039, -0.266, -0.448, -0.591, -0.755, -0.587,  0.187,
-                               0.345,  0.339,  0.372,  0.169,      0,      0,      0,      0,     0],
-                             [-0.328, -0.792, -0.928, -0.842, -0.709, -0.508, -0.341, -0.256, -0.131, -0.022,  0.029,  0.128,
-                               0.208,   0.17,  0.158,  0.216,  0.179,  0.005, -0.228, -0.415, -0.564, -0.733, -0.573,   0.19,
-                               0.384,  0.313,  0.375,   0.17,      0,      0,      0,      0,      0],
-                             [-0.324, -0.767, -0.893, -0.807, -0.676, -0.476,  -0.31, -0.225, -0.101,  0.008,   0.06,  0.159,
-                               0.239,  0.204,  0.195,  0.252,  0.212,  0.034, -0.203, -0.394, -0.546, -0.719, -0.564,  0.192,
-                               0.386,  0.315,  0.377,  0.171,      0,      0,      0,      0,      0],
-                             [ -0.31,  -0.74,  -0.86, -0.775, -0.647, -0.449, -0.283, -0.197, -0.073,  0.036,  0.089,  0.188,
-                               0.269,  0.235,  0.229,  0.285,  0.242,  0.061, -0.179, -0.374,  -0.53, -0.706, -0.556,  0.194,
-                               0.388,  0.317,  0.402,  0.158,      0,      0,      0,      0,      0],
-                             [-0.244, -0.694, -0.818,  -0.73, -0.605, -0.415, -0.252, -0.163, -0.037,  0.072,  0.122,   0.22,
-                               0.303,  0.273,  0.269,  0.324,  0.277,  0.093, -0.152,  -0.35,  -0.51, -0.691, -0.546,  0.196,
-                               0.39,   0.32,  0.403,  0.159,      0,      0,      0,      0,      0],
-                             [-0.284, -0.701, -0.803, -0.701, -0.568, -0.381, -0.225, -0.142, -0.017,  0.092,  0.143,  0.242,
-                               0.325,  0.298,  0.295,   0.35,    0.3,  0.112, -0.134, -0.334, -0.497,  -0.68,  -0.54,  0.198,
-                               0.392,  0.321,  0.404,   0.16,      0,      0,      0,      0,      0],
-                             [-0.281, -0.686, -0.783,  -0.68, -0.547, -0.359, -0.202, -0.119,  0.005,  0.112,  0.163,  0.261,
-                               0.345,  0.321,  0.319,  0.371,  0.319,   0.13, -0.118, -0.321, -0.486, -0.671, -0.534,  0.199,
-                               0.393,  0.323,  0.405,  0.161,      0,      0,      0,      0,      0],
-                             [-0.269, -0.667,  -0.76, -0.655, -0.522, -0.336, -0.181, -0.096,  0.029,  0.136,  0.188,  0.286,
-                                0.37,  0.346,  0.345,  0.396,  0.342,   0.15, -0.102, -0.307, -0.473, -0.661, -0.528,    0.2,
-                               0.393,  0.324,  0.405,  0.162,      0,      0,      0,      0,      0],
-                             [-0.255, -0.653, -0.747, -0.643, -0.511, -0.325, -0.169, -0.082,  0.042,  0.149,  0.204,  0.304,
-                               0.388,  0.363,  0.36 ,  0.409,  0.354,  0.164, -0.085, -0.289, -0.457, -0.649, -0.523,  0.193,
-                               0.394,  0.326,  0.406,  0.162,      0,      0,      0,      0,      0],
-                             [-0.265,  -0.65, -0.739, -0.634,   -0.5, -0.314, -0.159, -0.072,  0.052,  0.159,  0.215,  0.316,
-                               0.398,  0.374,  0.374,  0.424,   0.37,  0.181, -0.065, -0.265, -0.429, -0.627, -0.519,   0.18,
-                               0.394,  0.326,  0.406,  0.162,      0,      0,      0,      0,      0],
-                             [-0.276, -0.647, -0.731, -0.626, -0.492, -0.307, -0.152, -0.064,  0.058,  0.166,  0.227,  0.329,
-                               0.411,  0.389,   0.39,  0.441,  0.389,  0.207, -0.032, -0.228, -0.394, -0.596, -0.494,  0.194,
-                               0.376,  0.326,  0.406,  0.162,      0,      0,      0,      0,      0],
-                             [-0.271, -0.646,  -0.73, -0.625, -0.489, -0.303, -0.149, -0.061,  0.062,  0.169,  0.229,  0.332,
-                               0.412,  0.388,  0.389,  0.439,  0.387,  0.206, -0.028, -0.209, -0.347, -0.524, -0.435,  0.195,
-                               0.381,  0.313,  0.405,  0.162,      0,      0,      0,      0,      0],
-                             [-0.267, -0.647, -0.734, -0.628,  -0.49, -0.304, -0.151, -0.062,  0.061,  0.168,  0.229,  0.329,
-                               0.408,  0.385,  0.388,  0.438,  0.386,  0.206, -0.024, -0.194, -0.319,  -0.48,  -0.36,  0.318,
-                               0.405,  0.335,  0.394,  0.162,      0,      0,      0,      0,      0],
-                             [-0.274, -0.656, -0.745,  -0.64,   -0.5, -0.313, -0.158, -0.068,  0.054,  0.161,  0.223,  0.325,
-                               0.402,  0.379,  0.384,  0.438,  0.392,  0.221,  0.001, -0.164, -0.278, -0.415, -0.264,  0.445,
-                               0.402,  0.304,  0.389,  0.157,      0,      0,      0,      0,      0],
-                             [-0.289, -0.666, -0.753, -0.648, -0.508,  -0.32, -0.164, -0.073,  0.049,  0.156,   0.22,  0.321,
-                               0.397,  0.374,  0.377,   0.43,  0.387,  0.224,  0.014, -0.139, -0.236, -0.359, -0.211,  0.475,
-                                 0.4,  0.308,  0.375,  0.155,      0,      0,      0,      0,      0],
-                             [-0.302, -0.678, -0.765, -0.659, -0.517, -0.329, -0.176, -0.085,  0.038,  0.145,  0.208,   0.31,
-                               0.386,  0.362,  0.366,  0.421,  0.381,  0.224,  0.022, -0.119, -0.201,   -0.3, -0.129,  0.572,
-                               0.419,  0.265,  0.364,  0.154,      0,      0,      0,      0,      0],
-                             [-0.314, -0.696, -0.786, -0.681, -0.539, -0.349, -0.196, -0.105,  0.019,  0.127,  0.189,  0.289,
-                               0.364,   0.34,  0.346,  0.403,   0.37,  0.222,  0.036, -0.081, -0.133, -0.205, -0.021,  0.674,
-                               0.383,  0.237,  0.359,  0.151,      0,      0,      0,      0,      0],
-                             [-0.341, -0.719, -0.807, -0.702, -0.558, -0.367, -0.211,  -0.12,  0.003,  0.111,  0.175,  0.277,
-                               0.351,  0.325,  0.331,   0.39,   0.36,  0.221,  0.048, -0.046, -0.074, -0.139,  0.038,  0.726,
-                               0.429,  0.215,  0.347,  0.151,      0,      0,      0,      0,      0],
-                             [ -0.35, -0.737, -0.829, -0.724, -0.577, -0.385, -0.229, -0.136, -0.011,  0.098,  0.163,  0.266,
-                               0.338,   0.31,  0.316,  0.378,  0.354,  0.221,  0.062, -0.009, -0.012, -0.063,  0.119,  0.811,
-                               0.319,  0.201,  0.343,  0.148,      0,      0,      0,      0,      0],
-                             [-0.344,  -0.75, -0.856, -0.757, -0.607, -0.409,  -0.25, -0.156, -0.033,  0.076,  0.143,  0.246,
-                               0.316,  0.287,  0.293,  0.361,  0.345,  0.225,  0.082,  0.035,  0.071,  0.046,  0.172,  0.708,
-                               0.255,   0.21,  0.325,  0.146,      0,      0,      0,      0,      0]])/86400
-
-        cdef:
-            Py_ssize_t tt, k, ind1, ind2
-        A = np.interp(Gr.z_half,z_in,rad_in[0,:])
-        for tt in xrange(1,36):
-            A = np.vstack((A, np.interp(Gr.z_half,z_in,rad_in[tt,:])))
-        self.rad = A # store matrix in self
-        ind1 = int(mt.trunc(10.0/600.0)) - 1
-        ind2 = int(mt.ceil(10.0/600.0)) - 1
-        for k in xrange(Gr.nzg):
-            if 10%600.0 == 0:
-                self.Fo.dTdt[k] = self.rad[ind1,k]
-            else:
-                self.Fo.dTdt[k]    = (self.rad[ind2,k]-self.rad[ind1,k])/\
-                                      (self.rad_time[ind2]-self.rad_time[ind1])*(10.0)+self.rad[ind1,k]
+        self.Fo.initialize(Gr, GMV, TS)
         return
 
+
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
@@ -916,36 +841,19 @@ cdef class TRMM_LBA(CasesBase):
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
         self.Sur.lhf = 554.0 * mt.pow(np.maximum(0, np.cos(np.pi/2*((5.25*3600.0 - TS.t)/5.25/3600.0))),1.3)
         self.Sur.shf = 270.0 * mt.pow(np.maximum(0, np.cos(np.pi/2*((5.25*3600.0 - TS.t)/5.25/3600.0))),1.5)
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         # fix momentum fluxes to zero as they are not used in the paper
         self.Sur.rho_uflux = 0.0
         self.Sur.rho_vflux = 0.0
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
-        cdef:
-            Py_ssize_t k, ind1, ind2
+        self.Fo.update(GMV, TS)
 
-        ind2 = int(mt.ceil(TS.t/600.0))
-        ind1 = int(mt.trunc(TS.t/600.0))
-        for k in xrange(self.Fo.Gr.nzg):
-            if self.Fo.Gr.z_half[k] >= 22699.48:
-                self.Fo.dTdt[k] = 0.0
-            else:
-                if TS.t<600.0: # first 10 min use the radiative forcing of t=10min (as in the paper)
-                    self.Fo.dTdt[k] = self.rad[0,k]
-                elif TS.t<21600.0 and ind2<36:
-                    if TS.t%600.0 == 0:
-                        self.Fo.dTdt[k] = self.rad[ind1,k]
-                    else:
-                        self.Fo.dTdt[k] = (self.rad[ind2,k]-self.rad[ind1,k])\
-                                                 /(self.rad_time[ind2]-self.rad_time[ind1])\
-                                                 *(TS.t-self.rad_time[ind1])+self.rad[ind1,k]
-                else:
-                    self.Fo.dTdt[k] = self.rad[35,k]
+        return
 
-        self.Fo.update(GMV)
-
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class ARM_SGP(CasesBase):
@@ -955,17 +863,18 @@ cdef class ARM_SGP(CasesBase):
         self.casename = 'ARM_SGP'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 8.5e-5
         self.Fo.apply_subsidence =False
 
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 970.0*100 #Pressure at ground
         Ref.Tg = 299.0   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 15.2/1000#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1006,7 +915,7 @@ cdef class ARM_SGP(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Tsurface = 299.0 * exner_c(Ref.Pg)
         self.Sur.qsurface = 15.2e-3 # kg/kg
         self.Sur.lhf = 5.0
@@ -1015,19 +924,22 @@ cdef class ARM_SGP(CasesBase):
         self.Sur.ustar = 0.28 # this is taken from Bomex -- better option is to approximate from LES tke above the surface
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         cdef:
             Py_ssize_t k
         for k in xrange(Gr.nzg):
             self.Fo.ug[k] = 10.0
             self.Fo.vg[k] = 0.0
 
+        return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
 
@@ -1052,7 +964,7 @@ cdef class ARM_SGP(CasesBase):
         # if self.Sur.lhf < 1.0:
         #     self.Sur.lhf = 1.0
         #+++++++++
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         # fix momentum fluxes to zero as they are not used in the paper
         self.Sur.rho_uflux = 0.0
         self.Sur.rho_vflux = 0.0
@@ -1074,10 +986,13 @@ cdef class ARM_SGP(CasesBase):
                     self.Fo.dTdt[k] = dTdt*(1-(self.Fo.Gr.z_half[k]-1000.0)/1000.0)
                     self.Fo.dqtdt[k]  = dqtdt * exner_c(self.Fo.Ref.p0_half[k])\
                                         *(1-(self.Fo.Gr.z_half[k]-1000.0)/1000.0)
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
 
         return
 
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
+        return
 
 cdef class GATE_III(CasesBase):
     # adopted from: "Large eddy simulation of Maritime Deep Tropical Convection",
@@ -1086,16 +1001,17 @@ cdef class GATE_III(CasesBase):
         self.casename = 'GATE_III'
         self.Sur = Surface.SurfaceFixedCoeffs(paramlist)
         self.Fo = Forcing.ForcingStandard() # it was forcing standard
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'thetal_maxgrad'
         self.Fo.apply_subsidence = False
         self.Fo.apply_coriolis = False
 
         return
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1013.0*100  #Pressure at ground
         Ref.Tg = 299.184   # surface values for reference state (RS) which outputs p0 rho0 alpha0
         Ref.qtg = 16.5/1000#Total water mixing ratio at surface
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1148,7 +1064,7 @@ cdef class GATE_III(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.qsurface = 16.5/1000.0 # kg/kg
@@ -1158,13 +1074,13 @@ cdef class GATE_III(CasesBase):
         self.Sur.ch = 0.0034337
         self.Sur.cq = 0.0034337
         self.Sur.Tsurface = 299.184
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         #LES z is in meters
         z_in     = np.array([ 0.0,   0.5,  1.0,  1.5,   2.0,   2.5,    3.0,   3.5,   4.0,   4.5,   5.0,   5.5,   6.0,
                               6.5,  7.0,  7.5,   8.0,  8.5,   9.0,  9.5,  10.0,  10.5,  11.0,    11.5,   12.0, 12.5,
@@ -1192,6 +1108,10 @@ cdef class GATE_III(CasesBase):
         return
 
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         return
@@ -1200,13 +1120,16 @@ cdef class GATE_III(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV) # here lhf and shf are needed for calcualtion of bflux in surface and thus u_star
+        self.Sur.update(GMV, TS) # here lhf and shf are needed for calcualtion of bflux in surface and thus u_star
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV,  TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
         return
 
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
+        return
 
 cdef class DYCOMS_RF01(CasesBase):
     """
@@ -1219,15 +1142,16 @@ cdef class DYCOMS_RF01(CasesBase):
         self.casename = 'DYCOMS_RF01'
         self.Sur = Surface.SurfaceFixedFlux(paramlist)
         self.Fo = Forcing.ForcingDYCOMS_RF01() # radiation is included in Forcing
+        self.Rad = Radiation.RadiationDYCOMS_RF01()
         self.inversion_option = 'thetal_maxgrad'
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg   = 1017.8 * 100.0
         Ref.qtg  = 9.0 / 1000.0
         # Use an exner function with values for Rd, and cp given in Stevens 2005 to compute temperature
         Ref.Tg   = 289.0 * exner_c(Ref.Pg, kappa = dycoms_Rd / dycoms_cp)
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     # helper function
@@ -1335,7 +1259,7 @@ cdef class DYCOMS_RF01(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.zrough      = 1.0e-4
         self.Sur.ustar_fixed = False
         self.Sur.cm          = 0.0011
@@ -1357,14 +1281,14 @@ cdef class DYCOMS_RF01(CasesBase):
                                  / (theta_surface * (1.0 + (eps_vi-1) * self.Sur.qsurface)))
         self.Sur.Gr  = Gr
         self.Sur.Ref = Ref
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
 
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
 
         # geostrophic velocity profiles
         self.Fo.ug[:] = 7.0
@@ -1382,24 +1306,33 @@ cdef class DYCOMS_RF01(CasesBase):
 
         # radiation is treated as a forcing term (see eq. 3 in Stevens et. al. 2005)
         # cloud-top cooling + cloud-base warming + cooling in free troposphere
-        self.Fo.calculate_radiation(GMV)
 
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.Gr  = Gr
+        self.Rad.initialize(Gr, GMV, TS)
+        self.Rad.calculate_radiation(Ref, Gr, GMV, TS)
+        return
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
         self.Fo.initialize_io(Stats)
+        self.Rad.initialize_io(Stats)
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self, Stats)
         self.Fo.io(Stats)
+        self.Rad.io(Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class GABLS(CasesBase):
@@ -1407,6 +1340,7 @@ cdef class GABLS(CasesBase):
         self.casename = 'GABLS'
         self.Sur = Surface.SurfaceMoninObukhovDry(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         cdef double latitude = 73.0
@@ -1415,11 +1349,11 @@ cdef class GABLS(CasesBase):
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 265.0  #Temperature at ground
         Ref.qtg = 1.0e-12 #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN (TBD)
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
         cdef:
@@ -1463,23 +1397,26 @@ cdef class GABLS(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.1
         self.Sur.Tsurface = 265.0
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg - Gr.gw):
             # Geostrophic velocity profiles.
             self.Fo.ug[k] = 8.0
             self.Fo.vg[k] = 0.0
+        return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
@@ -1492,11 +1429,14 @@ cdef class GABLS(CasesBase):
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
         self.Sur.Tsurface = 265.0 - (0.25/3600.0)*TS.t
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 # Not fully implemented yet - Ignacio
@@ -1505,6 +1445,7 @@ cdef class SP(CasesBase):
         self.casename = 'SP'
         self.Sur = Surface.SurfaceSullivanPatton(paramlist)
         self.Fo = Forcing.ForcingStandard()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'critical_Ri'
         self.Fo.apply_coriolis = True
         self.Fo.coriolis_param = 1.0e-4 # s^{-1}
@@ -1512,11 +1453,11 @@ cdef class SP(CasesBase):
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.Tg = 300.0  #Temperature at ground
         Ref.qtg = 1.0e-4   #Total water mixing ratio at surface. if set to 0, alpha0, rho0, p0 are NaN.
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -1560,7 +1501,7 @@ cdef class SP(CasesBase):
         GMV.satadjust()
         return
 
-    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.zrough = 0.1
@@ -1569,18 +1510,21 @@ cdef class SP(CasesBase):
         theta_flux = 0.24
         self.Sur.bflux   =  g * theta_flux / theta_surface
         # self.Sur.bflux = 0.24 * exner_c(Ref.p0_half[Gr.gw]) * g / (Ref.p0_half[Gr.gw]*Ref.alpha0_half[Gr.gw]/Rd)
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
         cdef Py_ssize_t k
         for k in xrange(Gr.gw, Gr.nzg - Gr.gw):
             # Geostrophic velocity profiles. vg = 0
             self.Fo.ug[k] = 1.0
             self.Fo.vg[k] = 0.0
+        return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
 
@@ -1593,11 +1537,14 @@ cdef class SP(CasesBase):
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return
 
 cdef class DryBubble(CasesBase):
@@ -1605,16 +1552,17 @@ cdef class DryBubble(CasesBase):
         self.casename = 'DryBubble'
         self.Sur = Surface.SurfaceNone()
         self.Fo = Forcing.ForcingNone()
+        self.Rad = Radiation.RadiationNone()
         self.inversion_option = 'theta_rho'
         self.Fo.apply_coriolis = False
         self.Fo.apply_subsidence = False
         return
 
-    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats):
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
         Ref.Pg = 1.0e5  #Pressure at ground
         Ref.qtg = 1.0e-5
         Ref.Tg = 296
-        Ref.initialize(Gr, Stats)
+        Ref.initialize(Gr, Stats, namelist)
         return
 
     cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
@@ -1701,32 +1649,129 @@ cdef class DryBubble(CasesBase):
 
         return
 
-    cpdef initialize_surface(self, Grid Gr,  ReferenceState Ref ):
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
         self.Sur.Gr = Gr
         self.Sur.Ref = Ref
         self.Sur.qsurface = 1.0e-5
         self.Sur.shf = 8.0e-3 * cpm_c(self.Sur.qsurface) * Ref.rho0[Gr.gw-1]
-        self.Sur.initialize()
+        self.Sur.initialize(Gr, TS)
         return
 
-    cpdef initialize_forcing(self, Grid Gr,  ReferenceState Ref, GridMeanVariables GMV ):
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
         self.Fo.Gr = Gr
         self.Fo.Ref = Ref
-        self.Fo.initialize(GMV)
+        self.Fo.initialize(Gr, GMV, TS)
+        return
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.initialize(Gr, GMV, TS)
         return
 
     cpdef initialize_io(self, NetCDFIO_Stats Stats):
         CasesBase.initialize_io(self, Stats)
+        self.Rad.initialize_io(Stats)
+        self.Fo.initialize_io(Stats)
         return
 
     cpdef io(self, NetCDFIO_Stats Stats):
         CasesBase.io(self, Stats)
+        self.Rad.io(Stats)
+        self.Fo.io(Stats)
         return
 
     cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Sur.update(GMV)
+        self.Sur.update(GMV, TS)
         return
 
     cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
-        self.Fo.update(GMV)
+        self.Fo.update(GMV, TS)
+        return
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
+        return
+
+cdef class LES_driven_SCM(CasesBase):
+    def __init__(self, paramlist):
+        self.casename = 'LES_driven_SCM'
+        self.Sur = Surface.SurfaceLES(paramlist)
+        self.Fo = Forcing.ForcingLES()
+        self.Rad = Radiation.RadiationLES()
+        self.inversion_option = 'critical_Ri'
+        self.Fo.apply_coriolis = False
+        # get LES latitiude
+        self.Fo.apply_subsidence = True
+        self.Fo.nudge_tau = paramlist['forcing']['nudging_timescale']
+        return
+
+    cpdef initialize_reference(self, Grid Gr, ReferenceState Ref, NetCDFIO_Stats Stats, namelist):
+        Ref.initialize(Gr, Stats, namelist)
+        return
+
+    cpdef initialize_profiles(self, Grid Gr, GridMeanVariables GMV, ReferenceState Ref):
+        cdef:
+            Py_ssize_t k
+
+        les_data = nc.Dataset(Gr.les_filename,'r')
+        z_les_half = np.array(les_data.groups['reference'].variables['zp_half'])
+        thetali = np.array(les_data.groups['profiles'].variables['thetali_mean'])
+        qt      = np.array(les_data.groups['profiles'].variables['qt_mean'])
+        u_mean  = np.array(les_data.groups['profiles'].variables['u_mean'])
+        v_mean  = np.array(les_data.groups['profiles'].variables['v_mean'])
+        # interp1d from LES to SCM
+        f_thetali     = interp1d(z_les_half, thetali[0,:], fill_value="extrapolate")
+        GMV.H.values  = f_thetali(Gr.z_half)
+        f_qt          = interp1d(z_les_half, qt[0,:], fill_value="extrapolate")
+        GMV.QT.values = f_qt(Gr.z_half)
+        f_u_mean      = interp1d(z_les_half, u_mean[0,:], fill_value="extrapolate")
+        GMV.U.values  = f_u_mean(Gr.z_half)
+        f_v_mean      = interp1d(z_les_half, v_mean[0,:], fill_value="extrapolate")
+        GMV.V.values  = f_v_mean(Gr.z_half)
+
+        GMV.U.set_bcs(Gr)
+        GMV.QT.set_bcs(Gr)
+        GMV.H.set_bcs(Gr)
+        GMV.T.set_bcs(Gr)
+        GMV.satadjust()
+        return
+
+    cpdef initialize_surface(self, Grid Gr, ReferenceState Ref,  TimeStepping TS, namelist):
+        self.Sur.Gr = Gr
+        self.Sur.Ref = Ref
+        self.Sur.qsurface = 1.0e-5
+        self.Sur.zrough = 1.0e-4
+        self.Sur.initialize(Gr, TS)
+        return
+
+    cpdef initialize_forcing(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Fo.Gr = Gr
+        self.Fo.Ref = Ref
+        self.Fo.initialize(Gr, GMV, TS)
+        return
+
+    cpdef initialize_radiation(self, Grid Gr, ReferenceState Ref, GridMeanVariables GMV, TimeStepping TS):
+        self.Rad.Gr = Gr
+        self.Rad.initialize(Gr, GMV, TS)
+        return
+
+    cpdef initialize_io(self, NetCDFIO_Stats Stats):
+        CasesBase.initialize_io(self, Stats)
+        self.Rad.initialize_io(Stats)
+        self.Fo.initialize_io(Stats)
+        return
+
+    cpdef io(self, NetCDFIO_Stats Stats):
+        CasesBase.io(self, Stats)
+        self.Rad.io(Stats)
+        self.Fo.io(Stats)
+        return
+
+    cpdef update_surface(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Sur.update(GMV, TS)
+        return
+
+    cpdef update_forcing(self, GridMeanVariables GMV, TimeStepping TS):
+        self.Fo.update(GMV, TS)
+        return
+
+    cpdef update_radiation(self, ReferenceState Ref, Grid Gr, GridMeanVariables GMV,  TimeStepping TS):
+        self.Rad.update(Ref, Gr, GMV, TS)
         return

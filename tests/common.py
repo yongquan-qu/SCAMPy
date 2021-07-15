@@ -48,6 +48,7 @@ def simulation_setup(case):
         )
     )
     outfile = outpath + "/stats/Stats." + case + ".nc"
+    print(outfile)
 
     res = {"namelist"  : namelist,
            "paramlist" : paramlist,

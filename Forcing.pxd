@@ -2,9 +2,11 @@ from Grid cimport Grid
 from ReferenceState cimport ReferenceState
 from Variables cimport GridMeanVariables, VariablePrognostic
 from NetCDFIO cimport  NetCDFIO_Stats
+from TimeStepping cimport TimeStepping
 
 cdef class ForcingBase:
     cdef:
+        double nudge_tau
         double [:] subsidence
         double [:] dTdt # horizontal advection temperature tendency
         double [:] dqtdt # horizontal advection moisture tendency
@@ -19,31 +21,25 @@ cdef class ForcingBase:
         Grid Gr
         ReferenceState Ref
 
-    cpdef initialize(self, GridMeanVariables GMV)
-    cpdef update(self, GridMeanVariables GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class ForcingNone(ForcingBase):
-    cpdef initialize(self, GridMeanVariables GMV)
-    cpdef update(self, GridMeanVariables GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class ForcingStandard(ForcingBase):
-    cpdef initialize(self, GridMeanVariables GMV)
-    cpdef update(self, GridMeanVariables GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)
-
-# cdef class ForcingRadiative(ForcingBase):
-#     cpdef initialize(self, GridMeanVariables GMV)
-#     cpdef update(self, GridMeanVariables GMV)
-#     cpdef initialize_io(self, NetCDFIO_Stats Stats)
-#     cpdef io(self, NetCDFIO_Stats Stats)
 
 cdef class ForcingDYCOMS_RF01(ForcingBase):
     cdef:
@@ -54,9 +50,29 @@ cdef class ForcingDYCOMS_RF01(ForcingBase):
         double divergence
         double [:] f_rad # radiative flux at cell edges
 
-    cpdef initialize(self, GridMeanVariables GMV)
-    cpdef calculate_radiation(self, GridMeanVariables GMV)
-    cpdef update(self, GridMeanVariables GMV)
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
+    cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
+    cpdef initialize_io(self, NetCDFIO_Stats Stats)
+    cpdef io(self, NetCDFIO_Stats Stats)
+
+cdef class ForcingLES(ForcingBase):
+    cdef:
+        str LES_filename
+        double [:] t_les
+        double [:] z_les
+        double [:,:] scm_subsidence
+        double [:,:] dtdt_hadv
+        double [:,:] dtdt_nudge
+        double [:,:] dqtdt_hadv
+        double [:,:] dqtdt_nudge
+        double [:,:] dtdt_fluc
+        double [:,:] dqtdt_fluc
+        double [:,:] u_nudge
+        double [:,:] v_nudge
+
+    cpdef initialize(self, Grid Gr, GridMeanVariables GMV, TimeStepping TS)
+    cpdef update(self, GridMeanVariables GMV, TimeStepping TS)
     cpdef coriolis_force(self, VariablePrognostic U, VariablePrognostic V)
     cpdef initialize_io(self, NetCDFIO_Stats Stats)
     cpdef io(self, NetCDFIO_Stats Stats)

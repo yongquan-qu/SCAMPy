@@ -9,6 +9,11 @@ cdef class VariablePrognostic:
         double [:] new
         double [:] mf_update
         double [:] tendencies
+        double [:] radiation
+        double [:] horz_adv
+        double [:] nudge
+        double [:] fluc
+        double [:] subsidence
         str loc
         str kind
         str bc
