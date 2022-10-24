@@ -1,6 +1,6 @@
 import numpy as np
 cimport numpy as np
-from libc.math cimport sqrt, log, fabs,atan, exp, fmax, pow
+from libc.math cimport sqrt, log, fabs, atan, exp, fmax, pow
 include "parameters.pxi"
 
 #Adapated from PyCLES: https://github.com/pressel/pycles

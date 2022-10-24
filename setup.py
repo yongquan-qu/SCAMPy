@@ -20,7 +20,8 @@ if sys.platform == 'darwin':
     libraries = []
     extensions = []
     extra_compile_args = []
-    extra_compile_args += ['-O3', '-march=native', '-Wno-unused', '-Wno-#warnings','-fPIC']
+    # extra_compile_args += ['-O3', '-march=native', '-Wno-unused', '-Wno-#warnings','-fPIC']
+    extra_compile_args += ['-O3', '-Wno-unused', '-Wno-#warnings','-fPIC']
     # extra_objects=['./RRTMG/rrtmg_build/rrtmg_combined.o']
     extra_objects = []
     netcdf_include = '/opt/local/include'
@@ -216,7 +217,9 @@ extensions.append(_ext)
 # else:
 #     print("RRTMG Seems to be already compiled.")
 #
-
 setup(
-    ext_modules=cythonize(extensions, verbose=1, include_path=include_path)
+    ext_modules=cythonize(extensions, verbose=1, include_path=include_path,  language_level = 3)
 )
+# setup(
+#     ext_modules=cythonize(extensions, verbose=1, include_path=include_path)
+# )

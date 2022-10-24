@@ -62,7 +62,7 @@ cdef class RainVariables:
         try:
             self.rain_model = str(namelist['microphysics']['rain_model'])
         except:
-            print "EDMF_Rain: defaulting to no rain"
+            print("EDMF_Rain: defaulting to no rain")
             self.rain_model = "None"
 
         if self.rain_model not in ["None", "cutoff", "clima_1m"]:

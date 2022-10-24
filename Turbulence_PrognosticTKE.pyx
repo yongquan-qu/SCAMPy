@@ -144,7 +144,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             self.mixing_scheme = str(namelist['turbulence']['EDMF_PrognosticTKE']['mixing_length'])
         except:
             self.mixing_scheme = 'default'
-            print 'Using (Tan et al, 2018) default'
+            print('Using (Tan et al, 2018) default')
 
         # Get values from paramlist
         # set defaults at some point?
@@ -174,7 +174,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             except:
                 self.pressure_normalmode_buoy_coeff1 = self.pressure_buoy_coeff
                 self.pressure_normalmode_buoy_coeff2 = 0.0
-                print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula buoyancy term'
+                print('Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula buoyancy term')
 
         if str(namelist['turbulence']['EDMF_PrognosticTKE']['pressure_closure_drag']) == 'normalmode':
             try:
@@ -183,7 +183,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
             except:
                 self.pressure_normalmode_adv_coeff = 0.0
                 self.pressure_normalmode_drag_coeff = 1.0
-                print 'Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula drag term'
+                print('Using (Tan et al, 2018) parameters as default for Normal Mode pressure formula drag term')
 
         # "Legacy" coefficients used by the steady updraft routine
         self.vel_buoy_coeff = 1.0-self.pressure_buoy_coeff
@@ -286,7 +286,7 @@ cdef class EDMF_PrognosticTKE(ParameterizationBase):
 
     cpdef initialize(self, CasesBase Case, GridMeanVariables GMV, ReferenceState Ref):
         if Case.casename == 'DryBubble':
-            print 'updraft initialized for Dry Bubble'
+            print('updraft initialized for Dry Bubble')
             self.UpdVar.initialize_DryBubble(GMV, Ref)
         else:
             self.UpdVar.initialize(GMV)
